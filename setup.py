@@ -57,7 +57,7 @@ setup(
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
     url='http://github.com/Star2Billing/django-admin-tools-stats',
-    packages=['django-admin-tools-stats/django_admin_tools_stats/admin_tools_stats',
+    packages=['django_admin_tools_stats/admin_tools_stats/',
               'django_admin_tools_stats/docs/',],
     include_package_data=True,
     zip_safe = False,
