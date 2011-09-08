@@ -2,7 +2,7 @@ global-exclude *.pyc
 
 include README.rst
 include COPYING
-include django_admin_tools_stats/admin_tools_stats/requirements.txt
+include django_admin_tools_stats/requirements.txt
 
 recursive-include django_admin_tools_stats/admin_tools_stats *
 recursive-include django_admin_tools_stats/docs *
