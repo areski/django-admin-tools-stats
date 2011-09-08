@@ -2,7 +2,7 @@ from setuptools import setup
 import os
 import sys
 import re
-
+from django-admin-tools-stats import VERSION
 
 # Compile the list of packages available, because distutils doesn't have
 # an easy way to do this.
@@ -51,7 +51,7 @@ if sys.argv[1] == "install":
 
 setup(
     name='django-admin-tools-stats',
-    version='0.1.0',
+    version=VERSION.replace(' ', '-'),
     description='django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts',
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
