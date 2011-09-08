@@ -18,7 +18,7 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
 APP_DIR = os.path.normpath(os.path.join(os.getcwd(), '../..'))
-sys.path.append(APP_DIR)
+sys.path.insert(0, APP_DIR)
 os.environ["DJANGO_SETTINGS_MODULE"] = "django-admin-tools-stats.settings"
 import settings
 from django.core.management import setup_environ
