@@ -51,10 +51,11 @@ if sys.argv[1] == "install":
 
 setup(
     name='django-admin-tools-stats',
-    version='0.1',
-    description='',
+    version='0.1.0',
+    description='django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts',
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
+    url='http://github.com/Star2Billing/django-admin-tools-stats',
     packages=['django-admin-tools-stats/admin_tools_stats',
               'django-admin-tools-stats/docs',
               'django-admin-tools-stats/install'],
