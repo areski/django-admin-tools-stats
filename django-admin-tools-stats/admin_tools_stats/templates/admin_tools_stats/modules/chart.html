@@ -1,0 +1,18 @@
+{% extends "admin_tools/dashboard/module.html" %}
+{% load chart_tags %}
+{% block module_content %}
+
+    <br/>
+    {% if module.form_field %}
+    <form action="." method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+        {{ module.form_field }}&nbsp;
+    <!--<input type="SUBMIT" name="submit" value="Submit"/>-->
+    </form>
+    {% endif %}
+    <br/>
+
+    {% bar_chart module.values module.captions module.chart_size %}
+
+{% endblock %}
+

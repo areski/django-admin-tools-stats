@@ -1,0 +1,26 @@
+[
+   {
+      "pk":2,
+      "model":"admin_tools_stats.dashboardstatscriteria",
+      "fields":{
+         "criteria_fix_mapping":null,
+         "updated_date":"2011-09-02 05:51:41",
+         "criteria_name":"call_type",
+         "dynamic_criteria_field_name":"disposition",
+         "criteria_dynamic_mapping":{
+            "INVALIDARGS":"INVALIDARGS",
+            "BUSY":"BUSY",
+            "TORTURE":"TORTURE",
+            "ANSWER":"ANSWER",
+            "DONTCALL":"DONTCALL",
+            "FORBIDDEN":"FORBIDDEN",
+            "NOROUTE":"NOROUTE",
+            "CHANUNAVAIL":"CHANUNAVAIL",
+            "NOANSWER":"NOANSWER",
+            "CONGESTION":"CONGESTION",
+            "CANCEL":"CANCEL"
+         },
+         "created_date":"2011-09-02 05:51:41"
+      }
+   }
+]

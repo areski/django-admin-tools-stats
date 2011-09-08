@@ -1,0 +1,17 @@
+[
+   {
+      "pk":1,
+      "model":"admin_tools_stats.dashboardstatscriteria",
+      "fields":{
+         "criteria_fix_mapping":{
+            "is_active":"1"
+         },
+         "updated_date":"2011-09-01 09:06:12",
+         "criteria_name":"status",
+         "criteria_dynamic_mapping":{
+
+         },
+         "created_date":"2011-09-01 09:01:40"
+      }
+   }
+]

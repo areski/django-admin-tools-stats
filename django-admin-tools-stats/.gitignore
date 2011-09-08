@@ -1,0 +1,6 @@
+*.pyc
+*.db
+*nbproject*
+*devserver*
+*.idea*
+docs/build/*

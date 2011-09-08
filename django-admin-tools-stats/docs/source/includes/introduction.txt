@@ -1,0 +1,71 @@
+:Version: 0.1.0
+:Keywords: django, python
+
+--
+
+.. _django-admin-tools-stats-synopsis:
+
+Django-admin-tools-stats is an open source project & it is written in
+Python, using the ``Django`` Framework.
+
+The license is MIT.
+
+
+
+.. _overview:
+
+Overview
+========
+
+Django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts.
+
+The goal of this project is to to interrogate quickly your Model data and provide reports and statistics graph simple to read, use on a Dashboard.
+
+
+.. image:: ./_static/admin_dashboard.png
+    :width: 1000
+
+
+.. _usage:
+
+Usage
+=====
+
+This tools has been created to improve the django-admin-tools : https://bitbucket.org/izi/django-admin-tools/wiki/Home
+
+It allows you to easily include graph into your dashboard to monitor some of your data, for instance monitor the new user signing per days or the new campaign created per weeks.
+This addons offers enough flexibility to let you display a select button to add extra filter on the model data.
+
+
+.. _contributing:
+
+Contributing
+============
+
+Development of django-admin-tools-stats happens on Github:
+
+https://github.com/areski/django-admin-user-stats
+
+If you don’t like Github and Git you’re welcome to send regular patches.
+
+Bug tracker: https://github.com/areski/django-admin-user-stats/issues
+
+
+.. _documentation:
+
+Documentation
+=============
+
+An extensive documentation is available, it was made with the excellent Sphinx program :
+http://django-admin-user-stats.readthedocs.org
+
+
+Credits
+=======
+
+Django-admin-tools-stats has been inspired of django-admin-user-stats :
+https://github.com/kmike/django-admin-user-stats
+
+The Django-admin-tools-stats project is supported by Star2billing S.L. 
+
+For more information, see http://www.star2billing.com
