@@ -2,7 +2,7 @@ from setuptools import setup
 import os
 import sys
 import re
-from django-admin-tools-stats import VERSION
+from django_admin_tools_stats import VERSION
 
 
 # Compile the list of packages available, because distutils doesn't have
@@ -57,12 +57,12 @@ setup(
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
     url='http://github.com/Star2Billing/django-admin-tools-stats',
-    packages=['django-admin-tools-stats/admin_tools_stats',
-              'django-admin-tools-stats/docs',
-              'django-admin-tools-stats/install'],
+    packages=['django_admin_tools_stats/admin_tools_stats',
+              'django_admin_tools_stats/docs',
+              'django_admin_tools_stats/install'],
     include_package_data=True,
     zip_safe = False,
-    install_requires = parse_requirements('django-admin-tools-stats/install/conf/requirements.txt'),
-    dependency_links = parse_dependency_links('django-admin-tools-stats/install/conf/requirements.txt',
+    install_requires = parse_requirements('django_admin_tools_stats/install/conf/requirements.txt'),
+    dependency_links = parse_dependency_links('django_admin_tools_stats/install/conf/requirements.txt',
                                               install_flag),
 )
