@@ -4,6 +4,7 @@ import sys
 import re
 from django-admin-tools-stats import VERSION
 
+
 # Compile the list of packages available, because distutils doesn't have
 # an easy way to do this.
 packages, data_files, temp_data_files, addons_data_files = [], [], [], []
