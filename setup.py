@@ -50,7 +50,7 @@ if sys.argv[1] == "install":
     install_flag = True
 
 setup(
-    name='Django-admin-tools-stats',
+    name='django-admin-tools-stats',
     version='0.1',
     description='',
     author='Belaid Arezqui',
