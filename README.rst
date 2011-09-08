@@ -65,7 +65,13 @@ Configure
 Screenshot
 ----------
 
-.. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/django-admin-tools-stats/docs/source/_static/admin_dashboard.png
+.. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/django_admin_tools_stats/docs/source/_static/admin_dashboard.png
+
+
+Documentation
+-------------
+
+Documentation can be found here : http://readthedocs.org/docs/django-admin-tools-stats/
 
 
 Support 
