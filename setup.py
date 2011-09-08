@@ -5,11 +5,6 @@ import re
 from django_admin_tools_stats import VERSION
 
 
-# Compile the list of packages available, because distutils doesn't have
-# an easy way to do this.
-packages, data_files, temp_data_files, addons_data_files = [], [], [], []
-docs_data_files, resources_data_files = [], []
-
 root_dir = os.path.dirname(__file__)
 if root_dir:
     os.chdir(root_dir)
@@ -46,6 +41,29 @@ def parse_dependency_links(file_name, install_flag=False):
     return dependency_links
 
 
+# taken from django-registration
+# Compile the list of packages available, because distutils doesn't have
+# an easy way to do this.
+packages, data_files = [], []
+root_dir = os.path.dirname(__file__)
+if root_dir:
+    os.chdir(root_dir)
+
+for dirpath, dirnames, filenames in os.walk('django_admin_tools_stats'):
+    # Ignore dirnames that start with '.'
+    for i, dirname in enumerate(dirnames):
+        if dirname.startswith('.'): del dirnames[i]
+    if '__init__.py' in filenames:
+        pkg = dirpath.replace(os.path.sep, '.')
+        if os.path.altsep:
+            pkg = pkg.replace(os.path.altsep, '.')
+        packages.append(pkg)
+    elif filenames:
+        prefix = dirpath[12:] # Strip "django_admin_tools_stats/" or "django_admin_tools_stats\"
+        for f in filenames:
+            data_files.append(os.path.join(prefix, f))
+
+
 install_flag=False
 if sys.argv[1] == "install":
     install_flag = True
@@ -57,11 +75,23 @@ setup(
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
     url='http://github.com/Star2Billing/django-admin-tools-stats',
-    packages=['django_admin_tools_stats/admin_tools_stats/',
-              'django_admin_tools_stats/docs/',],
     include_package_data=True,
     zip_safe = False,
+    package_dir={'django_admin_tools_stats': 'django_admin_tools_stats'},
+    packages=packages,
+    package_data={'django_admin_tools_stats': data_files},
     install_requires = parse_requirements('django_admin_tools_stats/requirements.txt'),
     dependency_links = parse_dependency_links('django_admin_tools_stats/requirements.txt',
                                               install_flag),
+    license='MIT License',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Environment :: Web Environment',
+        'Framework :: Django',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Topic :: Software Development :: Libraries :: Python Modules'
+    ],
 )
