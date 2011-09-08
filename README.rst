@@ -60,7 +60,7 @@ Configure
 Screenshot
 ----------
 
-.. image:: https://star2billing.codebasehq.com/projects/a2billing/repositories/django-admin-tools-stats/tree/master/django-admin-tools-stats/docs/source/_static/admin_dashboard.png
+.. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/django-admin-tools-stats/docs/source/_static/admin_dashboard.png
 
 
 Support 
