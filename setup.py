@@ -62,7 +62,7 @@ setup(
               'django_admin_tools_stats/install'],
     include_package_data=True,
     zip_safe = False,
-    install_requires = parse_requirements('django_admin_tools_stats/install/conf/requirements.txt'),
-    dependency_links = parse_dependency_links('django_admin_tools_stats/install/conf/requirements.txt',
+    install_requires = parse_requirements('django_admin_tools_stats/requirements.txt'),
+    dependency_links = parse_dependency_links('django_admin_tools_stats/requirements.txt',
                                               install_flag),
 )
