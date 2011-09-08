@@ -3,6 +3,11 @@ django-dashboard-reuse
 ----------------------
 
 
+Django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts.
+
+The goal of this project is to to interrogate quickly your Model data and provide reports and statistics graph simple to read, use on a Dashboard.
+
+
 Installation
 ------------
 
