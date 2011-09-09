@@ -35,17 +35,17 @@ Configuration
 =============
 
 - Configure ``admin_tools``
-- Add ``django_admin_tools_stats.admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
+- Add ``admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
 
     INSTALLED_APPS = (
         ...
-        'django_admin_tools_stats.admin_tools_stats',
+        'admin_tools_stats',
         'chart_tools',
         ...)
 
 - Add the following code to dashboard.py::
 
-    from django_admin_tools_stats.admin_tools_stats.modules import DashboardCharts, get_active_graph
+    from admin_tools_stats.modules import DashboardCharts, get_active_graph
 
     # append an app list module for "Country_prefix"
     self.children.append(modules.AppList(

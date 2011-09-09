@@ -2,7 +2,7 @@ from setuptools import setup
 import os
 import sys
 import re
-from django_admin_tools_stats import VERSION
+from admin_tools_stats import VERSION
 
 
 root_dir = os.path.dirname(__file__)
@@ -49,7 +49,7 @@ root_dir = os.path.dirname(__file__)
 if root_dir:
     os.chdir(root_dir)
 
-for dirpath, dirnames, filenames in os.walk('django_admin_tools_stats'):
+for dirpath, dirnames, filenames in os.walk('admin_tools_stats'):
     # Ignore dirnames that start with '.'
     for i, dirname in enumerate(dirnames):
         if dirname.startswith('.'): del dirnames[i]
@@ -77,11 +77,11 @@ setup(
     url='http://github.com/Star2Billing/django-admin-tools-stats',
     include_package_data=True,
     zip_safe = False,
-    package_dir={'django_admin_tools_stats': 'django_admin_tools_stats'},
+    package_dir={'admin_tools_stats': 'admin_tools_stats'},
     packages=packages,
-    package_data={'django_admin_tools_stats': data_files},
-    install_requires = parse_requirements('django_admin_tools_stats/requirements.txt'),
-    dependency_links = parse_dependency_links('django_admin_tools_stats/requirements.txt',
+    package_data={'admin_tools_stats': data_files},
+    install_requires = parse_requirements('admin_tools_stats/requirements.txt'),
+    dependency_links = parse_dependency_links('admin_tools_stats/requirements.txt',
                                               install_flag),
     license='MIT License',
     classifiers=[

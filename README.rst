@@ -3,9 +3,9 @@ django-admin-tools-stats
 ------------------------
 
 
-Django-admin-tools-stats is a Django application which powers dashboard modules with customer statistics and charts.
+Django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts.
 
-The goal of this project is to quickly interrogate your model data to provide reports and statistics graphs which are simple to read and can be used on a Dashboard.
+The goal of this project is to to interrogate quickly your Model data and provide reports and statistics graph simple to read, use on a Dashboard.
 
 
 Installation
@@ -29,17 +29,17 @@ Configure
 ---------
 
 - Configure ``admin_tools``
-- Add ``django_admin_tools_stats.admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
+- Add ``admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
 
     INSTALLED_APPS = (
         ...
-        'django_admin_tools_stats.admin_tools_stats',
+        'admin_tools_stats',
         'chart_tools',
         ...)
-        
-- Add the following code to dashboard.py::
 
-    from django_admin_tools_stats.admin_tools_stats.modules import DashboardCharts, get_active_graph
+- Add following code to dashboard.py::
+
+    from admin_tools_stats.modules import DashboardCharts, get_active_graph
 
     # append an app list module for "Country_prefix"
     self.children.append(modules.AppList(
@@ -53,7 +53,7 @@ Configure
     graph_list = get_active_graph()
     for i in graph_list:
         kwargs = {}
-        #kwargs['chart_size'] = "380x100" # uncomment this option to apply your graph size
+        #kwargs['chart_size'] = "260x100" # uncomment this option to fix your graph size 
         kwargs['graph_key'] = i.graph_key
         if request.POST.get('select_box_'+i.graph_key):
             kwargs['select_box_'+i.graph_key] = request.POST['select_box_'+i.graph_key]
@@ -62,7 +62,7 @@ Configure
         self.children.append(DashboardCharts(**kwargs))
 
 - Do ``manage.py syncdb``
-- Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
+- Open admin panel, Configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
 
 
 Screenshot
@@ -77,11 +77,11 @@ Documentation
 Documentation can be found here : http://readthedocs.org/docs/django-admin-tools-stats/
 
 
-Support 
+Support
 -------
 
-Star2Billing S.L. (http://www.star2billing.com) offers consultancy including 
-installation, training and customisation 
+Star2Billing S.L. (http://www.star2billing.com) offers consultancy including
+installation, training and customization
 
 Please email us at sales@star2billing.com for more information
 
