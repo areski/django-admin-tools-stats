@@ -14,7 +14,7 @@ from django_admin_tools_stats.admin_tools_stats.models import *
 class DashboardChart(modules.DashboardModule):
     """Dashboard module with user registration charts.
 
-    With default values it is suited best for 2-column dashboard layouts.
+    Default values are best suited for 2-column dashboard layouts.
     """
     title = _('Dashboard Stats')
     template = 'admin_tools_stats/modules/chart.html'
@@ -47,7 +47,7 @@ class DashboardChart(modules.DashboardModule):
         self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
 
     def get_caption(self, dt):
-        """Display caption on x-axis of dashboard graph"""
+        """Displays caption on the x-axis of dashboard graph"""
         return {
             'hours': dt.strftime("%H"),
             'days': dt.strftime("%a"),
@@ -57,7 +57,7 @@ class DashboardChart(modules.DashboardModule):
 
     @cached(60*5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
-        """ Returns an array with new users count per interval"""
+        """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
             model_name = get_model(conf_data.model_app_name, conf_data.model_name)
@@ -95,7 +95,7 @@ class DashboardChart(modules.DashboardModule):
             return stats.time_series(begin, today+timedelta(days=1), interval)
 
     def prepare_template_data(self, data, graph_key, select_box_value):
-        """ Prepares data for template (it is passed as module attributes) """
+        """ Prepares data for template (passed as module attributes) """
         self.captions = [self.get_caption(t[0]) for t in data]
         self.values = [t[1] for t in data]
         self.max_value = max(self.values)

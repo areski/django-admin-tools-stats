@@ -3,11 +3,11 @@
 Test Case Descriptions
 ======================
 
----------------
-How to run test
----------------
+----------------
+How to run tests
+----------------
 
-**1. Run Full Test Suit**::
+**1. Run full test suite**::
 
     $ python manage.py test --verbosity=2
 

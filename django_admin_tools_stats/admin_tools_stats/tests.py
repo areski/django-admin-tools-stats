@@ -8,7 +8,7 @@ class AdminToolsStatsAdminInterfaceTestCase(TestCase):
     """Test cases for django-admin-tools-stats Admin Interface."""
 
     def setUp(self):
-        """To create admin user"""
+        """To create an admin username"""
         self.client = Client()
         self.user = \
         User.objects.create_user('admin', 'admin@world.com', 'admin')
@@ -24,7 +24,7 @@ class AdminToolsStatsAdminInterfaceTestCase(TestCase):
         }
 
     def test_admin_index(self):
-        """Test Function to check Admin index page"""
+        """Test function to check admin index page."""
         response = self.client.get('/admin/')
         self.failUnlessEqual(response.status_code, 200)
         response = self.client.login(username=self.user.username,
@@ -32,7 +32,7 @@ class AdminToolsStatsAdminInterfaceTestCase(TestCase):
         self.assertEqual(response, True)
 
     def test_admin_tools_stats(self):
-        """Test Function to check django-admin-tools-stats Admin pages"""
+        """Test function to check django-admin-tools-stats admin pages"""
         response = self.client.get('/admin/')
         self.failUnlessEqual(response.status_code, 200)
         response = self.client.get('/admin/auth/')

@@ -9,8 +9,7 @@ Installation overview
 Install requirements
 ====================
 
-A Requirements file gives you a way to create an environment where you can put
-all optional dependencies which are needed for your Project/Application.
+A requirements file stores a list of dependencies to be installed for your project/application.
 
 To get started with Django-admin-tools-stats you must have the following installed:
 
@@ -18,14 +17,14 @@ To get started with Django-admin-tools-stats you must have the following install
 - Apache / http server with WSGI modules
 - Django Framework >= 1.3 (Python based Web framework)
 - python-dateutil >= 1.5 (Extensions to the standard datetime module)
-- django-admin-tools (Collection of tools for the django administration)
+- django-admin-tools (Collection of tools for Django administration)
 - django-chart-tools >= 0.2.1 (A thin wrapper around Google Chart API for charts)
-- django-cache-utils (To provide utils for making cache-related work easier)
-- django-jsonfield >= 0.6 (Reusable django field that can use inside models)
+- django-cache-utils (To provide utilities for making cache-related work easier)
+- django-jsonfield >= 0.6 (Reusable Django field that can use inside models)
 - python-memcached >= 1.47 (Python based API for communicating with the memcached distributed memory object cache daemon)
 
 
-Use PIP to install all the requirements,::
+Use PIP to install the dependencies listed in the requirments file,::
 
     $ pip install -r requirements.txt
 
@@ -44,7 +43,7 @@ Configuration
         'chart_tools',
         ...)
 
-- Add following code to dashboard.py::
+- Add the following code to dashboard.py::
 
     from django_admin_tools_stats.admin_tools_stats.modules import DashboardCharts, get_active_graph
 
@@ -68,4 +67,4 @@ Configuration
         self.children.append(DashboardCharts(**kwargs))
 
 - Do ``manage.py syncdb``
-- Open admin panel, Configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
+- Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats`` respectively

@@ -1,8 +1,8 @@
 .. _developer-doc:
 
-=============
-Developer doc
-=============
+=======================
+Developer Documentation
+=======================
 
 Contents:
 

@@ -3,9 +3,9 @@ django-admin-tools-stats
 ------------------------
 
 
-Django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts.
+Django-admin-tools-stats is a Django application which powers dashboard modules with customer statistics and charts.
 
-The goal of this project is to to interrogate quickly your Model data and provide reports and statistics graph simple to read, use on a Dashboard.
+The goal of this project is to quickly interrogate your model data to provide reports and statistics graphs which are simple to read and can be used on a Dashboard.
 
 
 Installation
@@ -37,7 +37,7 @@ Configure
         'chart_tools',
         ...)
         
-- Add following code to dashboard.py::
+- Add the following code to dashboard.py::
 
     from django_admin_tools_stats.admin_tools_stats.modules import DashboardCharts, get_active_graph
 
@@ -62,7 +62,7 @@ Configure
         self.children.append(DashboardCharts(**kwargs))
 
 - Do ``manage.py syncdb``
-- Open admin panel, Configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
+- Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
 
 
 Screenshot
@@ -81,7 +81,7 @@ Support
 -------
 
 Star2Billing S.L. (http://www.star2billing.com) offers consultancy including 
-installation, training and customization 
+installation, training and customisation 
 
 Please email us at sales@star2billing.com for more information
 

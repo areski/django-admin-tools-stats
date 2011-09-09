@@ -53,12 +53,12 @@ class DashboardStats(models.Model):
 
     **Attributes**:
 
-        * ``graph_key`` - Unique graph name.
-        * ``graph_title`` - Graph Title.
+        * ``graph_key`` - unique graph name.
+        * ``graph_title`` - graph title.
         * ``model_app_name`` - App name of model.
         * ``model_name`` - model name.
-        * ``date_field_name`` - date field of model_name.
-        * ``criteria`` - Many-to-Many Relation.
+        * ``date_field_name`` - Date field of model_name.
+        * ``criteria`` - many-to-many relationship.
         * ``is_visible`` - enable/disable.
         * ``created_date`` - record created date.
         * ``updated_date`` - record updated date.
