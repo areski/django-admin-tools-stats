@@ -6,7 +6,7 @@ from django.db.models import *
 from django.template import RequestContext
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render_to_response
-from admin_tools_stats.models import *
+from django_admin_tools_stats.admin_tools_stats.models import *
 
 
 class DashboardStatsCriteriaAdmin(admin.ModelAdmin):

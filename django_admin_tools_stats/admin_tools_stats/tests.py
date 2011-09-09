@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.test import TestCase, Client
-from admin_tools_stats.test_utils import build_test_suite_from
+from django_admin_tools_stats.admin_tools_stats.test_utils import build_test_suite_from
 import base64
 
 

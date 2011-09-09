@@ -8,7 +8,7 @@ from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
-from admin_tools_stats.models import *
+from django_admin_tools_stats.admin_tools_stats.models import *
 
 
 class DashboardChart(modules.DashboardModule):
