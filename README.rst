@@ -11,16 +11,18 @@ The goal of this project is to to interrogate quickly your Model data and provid
 Installation
 ------------
 
-Dashboard-resue is a django based application, so the major requirements are :
+django-admin-tools-stats is a django based application, so the major requirements are :
 
     - python >= 2.4
     - Apache / http server with WSGI modules
     - Django Framework >= 1.3
-    - MySQL-python >= 1.2.3
     - python-dateutil >= 1.5
     - django-qsstats-magic >= 0.6.1
     - django-chart-tools >= 0.2.1
+    - django-jsonfield >= 0.6
+    - python-memcached >= 1.47
     - django-admin-tools
+    - django-cache-utils
 
 
 Configure

@@ -17,7 +17,6 @@ To get started with Django-admin-tools-stats you must have the following install
 - python >= 2.4 (programming language)
 - Apache / http server with WSGI modules
 - Django Framework >= 1.3 (Python based Web framework)
-- MySQL-python >= 1.2.3 (MySQL for python language)
 - python-dateutil >= 1.5 (Extensions to the standard datetime module)
 - django-admin-tools (Collection of tools for the django administration)
 - django-chart-tools >= 0.2.1 (A thin wrapper around Google Chart API for charts)
