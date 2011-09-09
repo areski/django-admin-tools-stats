@@ -16,16 +16,13 @@ How to run tests
     $ python manage.py test admin_tools_stats.AdminToolsStatsAdminInterfaceTestCase --verbosity=2
 
 
-.. automodule:: admin_tools_stats.tests
-
 ---------
 Test Case
 ---------
 
-Admin Interface Test Case
--------------------------
-
 .. _AdminToolsStatsAdminInterfaceTestCase-model:
 
-.. autoclass:: AdminToolsStatsAdminInterfaceTestCase
-    :members:
+:class:`AdminToolsStatsAdminInterfaceTestCase`
+----------------------------------------------
+
+Test cases for django-admin-tools-stats Admin Interface.
