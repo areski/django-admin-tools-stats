@@ -60,6 +60,7 @@ Configuration
     graph_list = get_active_graph()
     for i in graph_list:
         kwargs = {}
+        #kwargs['chart_size'] = "380x100" # uncomment this option to apply your graph size
         kwargs['graph_key'] = i.graph_key
         if request.POST.get('select_box_'+i.graph_key):
             kwargs['select_box_'+i.graph_key] = request.POST['select_box_'+i.graph_key]
