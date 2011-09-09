@@ -43,11 +43,11 @@ Contributing
 
 Development of django-admin-tools-stats takes place on Github:
 
-https://github.com/areski/django-admin-user-stats
+https://github.com/Star2Billing/django-admin-tools-stats
 
 If you don’t like Github and Git you’re welcome to send regular patches.
 
-Bug tracker: https://github.com/areski/django-admin-user-stats/issues
+Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
 
 
 .. _documentation:
