@@ -29,11 +29,11 @@ Configure
 ---------
 
 - Configure ``admin_tools``
-- Add ``django_admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
+- Add ``django_admin_tools_stats.admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
 
     INSTALLED_APPS = (
         ...
-        'django_admin_tools_stats',
+        'django_admin_tools_stats.admin_tools_stats',
         'chart_tools',
         ...)
         

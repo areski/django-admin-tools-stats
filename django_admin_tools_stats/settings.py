@@ -151,7 +151,7 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     'django.contrib.markup',
-    'admin_tools_stats',
+    'django_admin_tools_stats.admin_tools_stats',
     'chart_tools',
     'dateutil',
     # Uncomment the next line to enable admin documentation:
