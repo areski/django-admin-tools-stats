@@ -1,52 +1,7 @@
 
-
 TODO
 ====
 
-    • Refactor dynamic_criteria_field_name and move to model DashboardStatsCriteria - Done
-    
-    • Rename all module and repo to django-admin-tools-stats - Done
-        use new repo : git@codebasehq.com:star2billing/a2billing/django-admin-tools-stats.git
-    
-    • Add default fixture to power user graph - Done
-    
-    • Load initial fixture on install - Done
-    
-    • Add basic documentation with Sphinx - Done
-    
-    • Add caching of query to reduce query - Done
-    
-    • Add Today graph for the last 24h - Done
-    
-    • Add screenshot of graph in Readme.rst and doc - Done
-    
-    • Internationalization add _ gettext on all text - Done
-    
-    • Proper name in modules.py and rest of the module
-    
-        class DashboardChart(modules.DashboardModule): -> AdminStats
-        """
-        Dashboard module with user registration charts.
 
-        With default values it is suited best for 2-column dashboard layouts.
-        """
-        title = _('Dashboard chart')
-        template = 'admin_dashboard_stats/modules/chart.html'
-        
-        - rename DashboardChart to DashboardStats
-
-          (If we do this, two same classes are exists 1st in models.py & 2nd in modules.py)
-      
-        - change doc "Dashboard module with user registration charts."
-
-          Done
-          
-        - change title = _('Dashboard Stats')
-
-          Done
-        
-        - change template = 'admin_tools_stats/modules/chart.html'
-
-          Done
         
 
