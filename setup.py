@@ -59,7 +59,7 @@ for dirpath, dirnames, filenames in os.walk('admin_tools_stats'):
             pkg = pkg.replace(os.path.altsep, '.')
         packages.append(pkg)
     elif filenames:
-        prefix = dirpath[12:] # Strip "django_admin_tools_stats/" or "django_admin_tools_stats\"
+        prefix = dirpath[len('admin_tools_stats/'):] # Strip "admin_tools_stats/"
         for f in filenames:
             data_files.append(os.path.join(prefix, f))
 
