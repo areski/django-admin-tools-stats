@@ -4,5 +4,5 @@ django-jsonfield==0.6
 django-qsstats-magic>=0.6.1
 django-chart-tools>=0.2.1
 python-memcached>=1.47
+django-cache-utils
 hg+https://bitbucket.org/izi/django-admin-tools
-hg+https://bitbucket.org/kmike/django-cache-utils
