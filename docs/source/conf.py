@@ -17,12 +17,12 @@ import sys, os
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, os.path.abspath('.'))
-APP_DIR = os.path.normpath(os.path.join(os.getcwd(), '../..'))
-sys.path.insert(0, APP_DIR)
-#os.environ["DJANGO_SETTINGS_MODULE"] = "settings"
-import settings
-from django.core.management import setup_environ
-setup_environ(settings)
+#APP_DIR = os.path.normpath(os.path.join(os.getcwd(), '../..'))
+#sys.path.insert(0, APP_DIR)
+
+#import settings
+#from django.core.management import setup_environ
+#setup_environ(settings)
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
