@@ -85,7 +85,6 @@ class DashboardChart(modules.DashboardModule):
             begin = today - timedelta(days=days-1)
             return stats.time_series(begin, today+timedelta(days=1), interval)
         except:
-            print "erorr"
             stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = datetime.today()
             if days == 24:
