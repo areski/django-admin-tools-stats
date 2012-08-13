@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
+
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q, get_model
@@ -8,7 +8,8 @@ from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
-from admin_tools_stats.models import *
+from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
+from datetime import datetime, timedelta
 
 
 class DashboardChart(modules.DashboardModule):
