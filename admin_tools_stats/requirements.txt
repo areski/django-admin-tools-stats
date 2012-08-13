@@ -6,3 +6,4 @@ django-chart-tools>=0.2.1
 python-memcached>=1.47
 django-cache-utils
 hg+https://bitbucket.org/izi/django-admin-tools
+git+git://github.com/Star2Billing/switch2bill-common.git

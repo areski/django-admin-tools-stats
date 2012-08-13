@@ -1,57 +1,72 @@
-from django.contrib.auth.models import User
-from django.test import TestCase, Client
-from admin_tools_stats.test_utils import build_test_suite_from
-import base64
 
+from django.test import TestCase
+from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
+from common.utils import BaseAuthenticatedClient
 
-class AdminToolsStatsAdminInterfaceTestCase(TestCase):
+class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
     """Test cases for django-admin-tools-stats Admin Interface."""
 
-    def setUp(self):
-        """To create an admin username"""
-        self.client = Client()
-        self.user = \
-        User.objects.create_user('admin', 'admin@world.com', 'admin')
-        self.user.is_staff = True
-        self.user.is_superuser = True
-        self.user.is_active = True
-        self.user.save()
-        auth = '%s:%s' % ('admin', 'admin')
-        auth = 'Basic %s' % base64.encodestring(auth)
-        auth = auth.strip()
-        self.extra = {
-            'HTTP_AUTHORIZATION': auth,
-        }
-
-    def test_admin_index(self):
-        """Test function to check admin index page."""
-        response = self.client.get('/admin/')
-        self.failUnlessEqual(response.status_code, 200)
-        response = self.client.login(username=self.user.username,
-                                     password='admin')
-        self.assertEqual(response, True)
-
-    def test_admin_tools_stats(self):
-        """Test function to check django-admin-tools-stats admin pages"""
-        response = self.client.get('/admin/')
-        self.failUnlessEqual(response.status_code, 200)
-        response = self.client.get('/admin/auth/')
-        self.failUnlessEqual(response.status_code, 200)
-        
+    def test_admin_tools_stats_dashboardstats(self):
+        """Test function to check dashboardstats admin pages"""
         response = self.client.get('/admin/admin_tools_stats/')
         self.failUnlessEqual(response.status_code, 200)
         response = self.client.get('/admin/admin_tools_stats/dashboardstats/')
         self.failUnlessEqual(response.status_code, 200)
+
+    def test_admin_tools_stats_dashboardstatscriteria(self):
+        """Test function to check dashboardstatscriteria admin pages"""
         response = \
-        self.client.get('/admin/admin_tools_stats/dashboardstatscriteria/')
+            self.client.get('/admin/admin_tools_stats/dashboardstatscriteria/')
         self.failUnlessEqual(response.status_code, 200)
 
 
+class AdminToolsStatsModel(TestCase):
+    """Test DashboardStatsCriteria, DashboardStats models"""
 
-test_cases = [
-    AdminToolsStatsAdminInterfaceTestCase,
-]
+    #fixtures = []
+
+    def setUp(self):
+
+        # DashboardStatsCriteria model
+        self.dashboard_stats_criteria = DashboardStatsCriteria(
+            criteria_name="call_type",
+            criteria_fix_mapping='',
+            dynamic_criteria_field_name='disposition',
+            criteria_dynamic_mapping={
+                "INVALIDARGS":"INVALIDARGS",
+                "BUSY":"BUSY",
+                "TORTURE":"TORTURE",
+                "ANSWER":"ANSWER",
+                "DONTCALL":"DONTCALL",
+                "FORBIDDEN":"FORBIDDEN",
+                "NOROUTE":"NOROUTE",
+                "CHANUNAVAIL":"CHANUNAVAIL",
+                "NOANSWER":"NOANSWER",
+                "CONGESTION":"CONGESTION",
+                "CANCEL":"CANCEL"
+            },
+        )
+        self.dashboard_stats_criteria.save()
+
+        # DashboardStats model
+        self.dashboard_stats = DashboardStats(
+            graph_key='user_graph',
+            graph_title='User graph',
+            model_app_name='auth',
+            model_name='User',
+            date_field_name='date_joined',
+            criteria=self.dashboard_stats_criteria,
+            is_visible=1,
+        )
+        self.dashboard_stats.save()
+
+    def test_dashboard_criteria(self):
+        self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
+        self.assertEqual(self.dashboard_stats.graph_key, 'user_graph')
+
+    def teardown(self):
+        self.dashboard_stats_criteria.delete()
+        self.dashboard_stats.delete()
 
 
-def suite():
-    return build_test_suite_from(test_cases)
+
