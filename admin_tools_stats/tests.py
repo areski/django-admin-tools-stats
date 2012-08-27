@@ -47,6 +47,7 @@ class AdminToolsStatsModel(TestCase):
             },
         )
         self.dashboard_stats_criteria.save()
+        self.assertEqual(self.dashboard_stats_criteria.__unicode__(), 'call_type')
 
         # DashboardStats model
         self.dashboard_stats = DashboardStats(
@@ -59,6 +60,7 @@ class AdminToolsStatsModel(TestCase):
             is_visible=1,
         )
         self.dashboard_stats.save()
+        self.assertEqual(self.dashboard_stats.__unicode__(), 'user_graph')
 
     def test_dashboard_criteria(self):
         self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
