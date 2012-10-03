@@ -5,10 +5,10 @@ from django.utils.translation import ugettext_lazy as _
 from django.db.models import Q, get_model
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
-from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
 from admin_tools_stats.models import *
+import qsstats
 
 
 class DashboardChart(modules.DashboardModule):
@@ -74,9 +74,9 @@ class DashboardChart(modules.DashboardModule):
                 if i.dynamic_criteria_field_name and select_box_value:
                     kwargs[i.dynamic_criteria_field_name] = select_box_value
 
-            stats = QuerySetStats(model_name.objects.filter(**kwargs),
+            stats = qsstat.QuerySetStats(model_name.objects.filter(**kwargs),
                                   conf_data.date_field_name)
-            #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
+            #stats = qsstat.QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = datetime.today()
             if days == 24:
                 begin = today - timedelta(hours=days-1)
@@ -85,7 +85,7 @@ class DashboardChart(modules.DashboardModule):
             begin = today - timedelta(days=days-1)
             return stats.time_series(begin, today+timedelta(days=1), interval)
         except:
-            stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
+            stats = qsstat.QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = datetime.today()
             if days == 24:
                 begin = today - timedelta(hours=days-1)
