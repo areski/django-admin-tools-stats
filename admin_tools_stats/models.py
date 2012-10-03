@@ -1,13 +1,11 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from datetime import datetime
-from random import *
 import jsonfield.fields
 
 
 class DashboardStatsCriteria(models.Model):
     """To configure criteria for dashboard graphs
-    
+
     **Attributes**:
 
         * ``criteria_name`` - Unique word .

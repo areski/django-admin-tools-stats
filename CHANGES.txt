@@ -1,0 +1,15 @@
+Changelog
+=========
+
+0.3 (2012-10-03)
+------------------
+
+* Improve setup.py and update manifest
+* Update README.rst
+* Fix PEP8
+
+
+0.2 (2011-05-22)
+----------------
+
+* Import project

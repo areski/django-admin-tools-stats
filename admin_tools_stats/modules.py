@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import Q, get_model
+from django.db.models import get_model
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
-from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
+from admin_tools_stats.models import DashboardStats
 from datetime import datetime, timedelta
 
 
@@ -34,18 +33,18 @@ class DashboardChart(modules.DashboardModule):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.select_box_value = ''
         for key in kwargs:
-            value = kwargs[key]
             self.graph_key = kwargs['graph_key']
-            if kwargs.get('select_box_'+self.graph_key):
-                self.select_box_value = kwargs['select_box_'+self.graph_key]
+            if kwargs.get('select_box_' + self.graph_key):
+                self.select_box_value = kwargs['select_box_' + self.graph_key]
 
         if self.days is None:
             #self.days = {'days': 30, 'weeks': 30*7, 'months': 30*12}[self.interval]
-            self.days = {'hours': 24, 'days': 7, 'weeks': 7*1, 'months': 30*2}[self.interval]
+            self.days = {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
 
         self.data = self.get_registrations(self.interval, self.days,
                                            self.graph_key, self.select_box_value)
-        self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
+        self.prepare_template_data(
+            self.data, self.graph_key, self.select_box_value)
 
     def get_caption(self, dt):
         """Displays caption on the x-axis of dashboard graph"""
@@ -56,12 +55,13 @@ class DashboardChart(modules.DashboardModule):
             'weeks': dt.strftime('%W'),
         }[self.interval]
 
-    @cached(60*5)
+    @cached(60 * 5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
-            model_name = get_model(conf_data.model_app_name, conf_data.model_name)
+            model_name = get_model(
+                conf_data.model_app_name, conf_data.model_name)
             kwargs = {}
 
             for i in conf_data.criteria.all():
@@ -80,19 +80,20 @@ class DashboardChart(modules.DashboardModule):
             #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = datetime.today()
             if days == 24:
-                begin = today - timedelta(hours=days-1)
-                return stats.time_series(begin, today+timedelta(hours=1), interval)
+                begin = today - timedelta(hours=days - 1)
+                return stats.time_series(begin, today + timedelta(hours=1), interval)
 
-            begin = today - timedelta(days=days-1)
-            return stats.time_series(begin, today+timedelta(days=1), interval)
+            begin = today - timedelta(days=days - 1)
+            return stats.time_series(begin, today + timedelta(days=1), interval)
         except:
-            stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
+            stats = QuerySetStats(
+                User.objects.filter(is_active=True), 'date_joined')
             today = datetime.today()
             if days == 24:
-                begin = today - timedelta(hours=days-1)
-                return stats.time_series(begin, today+timedelta(hours=1), interval)
-            begin = today - timedelta(days=days-1)
-            return stats.time_series(begin, today+timedelta(days=1), interval)
+                begin = today - timedelta(hours=days - 1)
+                return stats.time_series(begin, today + timedelta(hours=1), interval)
+            begin = today - timedelta(days=days - 1)
+            return stats.time_series(begin, today + timedelta(days=1), interval)
 
     def prepare_template_data(self, data, graph_key, select_box_value):
         """ Prepares data for template (passed as module attributes) """
@@ -119,13 +120,15 @@ def get_dynamic_criteria(graph_key, select_box_value):
         for i in conf_data.criteria.all():
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
-                temp = '<select name="select_box_'+graph_key+'" onChange="this.form.submit();">'
+                temp = '<select name="select_box_' + graph_key + '" onChange="this.form.submit();">'
                 for key in dict(dy_map):
                     value = dy_map[key]
                     if key == select_box_value:
-                        temp += '<option value="' + key + '" selected=selected>' + value + '</option>'
+                        temp += '<option value="' + \
+                            key + '" selected=selected>' + value + '</option>'
                     else:
-                        temp += '<option value="' + key + '">' + value + '</option>'
+                        temp += '<option value="' + \
+                            key + '">' + value + '</option>'
                 temp += '</select>'
 
         return mark_safe(force_unicode(temp))
@@ -160,6 +163,7 @@ class DashboardCharts(modules.Group):
     """Group module with 3 default dashboard charts"""
     #title = _('New Users')
     key_value = ''
+
     def __init__(self, *args, **kwargs):
         for key in kwargs:
             #value = kwargs[key]

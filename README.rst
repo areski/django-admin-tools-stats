@@ -1,6 +1,6 @@
-------------------------
+========================
 django-admin-tools-stats
-------------------------
+========================
 
 
 Django-admin-tools-stats is a Django application which powers dashboard modules with customer statistics and charts.
@@ -9,7 +9,7 @@ The goal of this project is to quickly interrogate your model data to provide re
 
 
 Installation
-------------
+============
 
 django-admin-tools-stats is a django based application, so the major requirements are :
 
@@ -26,7 +26,7 @@ django-admin-tools-stats is a django based application, so the major requirement
 
 
 Configure
----------
+=========
 
 - Configure ``admin_tools``
 - Add ``admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
@@ -53,7 +53,7 @@ Configure
     graph_list = get_active_graph()
     for i in graph_list:
         kwargs = {}
-        #kwargs['chart_size'] = "260x100" # uncomment this option to fix your graph size 
+        #kwargs['chart_size'] = "260x100" # uncomment this option to fix your graph size
         kwargs['graph_key'] = i.graph_key
         if request.POST.get('select_box_'+i.graph_key):
             kwargs['select_box_'+i.graph_key] = request.POST['select_box_'+i.graph_key]
@@ -66,21 +66,27 @@ Configure
 
 
 Screenshot
-----------
+==========
 
 .. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/docs/source/_static/admin_dashboard.png
 
 
 Documentation
--------------
+=============
 
 Documentation can be found here : http://readthedocs.org/docs/django-admin-tools-stats/
 
 
-Support
--------
+Credit
+======
 
-Star2Billing S.L. (http://www.star2billing.com) offers consultancy including
-installation, training and customization
+Django-audiofield is a Star2Billing-Sponsored Community Project, for more information visit
+http://www.star2billing.com  or email us at info@star2billing.com
 
-Please email us at sales@star2billing.com for more information
+
+License
+=======
+
+Copyright (c) 2011-2012 Star2Billing S.L. <info@star2billing.com>
+
+django-audiofield is licensed under MIT, see `MIT-LICENSE.txt`.

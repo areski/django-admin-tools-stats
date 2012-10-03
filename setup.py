@@ -1,8 +1,16 @@
 from setuptools import setup
 import os
+import codecs
 import sys
 import re
-from admin_tools_stats import VERSION
+import admin_tools_stats
+
+
+version = admin_tools_stats.__version__
+
+
+def read(*parts):
+    return codecs.open(os.path.join(os.path.dirname(__file__), *parts)).read()
 
 
 root_dir = os.path.dirname(__file__)
@@ -52,37 +60,42 @@ if root_dir:
 for dirpath, dirnames, filenames in os.walk('admin_tools_stats'):
     # Ignore dirnames that start with '.'
     for i, dirname in enumerate(dirnames):
-        if dirname.startswith('.'): del dirnames[i]
+        if dirname.startswith('.'):
+            del dirnames[i]
     if '__init__.py' in filenames:
         pkg = dirpath.replace(os.path.sep, '.')
         if os.path.altsep:
             pkg = pkg.replace(os.path.altsep, '.')
         packages.append(pkg)
     elif filenames:
-        prefix = dirpath[len('admin_tools_stats/'):] # Strip "admin_tools_stats/"
+        prefix = dirpath[len('admin_tools_stats/'):]
+                             # Strip "admin_tools_stats/"
         for f in filenames:
             data_files.append(os.path.join(prefix, f))
 
 
-install_flag=False
+install_flag = False
 if sys.argv[1] == "install":
     install_flag = True
 
 setup(
     name='django-admin-tools-stats',
-    version=VERSION.replace(' ', '-'),
-    description='django-admin-tools-stats is a django application which power dashboard modules with customer stats and charts',
+    version=version,
+    description='django-admin-tools-stats is a django application which powers dashboard modules with customer stats and charts',
+    long_description=read('README.rst'),
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
     url='http://github.com/Star2Billing/django-admin-tools-stats',
     include_package_data=True,
-    zip_safe = False,
+    zip_safe=False,
     package_dir={'admin_tools_stats': 'admin_tools_stats'},
     packages=packages,
     package_data={'admin_tools_stats': data_files},
-    install_requires = parse_requirements('admin_tools_stats/requirements.txt'),
-    dependency_links = parse_dependency_links('admin_tools_stats/requirements.txt',
-                                              install_flag),
+    install_requires=parse_requirements(
+        'admin_tools_stats/requirements.txt'),
+    dependency_links=parse_dependency_links(
+        'admin_tools_stats/requirements.txt',
+        install_flag),
     license='MIT License',
     classifiers=[
         'Development Status :: 4 - Beta',

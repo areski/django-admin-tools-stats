@@ -4,7 +4,5 @@ django-qsstats-magic>=0.6.1
 django-chart-tools>=0.2.1
 python-memcached>=1.47
 django-cache-utils
-hg+https://bitbucket.org/izi/django-admin-tools
+django-admin-tools==0.4.1
 git+git://github.com/Star2Billing/switch2bill-common.git
-django-admin-tools
-

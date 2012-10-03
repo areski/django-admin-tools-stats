@@ -3,6 +3,7 @@ from django.test import TestCase
 from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
 from common.utils import BaseAuthenticatedClient
 
+
 class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
     """Test cases for django-admin-tools-stats Admin Interface."""
 
@@ -21,7 +22,9 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
 
 
 class AdminToolsStatsModel(TestCase):
-    """Test DashboardStatsCriteria, DashboardStats models"""
+    """
+    Test DashboardStatsCriteria, DashboardStats models
+    """
 
     #fixtures = []
 
@@ -33,21 +36,22 @@ class AdminToolsStatsModel(TestCase):
             criteria_fix_mapping='',
             dynamic_criteria_field_name='disposition',
             criteria_dynamic_mapping={
-                "INVALIDARGS":"INVALIDARGS",
-                "BUSY":"BUSY",
-                "TORTURE":"TORTURE",
-                "ANSWER":"ANSWER",
-                "DONTCALL":"DONTCALL",
-                "FORBIDDEN":"FORBIDDEN",
-                "NOROUTE":"NOROUTE",
-                "CHANUNAVAIL":"CHANUNAVAIL",
-                "NOANSWER":"NOANSWER",
-                "CONGESTION":"CONGESTION",
-                "CANCEL":"CANCEL"
+                "INVALIDARGS": "INVALIDARGS",
+                "BUSY": "BUSY",
+                "TORTURE": "TORTURE",
+                "ANSWER": "ANSWER",
+                "DONTCALL": "DONTCALL",
+                "FORBIDDEN": "FORBIDDEN",
+                "NOROUTE": "NOROUTE",
+                "CHANUNAVAIL": "CHANUNAVAIL",
+                "NOANSWER": "NOANSWER",
+                "CONGESTION": "CONGESTION",
+                "CANCEL": "CANCEL"
             },
         )
         self.dashboard_stats_criteria.save()
-        self.assertEqual(self.dashboard_stats_criteria.__unicode__(), 'call_type')
+        self.assertEqual(
+            self.dashboard_stats_criteria.__unicode__(), 'call_type')
 
         # DashboardStats model
         self.dashboard_stats = DashboardStats(
@@ -63,12 +67,10 @@ class AdminToolsStatsModel(TestCase):
         self.assertEqual(self.dashboard_stats.__unicode__(), 'user_graph')
 
     def test_dashboard_criteria(self):
-        self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
+        self.assertEqual(
+            self.dashboard_stats_criteria.criteria_name, "call_type")
         self.assertEqual(self.dashboard_stats.graph_key, 'user_graph')
 
     def teardown(self):
         self.dashboard_stats_criteria.delete()
         self.dashboard_stats.delete()
-
-
-
