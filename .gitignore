@@ -4,3 +4,7 @@
 *devserver*
 *.idea*
 docs/build/*
+build/
+dist/
+*.egg-info/*
+*sublime*
