@@ -45,7 +45,6 @@ setup(
     zip_safe=False,
     package_dir={'admin_tools_stats': 'admin_tools_stats'},
     packages=find_packages(),
-    include_package_data=True,
     package_data={},
     install_requires=parse_requirements('admin_tools_stats/requirements.txt'),
     dependency_links=parse_dependency_links('admin_tools_stats/requirements.txt'),
