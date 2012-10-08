@@ -8,7 +8,16 @@ Django-admin-tools-stats is a Django application which powers dashboard modules 
 The goal of this project is to quickly interrogate your model data to provide reports and statistics graphs which are simple to read and can be used on a Dashboard.
 
 
+
 Installation
+============
+
+Install Django-admin-tools-stats::
+
+    python setup.py install
+
+
+Dependencies
 ============
 
 django-admin-tools-stats is a django based application, so the major requirements are :
@@ -71,10 +80,26 @@ Screenshot
 .. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/docs/source/_static/admin_dashboard.png
 
 
+Contributing
+============
+
+If you've found a bug, implemented a feature or customized the template and
+think it is useful then please consider contributing. Patches, pull requests or
+just suggestions are welcome!
+
+Source code: http://github.com/Star2Billing/django-admin-tools-stats
+
+
+If you don’t like Github and Git you’re welcome to send regular patches.
+
+Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
+
+
 Documentation
 =============
 
-Documentation can be found here : http://readthedocs.org/docs/django-admin-tools-stats/
+Documentation is available on 'Read the Docs':
+http://readthedocs.org/docs/django-admin-tools-stats/
 
 
 Credit
