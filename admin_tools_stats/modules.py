@@ -10,6 +10,13 @@ from admin_tools.dashboard import modules
 from admin_tools_stats.models import DashboardStats
 from datetime import datetime, timedelta
 
+# Make timezone aware for Django 1.4
+try:
+    from django.utils.timezone import now
+except ImportError:
+    from datetime import datetime
+    now = datetime.now
+
 
 class DashboardChart(modules.DashboardModule):
     """Dashboard module with user registration charts.
@@ -78,7 +85,7 @@ class DashboardChart(modules.DashboardModule):
             stats = QuerySetStats(model_name.objects.filter(**kwargs),
                                   conf_data.date_field_name)
             #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
-            today = datetime.today()
+            today = now()
             if days == 24:
                 begin = today - timedelta(hours=days - 1)
                 return stats.time_series(begin, today + timedelta(hours=1), interval)
@@ -88,7 +95,7 @@ class DashboardChart(modules.DashboardModule):
         except:
             stats = QuerySetStats(
                 User.objects.filter(is_active=True), 'date_joined')
-            today = datetime.today()
+            today = now()
             if days == 24:
                 begin = today - timedelta(hours=days - 1)
                 return stats.time_series(begin, today + timedelta(hours=1), interval)
