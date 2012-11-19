@@ -1,6 +1,13 @@
 Changelog
 =========
 
+
+0.4 (2012-11-19)
+------------------
+
+* Fix for Django 1.4 timezone support by vdboor (Diederik van der Boor)
+
+
 0.3 (2012-10-03)
 ------------------
 
