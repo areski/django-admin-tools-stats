@@ -159,10 +159,10 @@ def get_registration_charts(**kwargs):
         #value = kwargs[key]
         key_value = kwargs['graph_key']
     return [
-        DashboardChart(_('Today'), interval='hours', **kwargs),
-        DashboardChart(_('Last week'), interval='days', **kwargs),
+        DashboardChart(_('today').title(), interval='hours', **kwargs),
+        DashboardChart(_('last week').title(), interval='days', **kwargs),
         #DashboardChart(_('Last 2 Weeks'), interval='weeks', **kwargs),
-        DashboardChart(_('Last months'), interval='months', **kwargs),
+        DashboardChart(_('last months').title(), interval='months', **kwargs),
     ]
 
 

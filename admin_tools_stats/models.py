@@ -18,25 +18,25 @@ class DashboardStatsCriteria(models.Model):
     **Name of DB table**: dash_stats_criteria
     """
     criteria_name = models.CharField(max_length=90, db_index=True,
-                    verbose_name=_('Criteria Name'),
-                    help_text=_("It needs to be one word unique. Ex. status, yesno"))
+                    verbose_name=_('criteria name'),
+                    help_text=_("it needs to be one word unique. Ex. status, yesno"))
     criteria_fix_mapping = jsonfield.fields.JSONField(null=True, blank=True,
-                           verbose_name=_("Fixed Criteria / Value"),
-                           help_text=_(u'A JSON Dictionary of key-value pairs that will be used for the criteria'))
+                           verbose_name=_("fixed criteria / value"),
+                           help_text=_(u'a JSON dictionary of key-value pairs that will be used for the criteria'))
     dynamic_criteria_field_name = models.CharField(max_length=90, blank=True, null=True,
-                                  verbose_name=_("Dynamic Criteria Field Name"),
-                                  help_text=_("Ex. for call records - disposition"))
+                                  verbose_name=_("dynamic criteria field name"),
+                                  help_text=_("ex. for call records - disposition"))
     criteria_dynamic_mapping = jsonfield.fields.JSONField(null=True, blank=True,
-                               verbose_name=_("Dynamic Criteria / Value"),
-                               help_text=_(u'A JSON Dictionary of key-value pairs that will be used for the criteria'))
+                               verbose_name=_("dynamic criteria / value"),
+                               help_text=_(u'a JSON dictionary of key-value pairs that will be used for the criteria'))
     created_date = models.DateTimeField(auto_now_add=True,
-                                        verbose_name=_('Date'))
+                                        verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = u'dash_stats_criteria'
-        verbose_name = _("Dashboard Stats Criteria")
-        verbose_name_plural = _("Dashboard Stats Criteria")
+        verbose_name = _("dashboard stats criteria")
+        verbose_name_plural = _("dashboard stats criteria")
 
     def __unicode__(self):
             return u"%s" % self.criteria_name
@@ -60,26 +60,26 @@ class DashboardStats(models.Model):
     **Name of DB table**: dashboard_stats
     """
     graph_key = models.CharField(max_length=90, db_index=True,
-                                 verbose_name=_('Graph Key'),
-                                 help_text=_("It needs to be one word unique. Ex. auth, mygraph"))
+                                 verbose_name=_('graph key'),
+                                 help_text=_("it needs to be one word unique. ex. auth, mygraph"))
     graph_title = models.CharField(max_length=90, db_index=True,
-                                   verbose_name=_('Graph Title'),
-                                   help_text=_("Heading title of graph box"))
-    model_app_name = models.CharField(max_length=90, verbose_name=_('App Name'),
-                                      help_text=_("Ex. auth / dialer_cdr"))
-    model_name = models.CharField(max_length=90, verbose_name=_('Model Name'),
-                                  help_text=_("Ex. User"))
-    date_field_name = models.CharField(max_length=90, verbose_name=_("Date Field Name"),
-                                       help_text=_("Ex. date_joined"))
+                                   verbose_name=_('graph title'),
+                                   help_text=_("heading title of graph box"))
+    model_app_name = models.CharField(max_length=90, verbose_name=_('app name'),
+                                      help_text=_("ex. auth / dialer_cdr"))
+    model_name = models.CharField(max_length=90, verbose_name=_('model name'),
+                                  help_text=_("ex. User"))
+    date_field_name = models.CharField(max_length=90, verbose_name=_("date field name"),
+                                       help_text=_("ex. date_joined"))
     criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True, null=True)
-    is_visible = models.BooleanField(default=True, verbose_name=_('Visible'))
-    created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('Date'))
+    is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
+    created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = u'dashboard_stats'
-        verbose_name = _("Dashboard Stats")
-        verbose_name_plural = _("Dashboard Stats")
+        verbose_name = _("dashboard stats")
+        verbose_name_plural = _("dashboard stats")
 
     def __unicode__(self):
             return u"%s" % self.graph_key
