@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import get_model
 from django.utils.encoding import force_unicode
@@ -93,6 +93,7 @@ class DashboardChart(modules.DashboardModule):
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
         except:
+            User = get_user_model()
             stats = QuerySetStats(
                 User.objects.filter(is_active=True), 'date_joined')
             today = now()
