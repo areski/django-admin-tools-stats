@@ -9,6 +9,7 @@ from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
 from admin_tools_stats.models import DashboardStats
 from datetime import datetime, timedelta
+import time
 
 # Make timezone aware for Django 1.4
 try:
@@ -62,7 +63,7 @@ class DashboardChart(modules.DashboardModule):
             'weeks': dt.strftime('%W'),
         }[self.interval]
 
-    @cached(60 * 5)
+    #@cached(60 * 5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
         try:
@@ -106,7 +107,25 @@ class DashboardChart(modules.DashboardModule):
     def prepare_template_data(self, data, graph_key, select_box_value):
         """ Prepares data for template (passed as module attributes) """
         self.captions = [self.get_caption(t[0]) for t in data]
-        self.values = [t[1] for t in data]
+
+        xdata = []
+        ydata = []
+        for data_date in self.data:
+            start_time = int(time.mktime(data_date[0].timetuple()) * 1000)
+            xdata.append(start_time)
+            ydata.append(data_date[1])
+
+        tooltip_date = "%d %b %Y %H:"
+        extra_serie = {"tooltip": {"y_start": "", "y_end": ""},
+                       "date_format": tooltip_date}
+        kwargs1 = {
+            "bar": True
+        }
+        self.values = {
+            'x': xdata,
+            'name1': 'series 1', 'y1': ydata, 'extra1': extra_serie, 'kwargs1': kwargs1,
+        }
+
         self.max_value = max(self.values)
         self.form_field = get_dynamic_criteria(graph_key, select_box_value)
 
@@ -160,8 +179,8 @@ def get_registration_charts(**kwargs):
         #value = kwargs[key]
         key_value = kwargs['graph_key']
     return [
-        DashboardChart(_('today').title(), interval='hours', **kwargs),
-        DashboardChart(_('last week').title(), interval='days', **kwargs),
+        #DashboardChart(_('today').title(), interval='hours', **kwargs),
+        #DashboardChart(_('last week').title(), interval='days', **kwargs),
         #DashboardChart(_('Last 2 Weeks'), interval='weeks', **kwargs),
         DashboardChart(_('last months').title(), interval='months', **kwargs),
     ]

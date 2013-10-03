@@ -1,6 +1,10 @@
 {% extends "admin_tools/dashboard/module.html" %}
-{% load chart_tags %}
+
+{% load nvd3_tags static %}
 {% block module_content %}
+    <link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
+    <script src="{% static 'nvd3/lib/d3.v2.js' %}" type="text/javascript"></script>
+    <script src="{% static 'nvd3/nv.d3.js'%}" type="text/javascript"></script>
 
     <br/>
     {% if module.form_field %}
@@ -11,8 +15,8 @@
     </form>
     {% endif %}
     <br/>
-
-    {% bar_chart module.values module.captions module.chart_size %}
+    {% load_chart 'lineChart' module.values "date_multibarchart_container" True "%b" %}
+    {% include_container "date_multibarchart_container" 200 400 %}
 
 {% endblock %}
 
