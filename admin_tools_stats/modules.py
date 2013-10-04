@@ -158,7 +158,7 @@ def get_dynamic_criteria(graph_key, select_box_value):
         for i in conf_data.criteria.all():
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
-                temp = '<select name="select_box_' + graph_key + '" onChange="this.form.submit();">'
+                temp = '<select name="select_box_' + graph_key + '" onChange="$(\'#stateform\').submit();">'
                 for key in dict(dy_map):
                     value = dy_map[key]
                     if key == select_box_value:
