@@ -17,8 +17,8 @@
         <form id="stateform" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
             {{ module.form_field }}
         </form>
+        <br/>
     {% endif %}
-    <br/>
     {% load_chart module.chart_type module.values module.interval True module.x_axis_format %}
     {% include_container module.interval module.chart_height module.chart_width %}
 

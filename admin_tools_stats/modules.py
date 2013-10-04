@@ -30,8 +30,8 @@ class DashboardChart(modules.DashboardModule):
     tooltip_date_format = "%d %b %Y"
     x_axis_format = "%d %b %Y"
     chart_type = 'discreteBarChart'
-    chart_height = 250
-    chart_width = 375
+    chart_height = 300
+    chart_width = '100%'
     require_chart_jscss = False
 
     model = None
