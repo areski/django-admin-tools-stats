@@ -56,8 +56,7 @@ class DashboardChart(modules.DashboardModule):
 
         self.data = self.get_registrations(self.interval, self.days,
                                            self.graph_key, self.select_box_value)
-        self.prepare_template_data(
-            self.data, self.graph_key, self.select_box_value)
+        self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
 
     def get_caption(self, dt):
         """Displays caption on the x-axis of dashboard graph"""
