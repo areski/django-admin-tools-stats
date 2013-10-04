@@ -68,7 +68,7 @@ class DashboardChart(modules.DashboardModule):
             'weeks': dt.strftime('%W'),
         }[self.interval]
 
-    #@cached(60 * 5)
+    @cached(60 * 5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
         try:
