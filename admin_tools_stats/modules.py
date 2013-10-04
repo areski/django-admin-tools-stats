@@ -132,9 +132,13 @@ class DashboardChart(modules.DashboardModule):
         extra_serie = {"tooltip": {"y_start": "", "y_end": ""},
                        "date_format": self.tooltip_date_format}
 
+        kwargs1 = {
+            "resize": True
+        }
         self.values = {
             'x': xdata,
             'name1': self.interval, 'y1': ydata, 'extra1': extra_serie,
+            'kwargs1': kwargs1
         }
 
         self.max_value = max(self.values)
