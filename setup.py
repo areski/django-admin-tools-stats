@@ -36,7 +36,7 @@ def parse_dependency_links(file_name):
 setup(
     name='django-admin-tools-stats',
     version=admin_tools_stats.__version__,
-    description='django-admin-tools-stats is a django application which powers dashboard modules with customer stats and charts',
+    description='django-admin-tools-stats - Django-admin dashboard module to create charts and stats',
     long_description=read('README.rst'),
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
@@ -57,6 +57,9 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: Python :: 2.7',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
 )
