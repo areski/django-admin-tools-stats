@@ -1,41 +1,40 @@
-========================
-django-admin-tools-stats
-========================
+Django-admin-tools-stats
+------------------------
+
+:Description: Django-admin module to create charts and stats in your dashboard
+:Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
 
 
-Django-admin-tools-stats is a Django application which powers dashboard modules with customer statistics and charts.
+Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard base on specific models and criterias.
 
-The goal of this project is to quickly interrogate your model data to provide reports and statistics graphs which are simple to read and can be used on a Dashboard.
-
+It will query your models and provide reporting and statistics graphs, simple to read and display on your Dashboard.
 
 
 Installation
-============
+------------
 
-Install Django-admin-tools-stats::
+Install, upgrade and uninstall django-admin-tools-stats with these commands::
 
-    python setup.py install
+    $ pip install django-admin-tools-stats
 
 
 Dependencies
-============
+------------
 
-django-admin-tools-stats is a django based application, so the major requirements are :
+django-admin-tools-stats is a django based application, the major requirements are :
 
-    - python >= 2.4
-    - Apache / http server with WSGI modules
-    - Django Framework >= 1.3
-    - python-dateutil >= 1.5
-    - django-qsstats-magic >= 0.6.1
-    - django-chart-tools >= 0.2.1
-    - django-jsonfield >= 0.6
-    - python-memcached >= 1.47
-    - django-admin-tools
+    - python-dateutil>=1.5,<2.0
+    - django-jsonfield==0.8
+    - django-qsstats-magic>=0.6.1
+    - python-memcached>=1.47
     - django-cache-utils
+    - django-admin-tools>=0.5.0
+    - switch2bill-common>=2.6.0
+    - django-nvd3>=0.4.1
 
 
 Configure
-=========
+---------
 
 - Configure ``admin_tools``
 - Add ``admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
@@ -70,48 +69,42 @@ Configure
 
         self.children.append(DashboardCharts(**kwargs))
 
-- Do ``manage.py syncdb``
+- Run this command::
+
+    $ python manage.py syncdb
+
+
 - Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
 
 
 Screenshot
-==========
+----------
 
 .. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/docs/source/_static/admin_dashboard.png
 
 
 Contributing
-============
+------------
 
-If you've found a bug, implemented a feature or customized the template and
-think it is useful then please consider contributing. Patches, pull requests or
-just suggestions are welcome!
+If you've found a bug, add a feature or improve django-admin-tools-stats and
+think it is useful then please consider contributing.
+Patches, pull requests or just suggestions are always welcome!
 
 Source code: http://github.com/Star2Billing/django-admin-tools-stats
-
-
-If you don’t like Github and Git you’re welcome to send regular patches.
 
 Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
 
 
 Documentation
-=============
+-------------
 
 Documentation is available on 'Read the Docs':
 http://readthedocs.org/docs/django-admin-tools-stats/
 
 
-Credit
-======
-
-Django-audiofield is a Star2Billing-Sponsored Community Project, for more information visit
-http://www.star2billing.com  or email us at info@star2billing.com
-
-
 License
-=======
+-------
 
-Copyright (c) 2011-2012 Star2Billing S.L. <info@star2billing.com>
+Copyright (c) 2011-2013 Star2Billing S.L. <info@star2billing.com>
 
-django-audiofield is licensed under MIT, see `MIT-LICENSE.txt`.
+django-admin-tools-stats is licensed under MIT, see `MIT-LICENSE.txt`.

@@ -5,3 +5,4 @@ python-memcached>=1.47
 django-cache-utils
 django-admin-tools>=0.5.0
 switch2bill-common>=2.6.0
+django-nvd3>=0.4.1
