@@ -36,7 +36,7 @@ def parse_dependency_links(file_name):
 setup(
     name='django-admin-tools-stats',
     version=admin_tools_stats.__version__,
-    description='django-admin-tools-stats - Django-admin dashboard module to create charts and stats',
+    description='django-admin-tools-stats - Django-admin module to create charts and stats in your dashboard',
     long_description=read('README.rst'),
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
