@@ -15,7 +15,6 @@ import time
 try:
     from django.utils.timezone import now
 except ImportError:
-    from datetime import datetime
     now = datetime.now
 
 
@@ -26,9 +25,14 @@ class DashboardChart(modules.DashboardModule):
     """
     title = _('Dashboard Stats')
     template = 'admin_tools_stats/modules/chart.html'
-    chart_size = "380x100"
     days = None
     interval = 'days'
+    tooltip_date_format = "%d %b %Y"
+    x_axis_format = "%d %b %Y"
+    chart_type = 'discreteBarChart'
+    chart_height = 250
+    chart_width = 375
+    require_chart_jscss = False
 
     model = None
     graph_key = None
@@ -41,6 +45,7 @@ class DashboardChart(modules.DashboardModule):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.select_box_value = ''
         for key in kwargs:
+            self.require_chart_jscss = kwargs['require_chart_jscss']
             self.graph_key = kwargs['graph_key']
             if kwargs.get('select_box_' + self.graph_key):
                 self.select_box_value = kwargs['select_box_' + self.graph_key]
@@ -108,6 +113,15 @@ class DashboardChart(modules.DashboardModule):
         """ Prepares data for template (passed as module attributes) """
         self.captions = [self.get_caption(t[0]) for t in data]
 
+        if self.interval == 'months':
+            self.tooltip_date_format = self.x_axis_format = "%b"
+        elif self.interval == 'days':
+            self.tooltip_date_format = "%d %b %Y"
+            self.x_axis_format = "%a"
+        elif self.interval == 'hours':
+            self.tooltip_date_format = "%d %b %Y %H:%S"
+            self.x_axis_format = "%H"
+
         xdata = []
         ydata = []
         for data_date in self.data:
@@ -115,15 +129,12 @@ class DashboardChart(modules.DashboardModule):
             xdata.append(start_time)
             ydata.append(data_date[1])
 
-        tooltip_date = "%d %b %Y %H:"
         extra_serie = {"tooltip": {"y_start": "", "y_end": ""},
-                       "date_format": tooltip_date}
-        kwargs1 = {
-            "bar": True
-        }
+                       "date_format": self.tooltip_date_format}
+
         self.values = {
             'x': xdata,
-            'name1': 'series 1', 'y1': ydata, 'extra1': extra_serie, 'kwargs1': kwargs1,
+            'name1': self.interval, 'y1': ydata, 'extra1': extra_serie,
         }
 
         self.max_value = max(self.values)
@@ -175,12 +186,9 @@ def get_active_graph():
 
 def get_registration_charts(**kwargs):
     """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
-    for key in kwargs:
-        #value = kwargs[key]
-        key_value = kwargs['graph_key']
     return [
-        #DashboardChart(_('today').title(), interval='hours', **kwargs),
-        #DashboardChart(_('last week').title(), interval='days', **kwargs),
+        DashboardChart(_('today').title(), interval='hours', **kwargs),
+        DashboardChart(_('last week').title(), interval='days', **kwargs),
         #DashboardChart(_('Last 2 Weeks'), interval='weeks', **kwargs),
         DashboardChart(_('last months').title(), interval='months', **kwargs),
     ]
@@ -188,13 +196,7 @@ def get_registration_charts(**kwargs):
 
 class DashboardCharts(modules.Group):
     """Group module with 3 default dashboard charts"""
-    #title = _('New Users')
-    key_value = ''
 
     def __init__(self, *args, **kwargs):
-        for key in kwargs:
-            #value = kwargs[key]
-            key_value = kwargs['graph_key']
         kwargs.setdefault('children', get_registration_charts(**kwargs))
         super(DashboardCharts, self).__init__(*args, **kwargs)
-        self.title = get_title(key_value)

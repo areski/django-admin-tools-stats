@@ -1,12 +1,17 @@
 {% extends "admin_tools/dashboard/module.html" %}
+{% load nvd3_tags %}
 
-{% load nvd3_tags static %}
+{% if module.require_chart_jscss %}
+    {% load static %}
+{% endif %}
+
 {% block module_content %}
-    <link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
-    <script src="{% static 'nvd3/lib/d3.v2.js' %}" type="text/javascript"></script>
-    <script src="{% static 'nvd3/nv.d3.js'%}" type="text/javascript"></script>
+    {% if module.require_chart_jscss %}
+        <link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
+        <script src="{% static 'nvd3/lib/d3.v2.js' %}" type="text/javascript"></script>
+        <script src="{% static 'nvd3/nv.d3.js'%}" type="text/javascript"></script>
+    {% endif %}
 
-    <br/>
     {% if module.form_field %}
     <form action="." method="POST" enctype="multipart/form-data">
     {% csrf_token %}
@@ -15,8 +20,8 @@
     </form>
     {% endif %}
     <br/>
-    {% load_chart 'lineChart' module.values "date_multibarchart_container" True "%b" %}
-    {% include_container "date_multibarchart_container" 200 400 %}
+    {% load_chart module.chart_type module.values module.interval True module.x_axis_format %}
+    {% include_container module.interval module.chart_height module.chart_width %}
 
 {% endblock %}
 
