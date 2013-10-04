@@ -86,7 +86,7 @@ Screenshot
 Contributing
 ------------
 
-If you've found a bug, add a feature or improve python-nv3 and
+If you've found a bug, add a feature or improve django-admin-tools-stats and
 think it is useful then please consider contributing.
 Patches, pull requests or just suggestions are always welcome!
 
