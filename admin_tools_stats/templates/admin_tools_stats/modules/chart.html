@@ -16,9 +16,9 @@
     $(function () {
 
         var tab_value = 'Today';
-        $('li[tabindex="0"]').live('click', function(event) {
+        $('a.ui-tabs-anchor').live('click', function(event) {
 
-            tab_value = $('#'+String(event.target.id)).text();
+            tab_value = $(event.target).text();
             if(tab_value == 'Today'){
                 {% load_chart module.chart_type module.values module.chart_container True module.x_axis_format False %}
             }
