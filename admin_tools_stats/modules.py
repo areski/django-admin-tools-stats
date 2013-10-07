@@ -37,6 +37,7 @@ class DashboardChart(modules.DashboardModule):
     model = None
     graph_key = None
     filter_list = None
+    chart_container = None
 
     def is_empty(self):
         return False
@@ -63,8 +64,7 @@ class DashboardChart(modules.DashboardModule):
         """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
-            model_name = get_model(
-                conf_data.model_app_name, conf_data.model_name)
+            model_name = get_model(conf_data.model_app_name, conf_data.model_name)
             kwargs = {}
 
             for i in conf_data.criteria.all():
@@ -110,6 +110,8 @@ class DashboardChart(modules.DashboardModule):
         elif self.interval == 'hours':
             self.tooltip_date_format = "%d %b %Y %H:%S"
             self.x_axis_format = "%H"
+
+        self.chart_container = self.interval + '_' + self.graph_key
 
         xdata = []
         ydata = []

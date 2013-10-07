@@ -20,22 +20,21 @@
 
             tab_value = $('#'+String(event.target.id)).text();
             if(tab_value == 'Today'){
-                {% load_chart module.chart_type module.values module.interval True module.x_axis_format False %}
+                {% load_chart module.chart_type module.values module.chart_container True module.x_axis_format False %}
             }
             else if(tab_value == 'Last Week'){
-                {% load_chart module.chart_type module.values module.interval True module.x_axis_format False %}
+                {% load_chart module.chart_type module.values module.chart_container True module.x_axis_format False %}
             }
             else if(tab_value == 'Last Months'){
-                {% load_chart module.chart_type module.values module.interval True module.x_axis_format False %}
+                {% load_chart module.chart_type module.values module.chart_container True module.x_axis_format False %}
             }
         });
         // init
         if(tab_value == 'Today'){
-            {% load_chart module.chart_type module.values module.interval True module.x_axis_format False %}
+            {% load_chart module.chart_type module.values module.chart_container True module.x_axis_format False %}
         }
 
     });
-
     </script>
 
     {% if module.form_field %}
@@ -45,7 +44,7 @@
         <br/>
     {% endif %}
 
-    {% include_container module.interval module.chart_height module.chart_width %}
+    {% include_container module.chart_container module.chart_height module.chart_width %}
 
 {% endblock %}
 
