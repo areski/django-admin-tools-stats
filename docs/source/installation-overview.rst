@@ -18,10 +18,11 @@ To get started with Django-admin-tools-stats you must have the following install
 - Django Framework >= 1.3 (Python based Web framework)
 - python-dateutil >= 1.5 (Extensions to the standard datetime module)
 - django-admin-tools (Collection of tools for Django administration)
-- django-chart-tools >= 0.2.1 (A thin wrapper around Google Chart API for charts)
 - django-cache-utils (To provide utilities for making cache-related work easier)
 - django-jsonfield >= 0.6 (Reusable Django field that can use inside models)
-- python-memcached >= 1.47 (Python based API for communicating with the memcached distributed memory object cache daemon)
+- django-nvd3 >= 0.4.1 (Django wrapper for nvd3 - It's time for beautiful charts)
+- python-memcached >= 1.47 (Python based API for communicating with the memcached
+distributed memory object cache daemon)
 
 
 Use PIP to install the dependencies listed in the requirments file,::
@@ -59,10 +60,11 @@ Configuration
     graph_list = get_active_graph()
     for i in graph_list:
         kwargs = {}
-        #kwargs['chart_size'] = "380x100" # uncomment this option to apply your graph size
         kwargs['graph_key'] = i.graph_key
-        if request.POST.get('select_box_'+i.graph_key):
-            kwargs['select_box_'+i.graph_key] = request.POST['select_box_'+i.graph_key]
+        kwargs['require_chart_jscss'] = False
+
+        if request.POST.get('select_box_' + i.graph_key):
+            kwargs['select_box_' + i.graph_key] = request.POST['select_box_' + i.graph_key]
 
         self.children.append(DashboardCharts(**kwargs))
 

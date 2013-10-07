@@ -61,11 +61,11 @@ Configure
     graph_list = get_active_graph()
     for i in graph_list:
         kwargs = {}
-        #kwargs['chart_size'] = "260x100" # uncomment this option to fix your graph size
+        kwargs['require_chart_jscss'] = False
         kwargs['graph_key'] = i.graph_key
-        if request.POST.get('select_box_'+i.graph_key):
-            kwargs['select_box_'+i.graph_key] = request.POST['select_box_'+i.graph_key]
 
+        if request.POST.get('select_box_' + i.graph_key):
+            kwargs['select_box_' + i.graph_key] = request.POST['select_box_' + i.graph_key]
 
         self.children.append(DashboardCharts(**kwargs))
 
