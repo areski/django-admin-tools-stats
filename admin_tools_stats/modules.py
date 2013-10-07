@@ -23,7 +23,7 @@ class DashboardChart(modules.DashboardModule):
 
     Default values are best suited for 2-column dashboard layouts.
     """
-    title = _('Dashboard Stats')
+    title = _('dashboard stats').title()
     template = 'admin_tools_stats/modules/chart.html'
     days = None
     interval = 'days'
@@ -191,7 +191,10 @@ def get_registration_charts(**kwargs):
 
 class DashboardCharts(modules.Group):
     """Group module with 3 default dashboard charts"""
+    title = _('new users')
 
     def __init__(self, *args, **kwargs):
+        key_value = kwargs.get('graph_key')
+        self.title = get_title(key_value)
         kwargs.setdefault('children', get_registration_charts(**kwargs))
         super(DashboardCharts, self).__init__(*args, **kwargs)
