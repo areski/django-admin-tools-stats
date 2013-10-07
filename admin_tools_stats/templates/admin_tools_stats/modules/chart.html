@@ -17,7 +17,7 @@
 
         var tab_value = 'Today';
         $('li[tabindex="0"]').live('click', function(event) {
-            //event.target
+
             tab_value = $('#'+String(event.target.id)).text();
             if(tab_value == 'Today'){
                 {% load_chart module.chart_type module.values module.interval True module.x_axis_format False %}

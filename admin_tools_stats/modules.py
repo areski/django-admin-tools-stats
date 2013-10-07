@@ -58,15 +58,6 @@ class DashboardChart(modules.DashboardModule):
                                            self.graph_key, self.select_box_value)
         self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
 
-    def get_caption(self, dt):
-        """Displays caption on the x-axis of dashboard graph"""
-        return {
-            'hours': dt.strftime("%H"),
-            'days': dt.strftime("%a"),
-            'months': dt.strftime("%b"),
-            'weeks': dt.strftime('%W'),
-        }[self.interval]
-
     @cached(60 * 5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
@@ -110,7 +101,6 @@ class DashboardChart(modules.DashboardModule):
 
     def prepare_template_data(self, data, graph_key, select_box_value):
         """ Prepares data for template (passed as module attributes) """
-        self.captions = [self.get_caption(t[0]) for t in data]
 
         if self.interval == 'months':
             self.tooltip_date_format = self.x_axis_format = "%b"
@@ -190,10 +180,10 @@ def get_active_graph():
 def get_registration_charts(**kwargs):
     """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
     return [
-        DashboardChart(_('today').title(), interval='hours', **kwargs),
-        DashboardChart(_('last week').title(), interval='days', **kwargs),
+        DashboardChart(('today').title(), interval='hours', **kwargs),
+        DashboardChart(('last week').title(), interval='days', **kwargs),
         #DashboardChart(_('Last 2 Weeks'), interval='weeks', **kwargs),
-        DashboardChart(_('last months').title(), interval='months', **kwargs),
+        DashboardChart(('last months').title(), interval='months', **kwargs),
     ]
 
 
