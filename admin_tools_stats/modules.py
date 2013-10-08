@@ -28,11 +28,16 @@ class DashboardChart(modules.DashboardModule):
     days = None
     interval = 'days'
     tooltip_date_format = "%d %b %Y"
-    x_axis_format = "%d %b %Y"
     chart_type = 'discreteBarChart'
     chart_height = 300
     chart_width = '100%'
     require_chart_jscss = False
+    extra = {
+        'x_is_date': True,
+        'x_axis_format': '%d %b %Y',
+        'tag_script_js': False,
+        'jquery_on_ready': False,
+    }
 
     model = None
     graph_key = None
@@ -103,13 +108,13 @@ class DashboardChart(modules.DashboardModule):
         """ Prepares data for template (passed as module attributes) """
 
         if self.interval == 'months':
-            self.tooltip_date_format = self.x_axis_format = "%b"
+            self.extra['x_axis_format'] = self.tooltip_date_format = "%b"
         elif self.interval == 'days':
             self.tooltip_date_format = "%d %b %Y"
-            self.x_axis_format = "%a"
+            self.extra['x_axis_format'] = "%a"
         elif self.interval == 'hours':
             self.tooltip_date_format = "%d %b %Y %H:%S"
-            self.x_axis_format = "%H"
+            self.extra['x_axis_format'] = "%H"
 
         self.chart_container = self.interval + '_' + self.graph_key
 
@@ -123,13 +128,9 @@ class DashboardChart(modules.DashboardModule):
         extra_serie = {"tooltip": {"y_start": "", "y_end": ""},
                        "date_format": self.tooltip_date_format}
 
-        kwargs1 = {
-            "resize": True
-        }
         self.values = {
             'x': xdata,
             'name1': self.interval, 'y1': ydata, 'extra1': extra_serie,
-            'kwargs1': kwargs1
         }
 
         self.max_value = max(self.values)
