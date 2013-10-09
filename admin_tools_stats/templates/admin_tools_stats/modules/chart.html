@@ -6,15 +6,13 @@
 {% endif %}
 
 {% block module_content %}
-    {# Jquery CDN : Needed when using jquery_on_ready=True #}
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+
     {% if module.require_chart_jscss %}
         <link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
         <script src="{% static 'nvd3/lib/d3.v2.js' %}" type="text/javascript"></script>
         <script src="{% static 'nvd3/nv.d3.js'%}" type="text/javascript"></script>
     {% endif %}
     <script type="text/javascript">
-    $(function(){
         var tab_value = 'Today';
         $('a.ui-tabs-anchor').live('click', function(event) {
 
@@ -33,7 +31,6 @@
         if(tab_value == 'Today'){
             {% load_chart module.chart_type module.values module.chart_container module.extra %}
         }
-    });
     </script>
 
     {% if module.form_field %}
