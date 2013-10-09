@@ -140,8 +140,7 @@ class DashboardChart(modules.DashboardModule):
 def get_title(graph_key):
     """Returns graph title"""
     try:
-        conf_data = DashboardStats.objects.get(graph_key=graph_key)
-        return conf_data.graph_title
+        return DashboardStats.objects.get(graph_key=graph_key).graph_title
     except:
         return ''
 
@@ -150,19 +149,17 @@ def get_dynamic_criteria(graph_key, select_box_value):
     """To get dynamic criteria & return into select box to display on dashboard"""
     try:
         temp = ''
-        conf_data = DashboardStats.objects.get(graph_key=graph_key)
-        for i in conf_data.criteria.all():
+        conf_data = DashboardStats.objects.get(graph_key=graph_key).criteria.all()
+        for i in conf_data:
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
                 temp = '<select name="select_box_' + graph_key + '" onChange="$(\'#stateform\').submit();">'
                 for key in dict(dy_map):
                     value = dy_map[key]
                     if key == select_box_value:
-                        temp += '<option value="' + \
-                            key + '" selected=selected>' + value + '</option>'
+                        temp += '<option value="' + key + '" selected=selected>' + value + '</option>'
                     else:
-                        temp += '<option value="' + \
-                            key + '">' + value + '</option>'
+                        temp += '<option value="' + key + '">' + value + '</option>'
                 temp += '</select>'
 
         return mark_safe(force_unicode(temp))
@@ -172,12 +169,10 @@ def get_dynamic_criteria(graph_key, select_box_value):
 
 def get_active_graph():
     """Returns active graphs"""
-    graph_list = []
     try:
-        graph_list = DashboardStats.objects.filter(is_visible=1)
-        return graph_list
+        return DashboardStats.objects.filter(is_visible=1)
     except:
-        return graph_list
+        return []
 
 
 def get_registration_charts(**kwargs):
