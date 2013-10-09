@@ -1,4 +1,4 @@
-VERSION = (0, 4, 4, "final", 0)
+VERSION = (0, 5, 0, "final", 0)  # edit also docs/source/conf.py
 
 
 def get_version():
