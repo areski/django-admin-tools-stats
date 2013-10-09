@@ -15,15 +15,8 @@
     <script type="text/javascript">
         var tab_value = 'Today';
         $('a.ui-tabs-anchor').live('click', function(event) {
-
             tab_value = $(event.target).text();
-            if(tab_value == 'Today'){
-                {% load_chart module.chart_type module.values module.chart_container module.extra %}
-            }
-            else if(tab_value == 'Last Week'){
-                {% load_chart module.chart_type module.values module.chart_container module.extra %}
-            }
-            else if(tab_value == 'Last Months'){
+            if(tab_value == 'Today' || tab_value == 'Last Week' || tab_value == 'Last Months'){
                 {% load_chart module.chart_type module.values module.chart_container module.extra %}
             }
         });

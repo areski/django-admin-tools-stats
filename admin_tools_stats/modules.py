@@ -32,12 +32,7 @@ class DashboardChart(modules.DashboardModule):
     chart_height = 300
     chart_width = '100%'
     require_chart_jscss = False
-    extra = {
-        'x_is_date': True,
-        'x_axis_format': '%d %b %Y',
-        'tag_script_js': False,
-        'jquery_on_ready': False,
-    }
+    extra = dict()
 
     model = None
     graph_key = None
@@ -106,13 +101,18 @@ class DashboardChart(modules.DashboardModule):
 
     def prepare_template_data(self, data, graph_key, select_box_value):
         """ Prepares data for template (passed as module attributes) """
-
+        self.extra = {
+            'x_is_date': True,
+            'tag_script_js': False,
+            'jquery_on_ready': False,
+        }
         if self.interval == 'months':
-            self.extra['x_axis_format'] = self.tooltip_date_format = "%b"
-        elif self.interval == 'days':
+            self.tooltip_date_format = "%b"
+            self.extra['x_axis_format'] = "%b"
+        if self.interval == 'days':
             self.tooltip_date_format = "%d %b %Y"
             self.extra['x_axis_format'] = "%a"
-        elif self.interval == 'hours':
+        if self.interval == 'hours':
             self.tooltip_date_format = "%d %b %Y %H:%S"
             self.extra['x_axis_format'] = "%H"
 
