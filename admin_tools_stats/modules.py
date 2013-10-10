@@ -133,7 +133,6 @@ class DashboardChart(modules.DashboardModule):
             'name1': self.interval, 'y1': ydata, 'extra1': extra_serie,
         }
 
-        self.max_value = max(self.values)
         self.form_field = get_dynamic_criteria(graph_key, select_box_value)
 
 
