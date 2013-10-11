@@ -33,10 +33,26 @@ The goal of this project is to quickly interrogate your model data to provide re
     :width: 1000
 
 
+.. _installation:
+
+Installation
+------------
+
+Install, upgrade and uninstall django-nvd3.py with these commands::
+
+  $ sudo pip install django-admin-tools-stats
+  $ sudo pip install --upgrade django-admin-tools-stats
+  $ sudo pip uninstall django-admin-tools-stats
+
+Or if you don't have `pip`::
+
+  $ sudo easy_install django-admin-tools-stats
+
+
 .. _usage:
 
 Usage
-=====
+-----
 
 These tools have been created to improve the django-admin-tools : http://django-admin-tools.readthedocs.org
 
@@ -60,7 +76,7 @@ Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
 .. _source_download:
 
 Source download
----------------
+===============
 
 The source code is currently available on github. Fork away!
 
@@ -84,3 +100,13 @@ Credits
 
 Django-admin-tools-stats was inspired by django-admin-user-stats :
 https://github.com/kmike/django-admin-user-stats
+
+
+.. _license:
+
+License
+=======
+
+Copyright (c) 2013 Arezqui Belaid <areski@gmail.com>
+
+Django-nvd3 is licensed under MIT, see `MIT-LICENSE.txt`.
