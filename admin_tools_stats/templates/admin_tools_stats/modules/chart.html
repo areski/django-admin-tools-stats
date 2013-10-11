@@ -25,10 +25,8 @@
             var href_val = event.target.hash;
             if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
             {
-                if(tab_value == 'Today' || tab_value == 'Last Week' || tab_value == 'Last Months'){
-                    $('#{{module.chart_container}}').empty().append(html_string);
-                    {% load_chart module.chart_type module.values module.chart_container module.extra %}
-                }
+                $('#{{module.chart_container}}').empty().append(html_string);
+                {% load_chart module.chart_type module.values module.chart_container module.extra %}
             }
         });
         // init
