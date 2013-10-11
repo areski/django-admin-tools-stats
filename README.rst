@@ -37,13 +37,13 @@ Configure
 ---------
 
 - Configure ``admin_tools``
-- Add ``admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
+- Add ``admin_tools_stats`` & ``django_nvd3`` into INSTALLED_APPS in settings.py::
 
     INSTALLED_APPS = (
         ...
         'admin_tools_stats',
-        'chart_tools',
-        ...)
+        'django_nvd3',
+        )
 
 - Add following code to dashboard.py::
 

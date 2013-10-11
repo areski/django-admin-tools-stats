@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.5.1 (2013-10-11)
+-------------------
+
+* Fix some bug on the tabs behavior and tooltip of the charts
+* Update documentation
+
+
 0.5.0 (2013-10-09)
 -------------------
 

@@ -1,11 +1,19 @@
-:Version: 0.1.0
-:Keywords: django, python
+:Version: |version|
+:Date: |today|
+:Keywords: django, python, plot, graph, nvd3, d3, dashboard
+:Author: Arezqui Belaid
+:License: MIT
 
 --
 
 .. _django-admin-tools-stats-synopsis:
 
-Django-admin-tools-stats is an open source project written in Python, using the ``Django`` Framework.
+
+Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard base on specific models and criterias.
+
+It will query your models and provide reporting and statistics graphs, simple to read and display on your Dashboard.
+
+Django-admin-tools-stats is an open source project written in Python and using the ``Django`` Framework.
 
 The license is MIT.
 
@@ -30,10 +38,11 @@ The goal of this project is to quickly interrogate your model data to provide re
 Usage
 =====
 
-These tools have been created to improve on django-admin-tools : https://bitbucket.org/izi/django-admin-tools/wiki/Home
+These tools have been created to improve the django-admin-tools : http://django-admin-tools.readthedocs.org
 
-They allow you to easily create and include graphs into your dashboard to monitor your data, for instance monitor new users signing up each day, or new campaigns created per week.
-The tools offer the flexibility to let you display a select button to add filters on the model data.
+With Django-admin-tools you will be able to create and include charts on your dashboard and monitor your data, for instance you can easily monitor new users signing up each day, or new campaigns created per week.
+
+Django-admin-tools also allow you to display a button 'Select' that will behave as a filter on the model data.
 
 
 .. _contributing:
@@ -45,9 +54,19 @@ Development of django-admin-tools-stats takes place on Github:
 
 https://github.com/Star2Billing/django-admin-tools-stats
 
-If you don’t like Github and Git you’re welcome to send regular patches.
-
 Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
+
+
+.. _source_download:
+
+Source download
+---------------
+
+The source code is currently available on github. Fork away!
+
+https://github.com/Star2Billing/django-admin-tools-stats
+
+Available also on PyPi : https://pypi.python.org/pypi/django-admin-tools-stats
 
 
 .. _documentation:
@@ -55,16 +74,13 @@ Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
 Documentation
 =============
 
-Extensive documentation is available made with the excellent Sphinx program :
-http://django-admin-user-stats.readthedocs.org
+Find the project documentation : http://django-admin-user-stats.readthedocs.org
 
+
+.. _credits:
 
 Credits
 =======
 
 Django-admin-tools-stats was inspired by django-admin-user-stats :
 https://github.com/kmike/django-admin-user-stats
-
-The Django-admin-tools-stats project is supported by Star2Billing S.L. 
-
-For more information, see http://www.star2billing.com

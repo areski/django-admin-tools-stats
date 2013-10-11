@@ -9,18 +9,14 @@ Installation overview
 Install requirements
 ====================
 
-A requirements file stores a list of dependencies to be installed for your project/application.
-
 To get started with Django-admin-tools-stats you must have the following installed:
 
-- python >= 2.4 (programming language)
-- Apache / http server with WSGI modules
 - Django Framework >= 1.3 (Python based Web framework)
 - python-dateutil >= 1.5 (Extensions to the standard datetime module)
 - django-admin-tools (Collection of tools for Django administration)
 - django-cache-utils (To provide utilities for making cache-related work easier)
 - django-jsonfield >= 0.6 (Reusable Django field that can use inside models)
-- django-nvd3 >= 0.4.1 (Django wrapper for nvd3 - It's time for beautiful charts)
+- django-nvd3 >= 0.5.0 (Django wrapper for nvd3 - It's time for beautiful charts)
 - python-memcached >= 1.47 (Python based API for communicating with the memcached
 distributed memory object cache daemon)
 
@@ -35,16 +31,16 @@ Use PIP to install the dependencies listed in the requirments file,::
 Configuration
 =============
 
-- Configure ``admin_tools``
-- Add ``admin_tools_stats`` & ``chart_tools`` into INSTALLED_APPS in settings.py::
+- Configure django-admin-tools, refer to the documentation of http://django-admin-tools.readthedocs.org/en/latest/
+
+- Add ``admin_tools_stats`` & ``django_nvd3`` into INSTALLED_APPS in settings.py::
 
     INSTALLED_APPS = (
-        ...
         'admin_tools_stats',
-        'chart_tools',
-        ...)
+        'django_nvd3',
+        )
 
-- Add the following code to dashboard.py::
+- Add the following code to your file dashboard.py::
 
     from admin_tools_stats.modules import DashboardCharts, get_active_graph
 
@@ -68,5 +64,9 @@ Configuration
 
         self.children.append(DashboardCharts(**kwargs))
 
-- Do ``manage.py syncdb``
+- Create the database tables needed by Django-admin-tools-stats, run the following command::
+
+    $ python manage.py syncdb
+
+
 - Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats`` respectively

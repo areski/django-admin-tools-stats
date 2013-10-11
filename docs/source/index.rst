@@ -3,11 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to django-admin-tools-stats documentation
-=================================================
+
+Django-nvd3 Documentation!
+==========================
 
 :Release: |version|
 :Date: |today|
+:Keywords: django, python, plot, graph, nvd3, d3, dashboard
+:Author: Arezqui Belaid
+:Description: Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard base on specific models and criterias.
 
 
 Contents:
