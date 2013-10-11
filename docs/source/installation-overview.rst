@@ -64,7 +64,7 @@ Configuration
 
         self.children.append(DashboardCharts(**kwargs))
 
-- Create the database tables needed by Django-admin-tools-stats, run the following command::
+- To create the tables needed by Django-admin-tools-stats, run the following command::
 
     $ python manage.py syncdb
 

@@ -5,7 +5,7 @@ Django-admin-tools-stats
 :Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
 
 
-Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard base on specific models and criterias.
+Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard based on specific models and criterias.
 
 It will query your models and provide reporting and statistics graphs, simple to read and display on your Dashboard.
 
@@ -71,7 +71,7 @@ Configure
 
         self.children.append(DashboardCharts(**kwargs))
 
-- Run this command::
+- To create the tables needed by Django-admin-tools-stats, run the following command::
 
     $ python manage.py syncdb
 
