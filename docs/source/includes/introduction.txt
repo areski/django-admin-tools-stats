@@ -15,8 +15,6 @@ It will query your models and provide reporting and statistics graphs, simple to
 
 Django-admin-tools-stats is an open source project written in Python and using the ``Django`` Framework.
 
-The license is MIT.
-
 
 
 .. _overview:
