@@ -117,6 +117,8 @@ class DashboardChart(modules.DashboardModule):
             self.extra['x_axis_format'] = "%H"
 
         self.chart_container = self.interval + '_' + self.graph_key
+        # add string into href attr
+        self.id = self.chart_container
 
         xdata = []
         ydata = []
