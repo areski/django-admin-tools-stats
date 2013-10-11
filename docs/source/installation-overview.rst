@@ -38,7 +38,7 @@ Configuration
     INSTALLED_APPS = (
         'admin_tools_stats',
         'django_nvd3',
-        )
+    )
 
 - Add the following code to your file dashboard.py::
 

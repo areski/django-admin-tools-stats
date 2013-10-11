@@ -45,7 +45,7 @@ Configure
         ...
         'admin_tools_stats',
         'django_nvd3',
-        )
+    )
 
 - Add following code to dashboard.py::
 
