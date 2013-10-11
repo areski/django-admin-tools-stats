@@ -11,7 +11,7 @@ Install requirements
 
 To get started with Django-admin-tools-stats you must have the following installed:
 
-- Django Framework >= 1.3 (Python based Web framework)
+- Django Framework >= 1.4 (Python based Web framework)
 - python-dateutil >= 1.5 (Extensions to the standard datetime module)
 - django-admin-tools (Collection of tools for Django administration)
 - django-cache-utils (To provide utilities for making cache-related work easier)
