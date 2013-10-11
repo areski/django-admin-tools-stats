@@ -17,21 +17,21 @@
     {% endif %}
 
     <script type="text/javascript">
-        var tab_value = 'Today';
+        var tab_value = true;
         var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
 
         $('li[aria-selected="true"] a.ui-tabs-anchor').live('click', function(event) {
-            tab_value = $(event.target).text();
+
             var href_val = event.target.hash;
             if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
             {
                 $('#{{module.chart_container}}').empty().append(html_string);
                 {% load_chart module.chart_type module.values module.chart_container module.extra %}
             }
+            tab_value = false;
         });
         // init
-        if(tab_value == 'Today'){
-            $('#{{module.chart_container}}').empty().append(html_string);
+        if(tab_value){
             {% load_chart module.chart_type module.values module.chart_container module.extra %}
         }
     </script>
