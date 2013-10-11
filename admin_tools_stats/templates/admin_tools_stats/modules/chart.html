@@ -17,7 +17,7 @@
     {% endif %}
 
     <script type="text/javascript">
-        var tab_value = true;
+        var init_value = true;
         var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
 
         $('li[aria-selected="true"] a.ui-tabs-anchor').live('click', function(event) {
@@ -28,10 +28,10 @@
                 $('#{{module.chart_container}}').empty().append(html_string);
                 {% load_chart module.chart_type module.values module.chart_container module.extra %}
             }
-            tab_value = false;
+            init_value = false;
         });
         // init
-        if(tab_value){
+        if(init_value){
             {% load_chart module.chart_type module.values module.chart_container module.extra %}
         }
     </script>
