@@ -58,7 +58,7 @@ class DashboardStats(models.Model):
 
     **Name of DB table**: dashboard_stats
     """
-    graph_key = models.CharField(max_length=90, db_index=True,
+    graph_key = models.CharField(unique=True, max_length=90,
                                  verbose_name=_('graph key'),
                                  help_text=_("it needs to be one word unique. ex. auth, mygraph"))
     graph_title = models.CharField(max_length=90, db_index=True,
