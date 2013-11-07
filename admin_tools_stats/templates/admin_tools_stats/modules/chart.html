@@ -8,7 +8,7 @@
 {% block module_content %}
     {# Jquery CDN : Needed when using jquery_on_ready=True #}
     {% if module.extra.jquery_on_ready %}
-        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="{% static "admin_tools/js/jquery/jquery.min.js" %}"></script>
     {% endif %}
     {% if module.require_chart_jscss %}
         <link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
@@ -17,23 +17,64 @@
     {% endif %}
 
     <script type="text/javascript">
-        var init_value = true;
-        var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
+        document.addEventListener('DOMContentLoaded',function(){
+            // Have a good enough sleep, wait for loading jquery and nvd3 files
 
-        $('li[aria-selected="true"] a.ui-tabs-anchor').live('click', function(event) {
+            function draw_graph() {
+                var init_value = true;
+                var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
 
-            var href_val = event.target.hash;
-            if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
-            {
-                $('#{{module.chart_container}}').empty().append(html_string);
-                {% load_chart module.chart_type module.values module.chart_container module.extra %}
+                $('a.ui-tabs-anchor').on('click', function(event) {
+                    var href_val = event.target.hash;
+                    if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
+                    {
+                        $('#{{module.chart_container}}').empty().append(html_string);
+                        {% load_chart module.chart_type module.values module.chart_container module.extra %}
+                    }
+                    init_value = false;
+                });
+                // init
+                if(init_value){
+                    {% load_chart module.chart_type module.values module.chart_container module.extra %}
+                }
             }
-            init_value = false;
+
+            function are_files_loaded() {
+                if (typeof(jQuery) == 'undefined' || typeof(nv) == 'undefined')
+                    return false;
+                else
+                    return true;
+            }
+
+            function wait_files(on_loaded) {
+                if (are_files_loaded()) {
+                    on_loaded();
+                } else {
+                    setTimeout(function() {
+                        wait_files(on_loaded)},
+                    100);
+                }
+            }
+
+            function is_module_loaded() {
+                return $('a.ui-tabs-anchor').length > 0;
+            }
+
+            function wait_module(on_loaded) {
+                if (is_module_loaded()) {
+                    on_loaded();
+                } else {
+                    setTimeout(function() {
+                        wait_module(on_loaded);
+                    }, 100);
+                }
+            }
+
+            wait_files(function() {
+                wait_module(draw_graph);
+            });
         });
-        // init
-        if(init_value){
-            {% load_chart module.chart_type module.values module.chart_container module.extra %}
-        }
+
     </script>
 
     {% if module.form_field %}
