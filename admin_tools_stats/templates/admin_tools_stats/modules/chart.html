@@ -19,23 +19,28 @@
     <script type="text/javascript">
         document.addEventListener('DOMContentLoaded',function(){
             // Have a good enough sleep, wait for loading jquery and nvd3 files
-
             function draw_graph() {
+                {% load_chart module.chart_type module.values module.chart_container module.extra %}
+            }
+
+            function on_loaded() {
                 var init_value = true;
                 var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
 
-                $('a.ui-tabs-anchor').on('click', function(event) {
+                $('a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]').on('click', function(event) {
+                    console.log("{{ module.interval }}_{{ module.graph_key}}")
+
                     var href_val = event.target.hash;
                     if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
                     {
                         $('#{{module.chart_container}}').empty().append(html_string);
-                        {% load_chart module.chart_type module.values module.chart_container module.extra %}
+                        draw_graph();
                     }
                     init_value = false;
                 });
                 // init
                 if(init_value){
-                    {% load_chart module.chart_type module.values module.chart_container module.extra %}
+                    draw_graph();
                 }
             }
 
@@ -71,7 +76,7 @@
             }
 
             wait_files(function() {
-                wait_module(draw_graph);
+                wait_module(on_loaded);
             });
         });
 
