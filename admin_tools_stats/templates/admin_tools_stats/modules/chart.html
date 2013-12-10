@@ -27,9 +27,7 @@
                 var init_value = true;
                 var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
 
-                $('a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]').on('click', function(event) {
-                    console.log("{{ module.interval }}_{{ module.graph_key}}")
-
+                $('body').delegate('a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]', 'click', function(event) {
                     var href_val = event.target.hash;
                     if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
                     {
