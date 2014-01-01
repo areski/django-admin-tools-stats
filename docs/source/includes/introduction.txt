@@ -105,6 +105,6 @@ https://github.com/kmike/django-admin-user-stats
 License
 =======
 
-Copyright (c) 2013 Arezqui Belaid <areski@gmail.com>
+Copyright (c) 2011-2014 Arezqui Belaid <areski@gmail.com>
 
 Django-nvd3 is licensed under MIT, see `MIT-LICENSE.txt`.

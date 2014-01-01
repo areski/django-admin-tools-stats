@@ -1,6 +1,13 @@
 Changelog
 =========
 
+
+0.5.2 (2014-01-01)
+-------------------
+
+* Fix requirements to not force old version of jsonfield
+
+
 0.5.1 (2013-10-11)
 -------------------
 
