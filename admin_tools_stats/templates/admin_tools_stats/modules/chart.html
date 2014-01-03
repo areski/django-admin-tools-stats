@@ -8,7 +8,7 @@
 {% block module_content %}
     {# Jquery CDN : Needed when using jquery_on_ready=True #}
     {% if module.extra.jquery_on_ready %}
-        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="{% static "admin_tools/js/jquery/jquery.min.js" %}"></script>
     {% endif %}
     {% if module.require_chart_jscss %}
         <link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
@@ -20,8 +20,8 @@
         var init_value = true;
         var html_string = '<svg style="width:{{module.chart_width}}%;height:{{module.chart_height}}px;" height="450"></svg>';
 
-        $('li[aria-selected="true"] a.ui-tabs-anchor').live('click', function(event) {
-
+        $('body').on('click', 'a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]', 'click', function(event)
+        {
             var href_val = event.target.hash;
             if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
             {
