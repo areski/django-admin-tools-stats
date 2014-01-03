@@ -25,14 +25,12 @@ Dependencies
 
 django-admin-tools-stats is a django based application, the major requirements are :
 
-    - python-dateutil>=1.5,<2.0
-    - django-jsonfield==0.8
-    - django-qsstats-magic>=0.6.1
-    - python-memcached>=1.47
+    - python-dateutil
+    - django-jsonfield
+    - django-qsstats-magic
     - django-cache-utils
-    - django-admin-tools>=0.5.0
-    - switch2bill-common>=2.6.0
-    - django-nvd3>=0.4.1
+    - django-admin-tools
+    - django-nvd3
 
 
 Configure
