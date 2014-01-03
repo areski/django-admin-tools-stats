@@ -2,6 +2,12 @@ Changelog
 =========
 
 
+0.5.3 (2014-01-03)
+-------------------
+
+* Fix js async loading with recent jquery version
+
+
 0.5.2 (2014-01-01)
 -------------------
 
