@@ -9,7 +9,7 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 
-VERSION = (0, 5, 4, "final", 0)  # edit also docs/source/conf.py
+VERSION = (0, 5, 5, "final", 0)  # edit also docs/source/conf.py
 
 
 def get_version():

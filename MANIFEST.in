@@ -2,6 +2,7 @@ global-exclude *.pyc
 
 include README.rst
 include MIT-LICENSE.txt
+include requirements.txt
 
 recursive-include admin_tools_stats *
 recursive-include docs *

@@ -4,10 +4,8 @@ import re
 import admin_tools_stats
 
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
-README = read('README.rst')
+def read(*parts):
+    return open(os.path.join(os.path.dirname(__file__), *parts)).read()
 
 
 def parse_requirements(file_name):
