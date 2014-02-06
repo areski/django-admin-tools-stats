@@ -1,10 +1,21 @@
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# Copyright (C) 2011-2014 Star2Billing S.L.
+#
+# The Initial Developer of the Original Code is
+# Arezqui Belaid <info@star2billing.com>
+#
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import jsonfield.fields
 
 
 class DashboardStatsCriteria(models.Model):
-    """To configure criteria for dashboard graphs
+    """
+    To configure criteria for dashboard graphs
 
     **Attributes**:
 
@@ -18,15 +29,18 @@ class DashboardStatsCriteria(models.Model):
     **Name of DB table**: dash_stats_criteria
     """
     criteria_name = models.CharField(max_length=90, db_index=True,
-        verbose_name=_('criteria name'),
-        help_text=_("it needs to be one word unique. Ex. status, yesno"))
-    criteria_fix_mapping = jsonfield.fields.JSONField(null=True, blank=True,
+                                     verbose_name=_('criteria name'),
+                                     help_text=_("it needs to be one word unique. Ex. status, yesno"))
+    criteria_fix_mapping = jsonfield.fields.JSONField(
+        null=True, blank=True,
         verbose_name=_("fixed criteria / value"),
         help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"))
-    dynamic_criteria_field_name = models.CharField(max_length=90, blank=True, null=True,
+    dynamic_criteria_field_name = models.CharField(
+        max_length=90, blank=True, null=True,
         verbose_name=_("dynamic criteria field name"),
         help_text=_("ex. for call records - disposition"))
-    criteria_dynamic_mapping = jsonfield.fields.JSONField(null=True, blank=True,
+    criteria_dynamic_mapping = jsonfield.fields.JSONField(
+        null=True, blank=True,
         verbose_name=_("dynamic criteria / value"),
         help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))

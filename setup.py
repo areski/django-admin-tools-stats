@@ -46,8 +46,8 @@ setup(
     package_dir={'admin_tools_stats': 'admin_tools_stats'},
     packages=find_packages(),
     package_data={},
-    install_requires=parse_requirements('admin_tools_stats/requirements.txt'),
-    dependency_links=parse_dependency_links('admin_tools_stats/requirements.txt'),
+    install_requires=parse_requirements('requirements.txt'),
+    dependency_links=parse_dependency_links('requirements.txt'),
     license='MIT License',
     classifiers=[
         'Development Status :: 5 - Production/Stable',

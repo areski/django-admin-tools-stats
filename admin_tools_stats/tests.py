@@ -1,11 +1,23 @@
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# Copyright (C) 2011-2014 Star2Billing S.L.
+#
+# The Initial Developer of the Original Code is
+# Arezqui Belaid <info@star2billing.com>
+#
 
 from django.test import TestCase
 from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
-from common.utils import BaseAuthenticatedClient
+from admin_tools_stats.utils import BaseAuthenticatedClient
 
 
 class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
-    """Test cases for django-admin-tools-stats Admin Interface."""
+    """
+    Test cases for django-admin-tools-stats Admin Interface
+    """
 
     def test_admin_tools_stats_dashboardstats(self):
         """Test function to check dashboardstats admin pages"""
@@ -25,11 +37,7 @@ class AdminToolsStatsModel(TestCase):
     """
     Test DashboardStatsCriteria, DashboardStats models
     """
-
-    #fixtures = []
-
     def setUp(self):
-
         # DashboardStatsCriteria model
         self.dashboard_stats_criteria = DashboardStatsCriteria(
             criteria_name="call_type",
