@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 
-Django-nvd3 Documentation!
+Django Admin Tools Stats Documentation!
 ==========================
 
 :Release: |version|
