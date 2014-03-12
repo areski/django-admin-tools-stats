@@ -31,12 +31,40 @@ django-admin-tools-stats is a django based application, the major requirements a
     - django-cache-utils
     - django-admin-tools
     - django-nvd3
+    - django-bower
 
 
 Configure
 ---------
 
 - Configure ``admin_tools``
+- Configure ``django-bower``
+
+  - Add ``django-bower`` to INSTALLED_APPS in settings.py::
+
+        INSTALLED_APPS = (
+            ...
+            'djangobower'
+        )
+    
+  - Add the following properties to you settings.py file::
+
+        BOWER_COMPONENTS_ROOT = BASE_DIR
+
+        BOWER_INSTALLED_APPS = ('nvd3',)
+
+  - Add django-bower finder to your static file finders::
+
+        STATICFILES_FINDERS = (
+            ...
+            'djangobower.finders.BowerFinder',
+        )
+
+  - Run the following commands. These will download nvd3.js and its dependencies using bower and throw them in to you static folder for access by your application::
+
+        $ python manage.py bower_install 
+        $ python manage.py collectstatic
+
 - Add ``admin_tools_stats`` & ``django_nvd3`` into INSTALLED_APPS in settings.py::
 
     INSTALLED_APPS = (
@@ -61,7 +89,7 @@ Configure
     graph_list = get_active_graph()
     for i in graph_list:
         kwargs = {}
-        kwargs['require_chart_jscss'] = False
+        kwargs['require_chart_jscss'] = True
         kwargs['graph_key'] = i.graph_key
 
         if context['request'].POST.get('select_box_' + i.graph_key):
