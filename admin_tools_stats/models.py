@@ -84,6 +84,8 @@ class DashboardStats(models.Model):
                                   help_text=_("ex. User"))
     date_field_name = models.CharField(max_length=90, verbose_name=_("date field name"),
                                        help_text=_("ex. date_joined"))
+    sum_field_name = models.CharField(max_length=90, verbose_name=_("Sum field name"), null=True,
+                                       help_text=_("The field you want to aggregate, ex. amount"))
     criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True, null=True)
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
