@@ -9,6 +9,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+from django.db.models.aggregates import Sum
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import get_model
@@ -88,8 +89,12 @@ class DashboardChart(modules.DashboardModule):
                 if i.dynamic_criteria_field_name and select_box_value:
                     kwargs[i.dynamic_criteria_field_name] = select_box_value
 
+            aggregate = None
+            if conf_data.sum_field_name:
+                aggregate = Sum(conf_data.sum_field_name)
+
             stats = QuerySetStats(model_name.objects.filter(**kwargs),
-                                  conf_data.date_field_name)
+                                  conf_data.date_field_name, aggregate)
             #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = now()
             if days == 24:
