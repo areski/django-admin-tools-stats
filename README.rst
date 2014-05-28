@@ -46,7 +46,7 @@ Configure
             ...
             'djangobower'
         )
-    
+
   - Add the following properties to you settings.py file::
 
         BOWER_COMPONENTS_ROOT = BASE_DIR
@@ -62,7 +62,7 @@ Configure
 
   - Run the following commands. These will download nvd3.js and its dependencies using bower and throw them in to you static folder for access by your application::
 
-        $ python manage.py bower_install 
+        $ python manage.py bower_install
         $ python manage.py collectstatic
 
 - Add ``admin_tools_stats`` & ``django_nvd3`` into INSTALLED_APPS in settings.py::
@@ -77,7 +77,7 @@ Configure
 
     from admin_tools_stats.modules import DashboardCharts, get_active_graph
 
-    # append an app list module for "Country_prefix"
+    # append an app list module
     self.children.append(modules.AppList(
         _('Dashboard Stats Settings'),
         models=('admin_tools_stats.*', ),

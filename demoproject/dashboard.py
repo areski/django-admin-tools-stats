@@ -15,6 +15,7 @@ from django.core.urlresolvers import reverse
 
 from admin_tools.dashboard import modules, Dashboard, AppIndexDashboard
 from admin_tools.utils import get_admin_site_name
+from admin_tools_stats.modules import DashboardCharts, get_active_graph
 
 
 class CustomIndexDashboard(Dashboard):
@@ -59,6 +60,26 @@ class CustomIndexDashboard(Dashboard):
             feed_url='http://www.djangoproject.com/rss/weblog/',
             limit=5
         ))
+
+        # append an app list module
+        self.children.append(modules.AppList(
+            _('Dashboard Stats Settings'),
+            models=('admin_tools_stats.*', ),
+        ))
+
+        # Copy following code into your custom dashboard
+        # append following code after recent actions module or
+        # a link list module for "quick links"
+        graph_list = get_active_graph()
+        for i in graph_list:
+            kwargs = {}
+            kwargs['require_chart_jscss'] = True
+            kwargs['graph_key'] = i.graph_key
+
+            if context['request'].POST.get('select_box_' + i.graph_key):
+                kwargs['select_box_' + i.graph_key] = context['request'].POST['select_box_' + i.graph_key]
+
+            self.children.append(DashboardCharts(**kwargs))
 
         # append another link list module for "support".
         self.children.append(modules.LinkList(
