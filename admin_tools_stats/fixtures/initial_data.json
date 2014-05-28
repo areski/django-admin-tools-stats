@@ -22,11 +22,12 @@
          "updated_date":"2011-09-01 09:11:56",
          "is_visible":true,
          "graph_key":"user_graph",
-	 "graph_title":"User graph",
+	      "graph_title":"User graph",
          "criteria":[
             1
          ],
          "date_field_name":"date_joined",
+         "sum_field_name":"",
          "model_name":"User",
          "created_date":"2011-09-01 08:56:45",
          "model_app_name":"auth"

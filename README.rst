@@ -49,9 +49,16 @@ Configure
 
   - Add the following properties to you settings.py file::
 
-        BOWER_COMPONENTS_ROOT = BASE_DIR
+        # Specifie path to components root (you need to use absolute path)
+        BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'components')
 
-        BOWER_INSTALLED_APPS = ('nvd3',)
+
+        BOWER_INSTALLED_APPS = (
+            'jquery#2.0.3',
+            'jquery-ui#~1.10.3',
+            'd3#3.3.6',
+            'nvd3#1.1.12-beta',
+        )
 
   - Add django-bower finder to your static file finders::
 
@@ -101,6 +108,9 @@ Configure
 
     $ python manage.py syncdb
 
+- You may also need to add some includes to your template admin base, see an example on the demo project:
+
+    demoproject/demoproject/templates/admin/base_site.html
 
 - Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
 
