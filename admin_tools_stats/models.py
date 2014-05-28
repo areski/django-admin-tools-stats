@@ -45,6 +45,8 @@ class DashboardStatsCriteria(models.Model):
         help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
+    sum_field_name = models.CharField(max_length=90, verbose_name=_("Sum field name"), null=True,
+                                       help_text=_("The field you want to aggregate, ex. amount"))
 
     class Meta:
         db_table = u'dash_stats_criteria'
