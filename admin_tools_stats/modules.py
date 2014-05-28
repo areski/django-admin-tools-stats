@@ -9,6 +9,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+from django.db.models.aggregates import Sum
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import get_model
@@ -88,8 +89,12 @@ class DashboardChart(modules.DashboardModule):
                 if i.dynamic_criteria_field_name and select_box_value:
                     kwargs[i.dynamic_criteria_field_name] = select_box_value
 
+            aggregate = None
+            if conf_data.sum_field_name:
+                aggregate = Sum(conf_data.sum_field_name)
+
             stats = QuerySetStats(model_name.objects.filter(**kwargs),
-                                  conf_data.date_field_name)
+                                  conf_data.date_field_name, aggregate)
             #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = now()
             if days == 24:
@@ -189,10 +194,10 @@ def get_active_graph():
 def get_registration_charts(**kwargs):
     """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
     return [
-        DashboardChart(('today').title(), interval='hours', **kwargs),
-        DashboardChart(('last week').title(), interval='days', **kwargs),
-        #DashboardChart(_('Last 2 Weeks'), interval='weeks', **kwargs),
-        DashboardChart(('last months').title(), interval='months', **kwargs),
+        DashboardChart(_('today').title(), interval='hours', **kwargs),
+        DashboardChart(_('last week').title(), interval='days', **kwargs),
+        DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
+        DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
     ]
 
 
