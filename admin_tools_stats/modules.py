@@ -189,10 +189,10 @@ def get_active_graph():
 def get_registration_charts(**kwargs):
     """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
     return [
-        DashboardChart(('today').title(), interval='hours', **kwargs),
-        DashboardChart(('last week').title(), interval='days', **kwargs),
-        #DashboardChart(_('Last 2 Weeks'), interval='weeks', **kwargs),
-        DashboardChart(('last months').title(), interval='months', **kwargs),
+        DashboardChart(_('today').title(), interval='hours', **kwargs),
+        DashboardChart(_('last week').title(), interval='days', **kwargs),
+        DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
+        DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
     ]
 
 
