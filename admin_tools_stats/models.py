@@ -13,14 +13,14 @@ from django.utils.translation import ugettext_lazy as _
 import jsonfield.fields
 
 operation = (
-            ('Count', 'Count'),
-            ('Sum', 'Sum'),
-            ('Avg', 'Avg'),
-            ('Max', 'Max'),
-            ('Min', 'Min'),
-            ('StdDev', 'StdDev'),
-            ('Variance', 'Variance'),
-            )
+    ('Count', 'Count'),
+    ('Sum', 'Sum'),
+    ('Avg', 'Avg'),
+    ('Max', 'Max'),
+    ('Min', 'Min'),
+    ('StdDev', 'StdDev'),
+    ('Variance', 'Variance'),
+)
 
 class DashboardStatsCriteria(models.Model):
     """
