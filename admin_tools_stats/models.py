@@ -12,6 +12,15 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import jsonfield.fields
 
+operation = (
+            ('Count', 'Count'),
+            ('Sum', 'Sum'),
+            ('Avg', 'Avg'),
+            ('Max', 'Max'),
+            ('Min', 'Min'),
+            ('StdDev', 'StdDev'),
+            ('Variance', 'Variance'),
+            )
 
 class DashboardStatsCriteria(models.Model):
     """
@@ -84,9 +93,12 @@ class DashboardStats(models.Model):
                                   help_text=_("ex. User"))
     date_field_name = models.CharField(max_length=90, verbose_name=_("date field name"),
                                        help_text=_("ex. date_joined"))
-    sum_field_name = models.CharField(max_length=90, verbose_name=_("Sum field name"),
+    operation_field_name = models.CharField(max_length=90, verbose_name=_("Operate field name"),
                                       null=True, blank=True,
                                       help_text=_("The field you want to aggregate, ex. amount"))
+    type_operation_field_name = models.CharField(max_length=90, verbose_name=_("Choose Type operation"),
+                                      null=True, blank=True, choices=operation,
+                                      help_text=_("choose the type operation what you want to aggregate, ex. Sum"))
     criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True, null=True)
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))

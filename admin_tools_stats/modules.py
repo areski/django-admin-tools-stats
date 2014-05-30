@@ -9,7 +9,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
-from django.db.models.aggregates import Sum
+from django.db.models.aggregates import Sum, Count, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import get_model
@@ -77,12 +77,11 @@ class DashboardChart(modules.DashboardModule):
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
             model_name = get_model(conf_data.model_app_name, conf_data.model_name)
             kwargs = {}
-
             for i in conf_data.criteria.all():
                 # fixed mapping value passed info kwargs
                 if i.criteria_fix_mapping:
                     for key in i.criteria_fix_mapping:
-                        # value => i.criteria_fix_mapping[key]
+                       # value => i.criteria_fix_mapping[key]
                         kwargs[key] = i.criteria_fix_mapping[key]
 
                 # dynamic mapping value passed info kwargs
@@ -90,11 +89,18 @@ class DashboardChart(modules.DashboardModule):
                     kwargs[i.dynamic_criteria_field_name] = select_box_value
 
             aggregate = None
-            if conf_data.sum_field_name:
-                aggregate = Sum(conf_data.sum_field_name)
+            if conf_data.type_operation_field_name and conf_data.operation_field_name:
+                operation={'Sum': Sum(conf_data.operation_field_name),
+                        'Avg':Avg(conf_data.operation_field_name),
+                        'StdDev':StdDev(conf_data.operation_field_name),
+                        'Max':Max(conf_data.operation_field_name),
+                        'Min':Min(conf_data.operation_field_name),
+                        'Variance':Variance(conf_data.operation_field_name),
+                        }
+                aggregate=operation[conf_data.type_operation_field_name]
 
             stats = QuerySetStats(model_name.objects.filter(**kwargs),
-                                  conf_data.date_field_name, aggregate)
+                                      conf_data.date_field_name, aggregate)
             #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = now()
             if days == 24:
