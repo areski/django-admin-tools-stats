@@ -13,7 +13,7 @@ from django.db.models.base import ModelBase
 from django.core.urlresolvers import resolve
 
 
-#TODO: Follow evolution of https://code.djangoproject.com/ticket/3591
+# TODO: Follow evolution of https://code.djangoproject.com/ticket/3591
 
 # Source link : http://django-notes.blogspot.in/2011/07/django-app-name-breadcrumbs-l10n.html
 class AppLabelRenamer(object):

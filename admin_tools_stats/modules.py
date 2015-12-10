@@ -9,7 +9,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
-from django.db.models.aggregates import Sum, Count, Avg, Max, Min, StdDev, Variance
+from django.db.models.aggregates import Sum, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from django.db.models import get_model
@@ -63,7 +63,7 @@ class DashboardChart(modules.DashboardModule):
                 self.select_box_value = kwargs['select_box_' + self.graph_key]
 
         if self.days is None:
-            #self.days = {'days': 30, 'weeks': 30*7, 'months': 30*12}[self.interval]
+            # self.days = {'days': 30, 'weeks': 30*7, 'months': 30*12}[self.interval]
             self.days = {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
 
         self.data = self.get_registrations(self.interval, self.days,
@@ -81,7 +81,7 @@ class DashboardChart(modules.DashboardModule):
                 # fixed mapping value passed info kwargs
                 if i.criteria_fix_mapping:
                     for key in i.criteria_fix_mapping:
-                       # value => i.criteria_fix_mapping[key]
+                        # value => i.criteria_fix_mapping[key]
                         kwargs[key] = i.criteria_fix_mapping[key]
 
                 # dynamic mapping value passed info kwargs
@@ -90,18 +90,19 @@ class DashboardChart(modules.DashboardModule):
 
             aggregate = None
             if conf_data.type_operation_field_name and conf_data.operation_field_name:
-                operation={'Sum': Sum(conf_data.operation_field_name),
-                        'Avg':Avg(conf_data.operation_field_name),
-                        'StdDev':StdDev(conf_data.operation_field_name),
-                        'Max':Max(conf_data.operation_field_name),
-                        'Min':Min(conf_data.operation_field_name),
-                        'Variance':Variance(conf_data.operation_field_name),
-                        }
-                aggregate=operation[conf_data.type_operation_field_name]
+                operation = {
+                    'Sum': Sum(conf_data.operation_field_name),
+                    'Avg': Avg(conf_data.operation_field_name),
+                    'StdDev': StdDev(conf_data.operation_field_name),
+                    'Max': Max(conf_data.operation_field_name),
+                    'Min': Min(conf_data.operation_field_name),
+                    'Variance': Variance(conf_data.operation_field_name),
+                }
+                aggregate = operation[conf_data.type_operation_field_name]
 
             stats = QuerySetStats(model_name.objects.filter(**kwargs),
-                                      conf_data.date_field_name, aggregate)
-            #stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
+                                  conf_data.date_field_name, aggregate)
+            # stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = now()
             if days == 24:
                 begin = today - timedelta(hours=days - 1)
