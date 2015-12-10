@@ -8,6 +8,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 import jsonfield.fields
@@ -21,6 +22,7 @@ operation = (
     ('StdDev', 'StdDev'),
     ('Variance', 'Variance'),
 )
+
 
 class DashboardStatsCriteria(models.Model):
     """

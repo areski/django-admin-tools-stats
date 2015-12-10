@@ -5,6 +5,23 @@ Django-admin-tools-stats
 :Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
 
 
+.. image:: https://pypip.in/version/django-admin-tools-stats/badge.svg
+    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+    :alt: Latest Version
+
+.. image:: https://pypip.in/download/django-admin-tools-stats/badge.svg
+    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+    :alt: Downloads
+
+.. image:: https://pypip.in/py_versions/django-admin-tools-stats/badge.svg
+    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+    :alt: Supported Python versions
+
+.. image:: https://pypip.in/license/django-admin-tools-stats/badge.svg
+    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+    :alt: License
+
+
 Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard based on specific models and criterias.
 
 It will query your models and provide reporting and statistics graphs, simple to read and display on your Dashboard.

@@ -2,11 +2,16 @@ Changelog
 =========
 
 
+0.6.2 (2015-12-10)
+-------------------
+
+* remove python-memcached from requirements
+
 
 0.6.1 (2014-05-30)
 -------------------
 
-* Support of Aggregation functions
+* support of Aggregation functions
 
 
 0.5.5 (2014-02-06)
