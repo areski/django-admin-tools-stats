@@ -1,6 +1,13 @@
 Changelog
 =========
 
+
+0.6.4 (2015-12-12)
+-------------------
+
+* fix bower_install creates a the folder build for src
+
+
 0.6.3 (2015-12-11)
 -------------------
 
