@@ -12,7 +12,13 @@
 from django.db.models.aggregates import Sum, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
-from django.db.models import get_model
+try:
+    # django >= 1.7
+    from django.apps import apps
+    get_model = apps.get_model
+except ImportError:
+    # django < 1.7
+    from django.db.models import get_model
 from django.utils.encoding import force_unicode
 from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
