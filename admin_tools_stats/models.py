@@ -101,7 +101,7 @@ class DashboardStats(models.Model):
     type_operation_field_name = models.CharField(max_length=90, verbose_name=_("Choose Type operation"),
                                       null=True, blank=True, choices=operation,
                                       help_text=_("choose the type operation what you want to aggregate, ex. Sum"))
-    criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True, null=True)
+    criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True)
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
