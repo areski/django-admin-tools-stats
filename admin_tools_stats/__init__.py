@@ -13,7 +13,7 @@
 #
 
 
-__version__ = '0.6.5'  # edit also docs/source/conf.py and update requirements.txt
+__version__ = '0.6.6'  # edit also docs/source/conf.py and update requirements.txt
 __author__ = "Arezqui Belaid"
 __contact__ = "areski@gmail.com"
 __homepage__ = "http://www.areskibelaid.com"
