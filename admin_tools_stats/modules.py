@@ -207,22 +207,21 @@ def get_active_graph():
         return []
 
 
-def get_registration_charts(**kwargs):
-    """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
-    return [
-        DashboardChart(_('today').title(), interval='hours', **kwargs),
-        DashboardChart(_('last week').title(), interval='days', **kwargs),
-        DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
-        DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
-    ]
-
-
 class DashboardCharts(modules.Group):
     """Group module with 3 default dashboard charts"""
     title = _('new users')
 
+    def get_registration_charts(self, **kwargs):
+        """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
+        return [
+            DashboardChart(_('today').title(), interval='hours', **kwargs),
+            DashboardChart(_('last week').title(), interval='days', **kwargs),
+            DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
+            DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
+        ]
+
     def __init__(self, *args, **kwargs):
         key_value = kwargs.get('graph_key')
         self.title = get_title(key_value)
-        kwargs.setdefault('children', get_registration_charts(**kwargs))
+        kwargs.setdefault('children', self.get_registration_charts(**kwargs))
         super(DashboardCharts, self).__init__(*args, **kwargs)
