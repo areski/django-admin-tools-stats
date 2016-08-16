@@ -19,7 +19,10 @@ try:
 except ImportError:
     # django < 1.7
     from django.db.models import get_model
-from django.utils.encoding import force_unicode
+try:  # Python 3
+    from django.utils.encoding import force_text
+except ImportError:  # Python 2
+    from django.utils.encoding import force_unicode as force_text
 from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
@@ -191,7 +194,7 @@ def get_dynamic_criteria(graph_key, select_box_value):
                         temp += '<option value="' + key + '">' + value + '</option>'
                 temp += '</select>'
 
-        return mark_safe(force_unicode(temp))
+        return mark_safe(force_text(temp))
     except:
         return ''
 
