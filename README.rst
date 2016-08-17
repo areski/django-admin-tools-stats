@@ -4,6 +4,8 @@ Django-admin-tools-stats
 :Description: Django-admin module to create charts and stats in your dashboard
 :Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
 
+.. image:: https://travis-ci.org/areski/django-admin-tools-stats.svg?branch=master
+    :target: https://travis-ci.org/areskiuhy/django-admin-tools-stats
 
 .. image:: https://pypip.in/version/django-admin-tools-stats/badge.svg
     :target: https://pypi.python.org/pypi/django-admin-tools-stats/

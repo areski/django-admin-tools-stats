@@ -43,20 +43,24 @@ def build_test_suite_from(test_cases):
 
 class BaseAuthenticatedClient(TestCase):
     """Common Authentication"""
-    fixtures = ['auth_user.json']
+    fixtures = ['auth_user']
 
     def setUp(self):
         """To create admin user"""
         self.client = Client()
         self.user = User.objects.get(username='admin')
         auth = '%s:%s' % ('admin', 'admin')
-        auth = 'Basic %s' % base64.encodestring(auth)
+        auth = 'Basic %s' % base64.encodestring(auth.encode('utf8'))
         auth = auth.strip()
         self.extra = {
             'HTTP_AUTHORIZATION': auth,
         }
-        login = self.client.login(username='admin', password='admin')
-        self.assertTrue(login)
+        try:
+            self.client.force_login(self.user)
+        except AttributeError:  # Django < 1.8
+            login = self.client.login(username='admin', password='admin')
+            self.assertTrue(login)
+
         self.factory = RequestFactory()
 
 
