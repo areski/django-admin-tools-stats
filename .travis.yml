@@ -9,31 +9,33 @@ python:
   - "3.5"
 
 env:
-  - DJANGO_VERSION="Django>=1.7,<1.8"
-  - DJANGO_VERSION="Django>=1.8,<1.9"
-  - DJANGO_VERSION="Django>=1.9,<1.10"
-  - DJANGO_VERSION="Django>=1.10,<1.11"
-  - DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
+  matrix:
+    - DJANGO_VERSION="Django<1.8"
+    - DJANGO_VERSION="Django<1.9"
+    - DJANGO_VERSION="Django<1.10"
+    - DJANGO_VERSION="Django<1.11"
+    - DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
 
-matrix:
-  allow_failures:
-    - env: DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
-  exclude:
-    - python: "3.5"
-      env: DJANGO_VERSION="Django<1.8"
-    - python: "3.3"
-      env: DJANGO_VERSION="Django<1.10"
 cache:
   directories:
     - $HOME/.cache/pip
-
-before_cache:
-  - rm -f $HOME/.cache/pip/log/debug.log
 
 install:
   - pip install -q "$DJANGO_VERSION"
   - python setup.py install
   - pip install -e git+https://github.com/infoscout/django-cache-utils.git#egg=django-cache-utils  # version compatible with newer Django versions, remove this line after PyPI package is released
+
+matrix:
+  exclude:
+    - python: "3.5"
+      env: DJANGO_VERSION="Django<1.8"
+    - python: "3.3"
+      env: DJANGO_VERSION="Django<1.10"
+  allow_failures:
+    - env: DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
+
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
 
 script:
     - cd demoproject && python -Wall manage.py test admin_tools_stats
