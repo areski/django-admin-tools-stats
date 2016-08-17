@@ -5,7 +5,7 @@ Django-admin-tools-stats
 :Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
 
 .. image:: https://travis-ci.org/areski/django-admin-tools-stats.svg?branch=master
-    :target: https://travis-ci.org/areskiuhy/django-admin-tools-stats
+    :target: https://travis-ci.org/areski/django-admin-tools-stats
 
 .. image:: https://img.shields.io/pypi/v/django-admin-tools-stats.svg
   :target: https://pypi.python.org/pypi/django-admin-tools-stats/
