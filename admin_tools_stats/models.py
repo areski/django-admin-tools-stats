@@ -10,6 +10,7 @@
 #
 
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 import jsonfield.fields
 
@@ -24,6 +25,7 @@ operation = (
 )
 
 
+@python_2_unicode_compatible
 class DashboardStatsCriteria(models.Model):
     """
     To configure criteria for dashboard graphs
@@ -58,14 +60,16 @@ class DashboardStatsCriteria(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
+        app_label = "admin_tools_stats"
         db_table = u'dash_stats_criteria'
         verbose_name = _("dashboard stats criteria")
         verbose_name_plural = _("dashboard stats criteria")
 
-    def __unicode__(self):
+    def __str__(self):
             return u"%s" % self.criteria_name
 
 
+@python_2_unicode_compatible
 class DashboardStats(models.Model):
     """To configure graphs for dashboard
 
@@ -107,9 +111,10 @@ class DashboardStats(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
 
     class Meta:
+        app_label = "admin_tools_stats"
         db_table = u'dashboard_stats'
         verbose_name = _("dashboard stats")
         verbose_name_plural = _("dashboard stats")
 
-    def __unicode__(self):
-            return u"%d %s" % (self.id, self.graph_key)
+    def __str__(self):
+            return u"%s" % self.graph_key

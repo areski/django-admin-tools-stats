@@ -19,7 +19,10 @@ try:
 except ImportError:
     # django < 1.7
     from django.db.models import get_model
-from django.utils.encoding import force_unicode
+try:  # Python 3
+    from django.utils.encoding import force_text
+except ImportError:  # Python 2
+    from django.utils.encoding import force_unicode as force_text
 from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
@@ -191,7 +194,7 @@ def get_dynamic_criteria(graph_key, select_box_value):
                         temp += '<option value="' + key + '">' + value + '</option>'
                 temp += '</select>'
 
-        return mark_safe(force_unicode(temp))
+        return mark_safe(force_text(temp))
     except:
         return ''
 
@@ -204,22 +207,21 @@ def get_active_graph():
         return []
 
 
-def get_registration_charts(**kwargs):
-    """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
-    return [
-        DashboardChart(_('today').title(), interval='hours', **kwargs),
-        DashboardChart(_('last week').title(), interval='days', **kwargs),
-        DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
-        DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
-    ]
-
-
 class DashboardCharts(modules.Group):
     """Group module with 3 default dashboard charts"""
     title = _('new users')
 
+    def get_registration_charts(self, **kwargs):
+        """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
+        return [
+            DashboardChart(_('today').title(), interval='hours', **kwargs),
+            DashboardChart(_('last week').title(), interval='days', **kwargs),
+            DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
+            DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
+        ]
+
     def __init__(self, *args, **kwargs):
         key_value = kwargs.get('graph_key')
         self.title = get_title(key_value)
-        kwargs.setdefault('children', get_registration_charts(**kwargs))
+        kwargs.setdefault('children', self.get_registration_charts(**kwargs))
         super(DashboardCharts, self).__init__(*args, **kwargs)

@@ -22,15 +22,15 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
     def test_admin_tools_stats_dashboardstats(self):
         """Test function to check dashboardstats admin pages"""
         response = self.client.get('/admin/admin_tools_stats/')
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         response = self.client.get('/admin/admin_tools_stats/dashboardstats/')
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
     def test_admin_tools_stats_dashboardstatscriteria(self):
         """Test function to check dashboardstatscriteria admin pages"""
         response = \
             self.client.get('/admin/admin_tools_stats/dashboardstatscriteria/')
-        self.failUnlessEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
 
 
 class AdminToolsStatsModel(TestCase):
@@ -59,25 +59,26 @@ class AdminToolsStatsModel(TestCase):
         )
         self.dashboard_stats_criteria.save()
         self.assertEqual(
-            self.dashboard_stats_criteria.__unicode__(), 'call_type')
+            self.dashboard_stats_criteria.__str__(), 'call_type')
 
         # DashboardStats model
         self.dashboard_stats = DashboardStats(
-            graph_key='user_graph',
+            graph_key='user_graph_test',
             graph_title='User graph',
             model_app_name='auth',
             model_name='User',
             date_field_name='date_joined',
-            criteria=self.dashboard_stats_criteria,
             is_visible=1,
         )
         self.dashboard_stats.save()
-        self.assertEqual(self.dashboard_stats.__unicode__(), 'user_graph')
+        self.dashboard_stats.criteria.add(self.dashboard_stats_criteria)
+        self.dashboard_stats.save()
+        self.assertEqual(self.dashboard_stats.__str__(), 'user_graph_test')
 
     def test_dashboard_criteria(self):
         self.assertEqual(
             self.dashboard_stats_criteria.criteria_name, "call_type")
-        self.assertEqual(self.dashboard_stats.graph_key, 'user_graph')
+        self.assertEqual(self.dashboard_stats.graph_key, 'user_graph_test')
 
     def teardown(self):
         self.dashboard_stats_criteria.delete()
