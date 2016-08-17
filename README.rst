@@ -4,22 +4,24 @@ Django-admin-tools-stats
 :Description: Django-admin module to create charts and stats in your dashboard
 :Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
 
+.. image:: https://travis-ci.org/areski/django-admin-tools-stats.svg?branch=master
+    :target: https://travis-ci.org/areski/django-admin-tools-stats
 
-.. image:: https://pypip.in/version/django-admin-tools-stats/badge.svg
-    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
-    :alt: Latest Version
+.. image:: https://img.shields.io/pypi/v/django-admin-tools-stats.svg
+  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+  :alt: Latest Version
 
-.. image:: https://pypip.in/download/django-admin-tools-stats/badge.svg
-    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
-    :alt: Downloads
+.. image:: https://img.shields.io/pypi/dm/django-admin-tools-stats.svg
+  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+  :alt: Downloads
 
-.. image:: https://pypip.in/py_versions/django-admin-tools-stats/badge.svg
-    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
-    :alt: Supported Python versions
+.. image:: https://img.shields.io/pypi/pyversions/django-admin-tools-stats.svg
+  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+  :alt: Supported Python versions
 
-.. image:: https://pypip.in/license/django-admin-tools-stats/badge.svg
-    :target: https://pypi.python.org/pypi/django-admin-tools-stats/
-    :alt: License
+.. image:: https://img.shields.io/pypi/l/django-admin-tools-stats.svg
+  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+  :alt: License
 
 
 Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard based on specific models and criterias.

@@ -2,6 +2,16 @@ Changelog
 =========
 
 
+0.7.0 (2016-08-17)
+-------------------
+
+* fixes for newer Django and Python versions
+* add Travis configuration file
+* allow to override get_registration_charts function
+* fix Python 3 compatibility
+* python manage.py bower_install creates the folder build for src
+
+
 0.6.6 (2015-12-13)
 -------------------
 
