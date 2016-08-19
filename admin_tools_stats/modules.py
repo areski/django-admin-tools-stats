@@ -23,12 +23,15 @@ try:  # Python 3
     from django.utils.encoding import force_text
 except ImportError:  # Python 2
     from django.utils.encoding import force_unicode as force_text
+from django.contrib import messages
+from django.core.exceptions import FieldError
 from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
 from admin_tools_stats.models import DashboardStats
 from datetime import datetime, timedelta
+
 import time
 
 # Make timezone aware for Django 1.4
@@ -79,6 +82,12 @@ class DashboardChart(modules.DashboardModule):
                                            self.graph_key, self.select_box_value)
         self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
 
+    def init_with_context(self, context):
+        super(DashboardChart, self).init_with_context(context)
+        request = context['request']
+        if hasattr(self, 'error_message'):
+            messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.title, self.error_message))
+
     @cached(60 * 5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
@@ -119,7 +128,8 @@ class DashboardChart(modules.DashboardModule):
 
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
-        except:
+        except (LookupError, FieldError) as e:
+            self.error_message = str(e)
             User = get_user_model()
             stats = QuerySetStats(
                 User.objects.filter(is_active=True), 'date_joined')
@@ -173,7 +183,8 @@ def get_title(graph_key):
     """Returns graph title"""
     try:
         return DashboardStats.objects.get(graph_key=graph_key).graph_title
-    except:
+    except LookupError as e:
+        self.error_message = str(e)
         return ''
 
 
@@ -195,7 +206,8 @@ def get_dynamic_criteria(graph_key, select_box_value):
                 temp += '</select>'
 
         return mark_safe(force_text(temp))
-    except:
+    except LookupError as e:
+        self.error_message = str(e)
         return ''
 
 
@@ -203,7 +215,8 @@ def get_active_graph():
     """Returns active graphs"""
     try:
         return DashboardStats.objects.filter(is_visible=1)
-    except:
+    except LookupError as e:
+        self.error_message = str(e)
         return []
 
 

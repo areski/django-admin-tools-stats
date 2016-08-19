@@ -10,6 +10,7 @@
 #
 
 from django.test import TestCase
+from django.core.exceptions import ValidationError
 from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
 from admin_tools_stats.utils import BaseAuthenticatedClient
 
@@ -73,6 +74,9 @@ class AdminToolsStatsModel(TestCase):
         self.dashboard_stats.save()
         self.dashboard_stats.criteria.add(self.dashboard_stats_criteria)
         self.dashboard_stats.save()
+        with self.assertRaises(ValidationError) as e:
+            self.dashboard_stats.clean()
+        self.assertEqual(e.exception.message_dict, {})
         self.assertEqual(self.dashboard_stats.__str__(), 'user_graph_test')
 
     def test_dashboard_criteria(self):

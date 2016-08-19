@@ -10,8 +10,14 @@
 #
 
 from django.db import models
+from django.core.exceptions import ValidationError
+try:
+    from django.core.exceptions import FieldDoesNotExist
+except ImportError:  # Django == 1.7
+    from django.contrib.contenttypes.admin import FieldDoesNotExist
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
+from django.apps import apps
 import jsonfield.fields
 
 operation = (
@@ -115,6 +121,36 @@ class DashboardStats(models.Model):
         db_table = u'dashboard_stats'
         verbose_name = _("dashboard stats")
         verbose_name_plural = _("dashboard stats")
+
+    def clean(self, *args, **kwargs):
+        errors = {}
+        model = None
+        try:
+            apps.get_app_config(self.model_app_name)
+        except LookupError as e:
+            errors['model_app_name'] = str(e)
+
+        try:
+            model = apps.get_model(self.model_app_name, self.model_name)
+        except LookupError as e:
+            errors['model_name'] = str(e)
+
+        try:
+            if model and self.operation_field_name:
+                operation_field = model._meta.get_field(self.operation_field_name)
+        except FieldDoesNotExist as e:
+            errors['operation_field_name'] = str(e)
+
+        try:
+            if model and self.date_field_name:
+                date_field = model._meta.get_field(self.date_field_name)
+        except FieldDoesNotExist as e:
+            errors['date_field_name'] = str(e)
+
+        raise ValidationError(errors)
+        return super(DashboardStats, self).clean(*args, **kwargs)
+
+
 
     def __str__(self):
             return u"%s" % self.graph_key
