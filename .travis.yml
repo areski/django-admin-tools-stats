@@ -22,8 +22,9 @@ cache:
 
 install:
   - pip install -q "$DJANGO_VERSION"
-  - python setup.py install
   - pip install -e git+https://github.com/infoscout/django-cache-utils.git#egg=django-cache-utils  # version compatible with newer Django versions, remove this line after PyPI package is released
+  - pip install coverage coveralls django-coverage-plugin
+  - pip install -r requirements.txt
 
 matrix:
   exclude:
@@ -42,4 +43,7 @@ before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
 
 script:
-    - cd demoproject && python -Wall manage.py test admin_tools_stats
+    - python -Wall $VIRTUAL_ENV/bin/coverage run setup.py test
+
+after_success:
+    - coveralls
