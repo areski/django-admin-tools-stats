@@ -12,13 +12,7 @@
 from django.db.models.aggregates import Sum, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
-try:
-    # django >= 1.7
-    from django.apps import apps
-    get_model = apps.get_model
-except ImportError:
-    # django < 1.7
-    from django.db.models import get_model
+from django.apps import apps
 try:  # Python 3
     from django.utils.encoding import force_text
 except ImportError:  # Python 2
@@ -34,11 +28,7 @@ from datetime import datetime, timedelta
 
 import time
 
-# Make timezone aware for Django 1.4
-try:
-    from django.utils.timezone import now
-except ImportError:
-    now = datetime.now
+from django.utils.timezone import now
 
 
 class DashboardChart(modules.DashboardModule):
@@ -93,7 +83,7 @@ class DashboardChart(modules.DashboardModule):
         """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
-            model_name = get_model(conf_data.model_app_name, conf_data.model_name)
+            model_name = apps.get_model(conf_data.model_app_name, conf_data.model_name)
             kwargs = {}
             for i in conf_data.criteria.all():
                 # fixed mapping value passed info kwargs
