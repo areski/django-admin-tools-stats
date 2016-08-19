@@ -55,6 +55,9 @@ class DashboardChart(modules.DashboardModule):
     def is_empty(self):
         return False
 
+    def get_day_intervals(self):
+        return {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
+
     def __init__(self, *args, **kwargs):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.select_box_value = ''
@@ -65,8 +68,7 @@ class DashboardChart(modules.DashboardModule):
                 self.select_box_value = kwargs['select_box_' + self.graph_key]
 
         if self.days is None:
-            # self.days = {'days': 30, 'weeks': 30*7, 'months': 30*12}[self.interval]
-            self.days = {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
+            self.days = self.get_day_intervals()
 
         self.data = self.get_registrations(self.interval, self.days,
                                            self.graph_key, self.select_box_value)
