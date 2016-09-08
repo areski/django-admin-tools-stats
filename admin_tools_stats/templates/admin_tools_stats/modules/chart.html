@@ -41,7 +41,7 @@
     </script>
 
     {% if module.form_field %}
-        <form id="stateform" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
+        <form class="stateform" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
             {{ module.form_field }}
         </form>
         <br/>
