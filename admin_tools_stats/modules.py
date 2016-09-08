@@ -61,18 +61,22 @@ class DashboardChart(modules.DashboardModule):
     def __init__(self, *args, **kwargs):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.select_box_value = ''
+        self.other_select_box_values = {}
+        self.require_chart_jscss = kwargs['require_chart_jscss']
+        self.graph_key = kwargs['graph_key']
         for key in kwargs:
-            self.require_chart_jscss = kwargs['require_chart_jscss']
-            self.graph_key = kwargs['graph_key']
-            if kwargs.get('select_box_' + self.graph_key):
-                self.select_box_value = kwargs['select_box_' + self.graph_key]
+            if key.startswith('select_box_'):
+                if key == 'select_box_' + self.graph_key:
+                    self.select_box_value = kwargs[key]
+                else:
+                    self.other_select_box_values[key] = kwargs[key]
 
         if self.days is None:
             self.days = self.get_day_intervals()
 
         self.data = self.get_registrations(self.interval, self.days,
                                            self.graph_key, self.select_box_value)
-        self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
+        self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
 
     def init_with_context(self, context):
         super(DashboardChart, self).init_with_context(context)
@@ -132,7 +136,7 @@ class DashboardChart(modules.DashboardModule):
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
 
-    def prepare_template_data(self, data, graph_key, select_box_value):
+    def prepare_template_data(self, data, graph_key, select_box_value, other_select_box_values):
         """ Prepares data for template (passed as module attributes) """
         self.extra = {
             'x_is_date': True,
@@ -168,7 +172,7 @@ class DashboardChart(modules.DashboardModule):
             'name1': self.interval, 'y1': ydata, 'extra1': extra_serie,
         }
 
-        self.form_field = get_dynamic_criteria(graph_key, select_box_value)
+        self.form_field = get_dynamic_criteria(graph_key, select_box_value, other_select_box_values)
 
 
 def get_title(graph_key):
@@ -180,7 +184,7 @@ def get_title(graph_key):
         return ''
 
 
-def get_dynamic_criteria(graph_key, select_box_value):
+def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
     """To get dynamic criteria & return into select box to display on dashboard"""
     try:
         temp = ''
@@ -196,6 +200,8 @@ def get_dynamic_criteria(graph_key, select_box_value):
                     else:
                         temp += '<option value="' + key + '">' + value + '</option>'
                 temp += '</select>'
+
+        temp += "\n".join(['<input type="hidden" name="%s" value="%s">' % (key, other_select_box_values[key]) for key in other_select_box_values ])
 
         return mark_safe(force_text(temp))
     except LookupError as e:
