@@ -20,19 +20,23 @@
         var init_value = true;
         var html_string = '<svg style="width:{{module.chart_width}};height:{{module.chart_height}}px;"></svg>';
 
+        function loadChart_{{ module.interval }}_{{ module.graph_key}}(){
+            {% load_chart module.chart_type module.values module.chart_container module.extra %}
+        }
+
         $('body').on('click', 'a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]', 'click', function(event)
         {
             var href_val = event.target.hash;
             if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
             {
                 $('#{{module.chart_container}}').empty().append(html_string);
-                {% load_chart module.chart_type module.values module.chart_container module.extra %}
+                loadChart_{{ module.interval }}_{{ module.graph_key}}();
             }
             init_value = false;
         });
         // init
         if(init_value){
-            {% load_chart module.chart_type module.values module.chart_container module.extra %}
+            loadChart_{{ module.interval }}_{{ module.graph_key}}();
         }
     </script>
 
