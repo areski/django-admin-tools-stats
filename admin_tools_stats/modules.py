@@ -120,7 +120,7 @@ class DashboardChart(modules.DashboardModule):
 
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
-        except (LookupError, FieldError) as e:
+        except (LookupError, FieldError, TypeError) as e:
             self.error_message = str(e)
             User = get_user_model()
             stats = QuerySetStats(
