@@ -23,6 +23,7 @@ cache:
 install:
   - pip install -q "$DJANGO_VERSION"
   - pip install -e git+https://github.com/infoscout/django-cache-utils.git#egg=django-cache-utils  # version compatible with newer Django versions, remove this line after PyPI package is released
+  - pip install -e git+https://github.com/PetrDlouhy/django-qsstats-magic.git#egg=django-qsstats-magic  # version compatible with Python 3, remove this line after PyPI package is released
   - pip install coverage coveralls django-coverage-plugin
   - pip install -r requirements.txt
 
