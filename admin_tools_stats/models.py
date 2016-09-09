@@ -61,7 +61,11 @@ class DashboardStatsCriteria(models.Model):
     criteria_dynamic_mapping = jsonfield.fields.JSONField(
         null=True, blank=True,
         verbose_name=_("dynamic criteria / value"),
-        help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"))
+        help_text=_(
+            "a JSON dictionary of key-value pairs that will be used for the criteria"
+            " Ex. \"{'false': 'Inactive', 'true': 'Active'}\"",
+        ),
+    )
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
 
