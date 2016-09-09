@@ -1,0 +1,57 @@
+[
+   {
+      "pk":1,
+      "model":"admin_tools_stats.dashboardstatscriteria",
+      "fields":{
+         "criteria_fix_mapping":{
+            "is_active":"1"
+         },
+         "updated_date":"2011-09-01 09:06:12",
+         "criteria_name":"active",
+	 "dynamic_criteria_field_name":"",
+         "criteria_dynamic_mapping":{
+            "true": "Active",
+            "false": "Inactive"
+         },
+         "created_date":"2011-09-01 09:01:40"
+      }
+   },
+   {
+      "pk":2,
+      "model":"admin_tools_stats.dashboardstats",
+      "fields":{
+         "updated_date":"2011-09-01 09:11:56",
+         "is_visible":true,
+         "graph_key":"user_logged_graph",
+	      "graph_title":"User logged in graph",
+         "criteria":[
+            1
+         ],
+         "date_field_name":"last_login",
+         "operation_field_name":"is_staff",
+         "type_operation_field_name":"Sum",
+         "model_name":"User",
+         "created_date":"2011-09-01 08:56:45",
+         "model_app_name":"auth"
+      }
+   },
+   {
+      "pk":1,
+      "model":"admin_tools_stats.dashboardstats",
+      "fields":{
+         "updated_date":"2011-09-01 09:11:56",
+         "is_visible":true,
+         "graph_key":"user_graph",
+	      "graph_title":"User graph",
+         "criteria":[
+            1
+         ],
+         "date_field_name":"date_joined",
+         "operation_field_name":"",
+         "type_operation_field_name":"",
+         "model_name":"User",
+         "created_date":"2011-09-01 08:56:45",
+         "model_app_name":"auth"
+      }
+   }
+]

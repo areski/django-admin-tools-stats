@@ -9,6 +9,8 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 
+import django
+
 from django.test import TestCase
 from django.core.exceptions import ValidationError
 from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
@@ -35,21 +37,51 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
 
 
 class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
-    fixtures = ['initial_data', 'auth_user']
+    fixtures = ['test_data', 'auth_user']
 
-    def test_admin_dashboard_page(self):
-        """Test function to check dashboardstatscriteria admin pages"""
-        response = self.client.get('/admin/')
-        self.assertContains(
-            response,
-            '<h2>User graph</h2>',
-            html=True,
-        )
-        self.assertContains(
-            response,
-            '<svg style="width:100%;height:300px;"></svg>',
-            html=True,
-        )
+    if django.VERSION >= (1,8,0):
+        def test_admin_dashboard_page(self):
+            """Test function to check dashboardstatscriteria admin pages"""
+            response = self.client.get('/admin/')
+            self.assertContains(
+                response,
+                '<h2>User graph</h2>',
+                html=True,
+            )
+            self.assertContains(
+                response,
+                '<h2>User logged in graph</h2>',
+                html=True,
+            )
+            self.assertContains(
+                response,
+                '<svg style="width:100%;height:300px;"></svg>',
+                html=True,
+            )
+            self.assertContains(
+                response,
+                '<option value="true">Active</option>',
+                html=True,
+            )
+            self.assertContains(
+                response,
+                '<option value="false">Inactive</option>',
+                html=True,
+            )
+
+        def test_admin_dashboard_page_post(self):
+            """Test function to check dashboardstatscriteria admin pages"""
+            response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
+            self.assertContains(
+                response,
+                '<input type="hidden" name="select_box_user_graph" value="true">',
+                html=True,
+            )
+            self.assertContains(
+                response,
+                '<option value="true" selected="selected">Active</option>',
+                html=True,
+            )
 
 
 class AdminToolsStatsModel(TestCase):
