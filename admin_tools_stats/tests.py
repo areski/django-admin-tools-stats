@@ -34,6 +34,24 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
         self.assertEqual(response.status_code, 200)
 
 
+class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
+    fixtures = ['initial_data', 'auth_user']
+
+    def test_admin_dashboard_page(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        response = self.client.get('/admin/')
+        self.assertContains(
+            response,
+            '<h2>User graph</h2>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<svg style="width:100%;height:300px;"></svg>',
+            html=True,
+        )
+
+
 class AdminToolsStatsModel(TestCase):
     """
     Test DashboardStatsCriteria, DashboardStats models
