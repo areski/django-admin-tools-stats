@@ -41,6 +41,11 @@ class DashboardChart(modules.DashboardModule):
     days = None
     interval = 'days'
     tooltip_date_format = "%d %b %Y"
+    interval_dateformat_map = {
+        'months': ("%b", "%b"),
+        'days': ("%d %b %Y", "%a"),
+        'hours': ("%d %b %Y %H:%S", "%H"),
+    }
     chart_type = 'discreteBarChart'
     chart_height = 300
     chart_width = '100%'
@@ -143,15 +148,9 @@ class DashboardChart(modules.DashboardModule):
             'tag_script_js': False,
             'jquery_on_ready': False,
         }
-        if self.interval == 'months':
-            self.tooltip_date_format = "%b"
-            self.extra['x_axis_format'] = "%b"
-        if self.interval == 'days':
-            self.tooltip_date_format = "%d %b %Y"
-            self.extra['x_axis_format'] = "%a"
-        if self.interval == 'hours':
-            self.tooltip_date_format = "%d %b %Y %H:%S"
-            self.extra['x_axis_format'] = "%H"
+
+        if self.interval in self.interval_dateformat_map:
+            self.tooltip_date_format, self.extra['x_axis_format'] = self.interval_dateformat_map[self.interval]
 
         self.chart_container = self.interval + '_' + self.graph_key
         # add string into href attr
