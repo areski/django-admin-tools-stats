@@ -23,6 +23,7 @@ class DashboardStatsCriteriaAdmin(admin.ModelAdmin):
     list_display = ('id', 'criteria_name', 'created_date')
     list_filter = ['created_date']
     ordering = ('id', )
+    save_as = True
 
 admin.site.register(DashboardStatsCriteria, DashboardStatsCriteriaAdmin)
 
@@ -36,5 +37,6 @@ class DashboardStatsAdmin(admin.ModelAdmin):
                     'is_visible', 'created_date')
     list_filter = ['created_date']
     ordering = ('id', )
+    save_as = True
 
 admin.site.register(DashboardStats, DashboardStatsAdmin)

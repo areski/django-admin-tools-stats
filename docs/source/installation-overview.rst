@@ -59,8 +59,9 @@ Configuration
         kwargs['graph_key'] = i.graph_key
         kwargs['require_chart_jscss'] = False
 
-        if context['request'].POST.get('select_box_' + i.graph_key):
-            kwargs['select_box_' + i.graph_key] = context['request'].POST['select_box_' + i.graph_key]
+        for key in context['request'].POST:
+            if key.startswith('select_box_'):
+                kwargs[key] = context['request'].POST[key]
 
         self.children.append(DashboardCharts(**kwargs))
 

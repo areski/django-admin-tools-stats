@@ -12,30 +12,23 @@
 from django.db.models.aggregates import Sum, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
-try:
-    # django >= 1.7
-    from django.apps import apps
-    get_model = apps.get_model
-except ImportError:
-    # django < 1.7
-    from django.db.models import get_model
+from django.apps import apps
 try:  # Python 3
     from django.utils.encoding import force_text
 except ImportError:  # Python 2
     from django.utils.encoding import force_unicode as force_text
+from django.contrib import messages
+from django.core.exceptions import FieldError
 from django.utils.safestring import mark_safe
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
 from admin_tools_stats.models import DashboardStats
 from datetime import datetime, timedelta
+
 import time
 
-# Make timezone aware for Django 1.4
-try:
-    from django.utils.timezone import now
-except ImportError:
-    now = datetime.now
+from django.utils.timezone import now
 
 
 class DashboardChart(modules.DashboardModule):
@@ -48,6 +41,11 @@ class DashboardChart(modules.DashboardModule):
     days = None
     interval = 'days'
     tooltip_date_format = "%d %b %Y"
+    interval_dateformat_map = {
+        'months': ("%b", "%b"),
+        'days': ("%d %b %Y", "%a"),
+        'hours': ("%d %b %Y %H:%S", "%H"),
+    }
     chart_type = 'discreteBarChart'
     chart_height = 300
     chart_width = '100%'
@@ -62,29 +60,41 @@ class DashboardChart(modules.DashboardModule):
     def is_empty(self):
         return False
 
+    def get_day_intervals(self):
+        return {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
+
     def __init__(self, *args, **kwargs):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.select_box_value = ''
+        self.other_select_box_values = {}
+        self.require_chart_jscss = kwargs['require_chart_jscss']
+        self.graph_key = kwargs['graph_key']
         for key in kwargs:
-            self.require_chart_jscss = kwargs['require_chart_jscss']
-            self.graph_key = kwargs['graph_key']
-            if kwargs.get('select_box_' + self.graph_key):
-                self.select_box_value = kwargs['select_box_' + self.graph_key]
+            if key.startswith('select_box_'):
+                if key == 'select_box_' + self.graph_key:
+                    self.select_box_value = kwargs[key]
+                else:
+                    self.other_select_box_values[key] = kwargs[key]
 
         if self.days is None:
-            # self.days = {'days': 30, 'weeks': 30*7, 'months': 30*12}[self.interval]
-            self.days = {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
+            self.days = self.get_day_intervals()
 
         self.data = self.get_registrations(self.interval, self.days,
                                            self.graph_key, self.select_box_value)
-        self.prepare_template_data(self.data, self.graph_key, self.select_box_value)
+        self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
+
+    def init_with_context(self, context):
+        super(DashboardChart, self).init_with_context(context)
+        request = context['request']
+        if hasattr(self, 'error_message'):
+            messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.title, self.error_message))
 
     @cached(60 * 5)
     def get_registrations(self, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
-            model_name = get_model(conf_data.model_app_name, conf_data.model_name)
+            model_name = apps.get_model(conf_data.model_app_name, conf_data.model_name)
             kwargs = {}
             for i in conf_data.criteria.all():
                 # fixed mapping value passed info kwargs
@@ -119,7 +129,8 @@ class DashboardChart(modules.DashboardModule):
 
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
-        except:
+        except (LookupError, FieldError, TypeError) as e:
+            self.error_message = str(e)
             User = get_user_model()
             stats = QuerySetStats(
                 User.objects.filter(is_active=True), 'date_joined')
@@ -130,22 +141,16 @@ class DashboardChart(modules.DashboardModule):
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
 
-    def prepare_template_data(self, data, graph_key, select_box_value):
+    def prepare_template_data(self, data, graph_key, select_box_value, other_select_box_values):
         """ Prepares data for template (passed as module attributes) """
         self.extra = {
             'x_is_date': True,
             'tag_script_js': False,
             'jquery_on_ready': False,
         }
-        if self.interval == 'months':
-            self.tooltip_date_format = "%b"
-            self.extra['x_axis_format'] = "%b"
-        if self.interval == 'days':
-            self.tooltip_date_format = "%d %b %Y"
-            self.extra['x_axis_format'] = "%a"
-        if self.interval == 'hours':
-            self.tooltip_date_format = "%d %b %Y %H:%S"
-            self.extra['x_axis_format'] = "%H"
+
+        if self.interval in self.interval_dateformat_map:
+            self.tooltip_date_format, self.extra['x_axis_format'] = self.interval_dateformat_map[self.interval]
 
         self.chart_container = self.interval + '_' + self.graph_key
         # add string into href attr
@@ -166,18 +171,19 @@ class DashboardChart(modules.DashboardModule):
             'name1': self.interval, 'y1': ydata, 'extra1': extra_serie,
         }
 
-        self.form_field = get_dynamic_criteria(graph_key, select_box_value)
+        self.form_field = get_dynamic_criteria(graph_key, select_box_value, other_select_box_values)
 
 
 def get_title(graph_key):
     """Returns graph title"""
     try:
         return DashboardStats.objects.get(graph_key=graph_key).graph_title
-    except:
+    except LookupError as e:
+        self.error_message = str(e)
         return ''
 
 
-def get_dynamic_criteria(graph_key, select_box_value):
+def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
     """To get dynamic criteria & return into select box to display on dashboard"""
     try:
         temp = ''
@@ -185,7 +191,7 @@ def get_dynamic_criteria(graph_key, select_box_value):
         for i in conf_data:
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
-                temp = '<select name="select_box_' + graph_key + '" onChange="$(\'#stateform\').submit();">'
+                temp = '<select name="select_box_' + graph_key + '" onChange="$(this).closest(\'form\').submit();">'
                 for key in dict(dy_map):
                     value = dy_map[key]
                     if key == select_box_value:
@@ -194,8 +200,11 @@ def get_dynamic_criteria(graph_key, select_box_value):
                         temp += '<option value="' + key + '">' + value + '</option>'
                 temp += '</select>'
 
+        temp += "\n".join(['<input type="hidden" name="%s" value="%s">' % (key, other_select_box_values[key]) for key in other_select_box_values ])
+
         return mark_safe(force_text(temp))
-    except:
+    except LookupError as e:
+        self.error_message = str(e)
         return ''
 
 
@@ -203,7 +212,8 @@ def get_active_graph():
     """Returns active graphs"""
     try:
         return DashboardStats.objects.filter(is_visible=1)
-    except:
+    except LookupError as e:
+        self.error_message = str(e)
         return []
 
 
