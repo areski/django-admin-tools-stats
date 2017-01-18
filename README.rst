@@ -157,6 +157,6 @@ http://readthedocs.org/docs/django-admin-tools-stats/
 License
 -------
 
-Copyright (c) 2011-2014 Star2Billing S.L. <info@star2billing.com>
+Copyright (c) 2011-2017 Star2Billing S.L. <info@star2billing.com>
 
 django-admin-tools-stats is licensed under MIT, see `MIT-LICENSE.txt`.

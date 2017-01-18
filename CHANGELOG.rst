@@ -2,6 +2,28 @@ Changelog
 =========
 
 
+0.8.0 (2017-01-18)
+------------------
+
+* make possible to change dateformat of x axis <Petr Dlouhý>
+* add example for dynamic criteria <Petr Dlouhý>
+* test also dynamic criteria <Petr Dlouhý>
+* use django-qsstats-magic that work with Python 3 in tests <Petr Dlouhý>
+* test actual chart generation -> increase test coverage <Petr Dlouhý>
+* fix: preserve criteria settings of other chart stats <Petr Dlouhý>
+* fix duplicate id of dynamic criteria form <Petr Dlouhý>
+* reduce size of generated code by reusing load_charts code in function <Petr Dlouhý>
+* fix duplication of % sign in template svg tag <Petr Dlouhý>
+* catch also TypeError in registration field <Petr Dlouhý>
+* rename "Graph key" to "Graph identifier" to be more clear <Petr Dlouhý>
+* use save_as=True in admin to allow easier copying of charts <Petr Dlouhý>
+* allow to override day intervalse for graphs <Petr Dlouhý>
+* reorganize testing to run coverage <Petr Dlouhý>
+* remove old import code <Petr Dlouhý>
+* checks of DashboardStats field values, report field errors by Django message framework <Petr Dlouhý>
+
+
+
 0.7.1 (2016-08-17)
 ------------------
 
