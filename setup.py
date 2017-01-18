@@ -4,6 +4,19 @@ import re
 import admin_tools_stats
 
 
+def runtests():
+    import os
+    import sys
+
+    import django
+    from django.core.management import call_command
+
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'demoproject.test_settings'
+    django.setup()
+    call_command('test', 'admin_tools_stats')
+    sys.exit()
+
+
 def read(*parts):
     return open(os.path.join(os.path.dirname(__file__), *parts)).read()
 
@@ -63,4 +76,5 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
+    test_suite='setup.runtests',
 )

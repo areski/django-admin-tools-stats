@@ -2,7 +2,7 @@ from django.conf.urls import url, include
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
-from demoproject.views import home
+from .views import home
 admin.autodiscover()
 
 urlpatterns = [
