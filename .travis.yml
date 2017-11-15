@@ -14,6 +14,8 @@ env:
     - DJANGO_VERSION="Django<1.9"
     - DJANGO_VERSION="Django<1.10"
     - DJANGO_VERSION="Django<1.11"
+    - DJANGO_VERSION="Django<2.0"
+    - DJANGO_VERSION="Django<2.1"
     - DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
 
 cache:
@@ -21,20 +23,24 @@ cache:
     - $HOME/.cache/pip
 
 install:
-  - pip install -q "$DJANGO_VERSION"
-  - pip install -e git+https://github.com/infoscout/django-cache-utils.git#egg=django-cache-utils  # version compatible with newer Django versions, remove this line after PyPI package is released
-  - pip install -e git+https://github.com/PetrDlouhy/django-qsstats-magic.git#egg=django-qsstats-magic  # version compatible with Python 3, remove this line after PyPI package is released
   - pip install coverage coveralls django-coverage-plugin
   - pip install -r requirements.txt
+  - pip install -q "$DJANGO_VERSION"
 
 matrix:
   exclude:
     - python: "3.5"
       env: DJANGO_VERSION="Django<1.8"
     - python: "3.3"
+      env: DJANGO_VERSION="Django<1.8"
+    - python: "3.3"
       env: DJANGO_VERSION="Django<1.10"
     - python: "3.3"
       env: DJANGO_VERSION="Django<1.11"
+    - python: "3.3"
+      env: DJANGO_VERSION="Django<2.0"
+    - python: "3.3"
+      env: DJANGO_VERSION="Django<2.1"
     - python: "3.3"
       env: DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
   allow_failures:
