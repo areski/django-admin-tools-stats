@@ -103,7 +103,6 @@ TEMPLATES = [{
             ('django.template.loaders.cached.Loader', [
                 'django.template.loaders.filesystem.Loader',
                 'django.template.loaders.app_directories.Loader',
-                'django.template.loaders.eggs.Loader',
                 'admin_tools.template_loaders.Loader',
             ]),
         ],
@@ -124,7 +123,6 @@ TEMPLATES = [{
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.eggs.Loader',
     'admin_tools.template_loaders.Loader',
 )
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -145,10 +143,10 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware'
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
+MIDDLEWARE = MIDDLEWARE_CLASSES
 
 
 ROOT_URLCONF = 'demoproject.urls'
