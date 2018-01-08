@@ -28,7 +28,7 @@ Django-admin-tools-stats is a Django admin module that allow you to create easil
 
 It will query your models and provide reporting and statistics graphs, simple to read and display on your Dashboard.
 
-.. image:: https://github.com/Star2Billing/django-admin-tools-stats/raw/master/docs/source/_static/admin_dashboard.png
+.. image:: https://github.com/areski/django-admin-tools-stats/raw/master/docs/source/_static/admin_dashboard.png
 
 
 Installation
@@ -142,9 +142,9 @@ If you've found a bug, add a feature or improve django-admin-tools-stats and
 think it is useful then please consider contributing.
 Patches, pull requests or just suggestions are always welcome!
 
-Source code: http://github.com/Star2Billing/django-admin-tools-stats
+Source code: http://github.com/areski/django-admin-tools-stats
 
-Bug tracker: https://github.com/Star2Billing/django-admin-tools-stats/issues
+Bug tracker: https://github.com/areski/django-admin-tools-stats/issues
 
 
 Documentation
