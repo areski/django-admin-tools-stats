@@ -9,7 +9,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
-from django.db.models.aggregates import Sum, Avg, Max, Min, StdDev, Variance
+from django.db.models.aggregates import Count, Sum, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
 from django.utils.translation import ugettext_lazy as _
 from django.apps import apps
@@ -110,6 +110,7 @@ class DashboardChart(modules.DashboardModule):
             aggregate = None
             if conf_data.type_operation_field_name and conf_data.operation_field_name:
                 operation = {
+                    'Count': Count(conf_data.operation_field_name),
                     'Sum': Sum(conf_data.operation_field_name),
                     'Avg': Avg(conf_data.operation_field_name),
                     'StdDev': StdDev(conf_data.operation_field_name),
