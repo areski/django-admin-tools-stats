@@ -2,6 +2,14 @@ Changelog
 =========
 
 
+0.9.0 (2018-01-08)
+------------------
+
+* Count added <Petr Dlouhý>
+* fix Travist configuration and Django versions in it <Petr Dlouhý>
+* other fixes for Django 2.0 <Petr Dlouhý>
+* use djcacheutils for Python 3 compatibility <Petr Dlouhý>
+
 0.8.0 (2017-01-18)
 ------------------
 
