@@ -51,7 +51,7 @@ setup(
     long_description=read('README.rst'),
     author='Belaid Arezqui',
     author_email='areski@gmail.com',
-    url='http://github.com/Star2Billing/django-admin-tools-stats',
+    url='https://github.com/areski/django-admin-tools-stats',
     include_package_data=True,
     zip_safe=False,
     package_dir={'admin_tools_stats': 'admin_tools_stats'},
