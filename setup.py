@@ -76,5 +76,9 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
+    extras_require={
+        ':python_version < "3.0"': ['Django>=1.8,<2.0'],
+        ':python_version >= "3.0"': ['Django>=1.8'],
+    },
     test_suite='setup.runtests',
 )
