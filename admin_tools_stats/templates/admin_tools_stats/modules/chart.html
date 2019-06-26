@@ -20,24 +20,34 @@
         var init_value = true;
         var html_string = '<svg style="width:{{module.chart_width}};height:{{module.chart_height}}px;"></svg>';
 
-        function loadChart_{{ module.interval }}_{{ module.graph_key}}(){
-            {% load_chart module.chart_type module.values module.chart_container module.extra %}
+        function defer(method) {
+            if (window.jQuery && window.nv) {
+                method();
+            } else {
+                setTimeout(function() { defer(method) }, 50);
+            }
         }
 
-        $('body').on('click', 'a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]', 'click', function(event)
-        {
-            var href_val = event.target.hash;
-            if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
-            {
-                $('#{{module.chart_container}}').empty().append(html_string);
-                loadChart_{{ module.interval }}_{{ module.graph_key}}();
+        defer( function(){
+            function loadChart_{{ module.interval }}_{{ module.graph_key}}(){
+                {% load_chart module.chart_type module.values module.chart_container module.extra %}
             }
-            init_value = false;
+
+            $('body').on('click', 'a.ui-tabs-anchor[href$={{ module.interval }}_{{ module.graph_key}}]', 'click', function(event)
+            {
+                var href_val = event.target.hash;
+                if(href_val.indexOf('{{ module.interval }}_{{ module.graph_key}}' ) != -1)
+                {
+                    $('#{{module.chart_container}}').empty().append(html_string);
+                    loadChart_{{ module.interval }}_{{ module.graph_key}}();
+                }
+                init_value = false;
+            });
+            // init
+            if(init_value){
+                loadChart_{{ module.interval }}_{{ module.graph_key}}();
+            };
         });
-        // init
-        if(init_value){
-            loadChart_{{ module.interval }}_{{ module.graph_key}}();
-        }
     </script>
 
     {% if module.form_field %}
