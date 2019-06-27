@@ -142,6 +142,7 @@ class DashboardChart(modules.DashboardModule):
             begin = today - timedelta(days=days - 1)
             return stats.time_series(begin, today + timedelta(days=1), interval)
 
+    @cached(60 * 5)
     def prepare_template_data(self, data, graph_key, select_box_value, other_select_box_values):
         """ Prepares data for template (passed as module attributes) """
         self.extra = {
@@ -175,6 +176,7 @@ class DashboardChart(modules.DashboardModule):
         self.form_field = get_dynamic_criteria(graph_key, select_box_value, other_select_box_values)
 
 
+@cached(60 * 5)
 def get_title(graph_key):
     """Returns graph title"""
     try:
@@ -184,6 +186,7 @@ def get_title(graph_key):
         return ''
 
 
+@cached(60 * 5)
 def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
     """To get dynamic criteria & return into select box to display on dashboard"""
     try:
