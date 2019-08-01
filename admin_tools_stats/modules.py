@@ -110,6 +110,7 @@ class DashboardChart(modules.DashboardModule):
             aggregate = None
             if conf_data.type_operation_field_name and conf_data.operation_field_name:
                 operation = {
+                    'DistinctCount': Count(conf_data.operation_field_name, distinct=True),
                     'Count': Count(conf_data.operation_field_name),
                     'Sum': Sum(conf_data.operation_field_name),
                     'Avg': Avg(conf_data.operation_field_name),
