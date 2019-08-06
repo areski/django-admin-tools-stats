@@ -121,7 +121,7 @@ class DashboardChart(modules.DashboardModule):
                 }
                 aggregate = operation[conf_data.type_operation_field_name]
 
-            stats = QuerySetStats(model_name.objects.filter(**kwargs),
+            stats = QuerySetStats(model_name.objects.filter(**kwargs).distinct(),
                                   conf_data.date_field_name, aggregate)
             # stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
             today = now()
