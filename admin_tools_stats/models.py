@@ -10,11 +10,7 @@
 #
 
 from django.db import models
-from django.core.exceptions import ValidationError
-try:
-    from django.core.exceptions import FieldDoesNotExist
-except ImportError:  # Django == 1.7
-    from django.contrib.contenttypes.admin import FieldDoesNotExist
+from django.core.exceptions import FieldError, ValidationError
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 from django.apps import apps
@@ -109,10 +105,10 @@ class DashboardStats(models.Model):
     model_name = models.CharField(max_length=90, verbose_name=_('model name'),
                                   help_text=_("ex. User"))
     date_field_name = models.CharField(max_length=90, verbose_name=_("date field name"),
-                                       help_text=_("ex. date_joined"))
+                                       help_text=_("ex. date_joined, invitation__invitation_date"))
     operation_field_name = models.CharField(max_length=90, verbose_name=_("Operate field name"),
                                       null=True, blank=True,
-                                      help_text=_("The field you want to aggregate, ex. amount"))
+                                      help_text=_("The field you want to aggregate, ex. amount, salaries__total_income"))
     type_operation_field_name = models.CharField(max_length=90, verbose_name=_("Choose Type operation"),
                                       null=True, blank=True, choices=operation,
                                       help_text=_("choose the type operation what you want to aggregate, ex. Sum"))
@@ -142,14 +138,14 @@ class DashboardStats(models.Model):
 
         try:
             if model and self.operation_field_name:
-                operation_field = model._meta.get_field(self.operation_field_name)
-        except FieldDoesNotExist as e:
+                model.objects.all().query.resolve_ref(self.operation_field_name)
+        except FieldError as e:
             errors['operation_field_name'] = str(e)
 
         try:
             if model and self.date_field_name:
-                date_field = model._meta.get_field(self.date_field_name)
-        except FieldDoesNotExist as e:
+                model.objects.all().query.resolve_ref(self.date_field_name)
+        except FieldError as e:
             errors['date_field_name'] = str(e)
 
         raise ValidationError(errors)
