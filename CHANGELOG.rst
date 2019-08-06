@@ -1,12 +1,18 @@
 Changelog
 =========
 
+1.0.0 (2019-08-06)
+------------------
+
+* DistinctCount qualifier added <Petr Dlouhý>
+* date/operate fields can now contain related reference <Petr Dlouhý>
+* fix loading charts on page load <Petr Dlouhý>
 
 0.9.0 (2018-01-08)
 ------------------
 
 * Count added <Petr Dlouhý>
-* fix Travist configuration and Django versions in it <Petr Dlouhý>
+* fix Travis configuration and Django versions in it <Petr Dlouhý>
 * other fixes for Django 2.0 <Petr Dlouhý>
 * use djcacheutils for Python 3 compatibility <Petr Dlouhý>
 
