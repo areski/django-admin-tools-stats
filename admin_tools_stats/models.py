@@ -21,6 +21,7 @@ from django.apps import apps
 import jsonfield.fields
 
 operation = (
+    ('DistinctCount', 'DistinctCount'),
     ('Count', 'Count'),
     ('Sum', 'Sum'),
     ('Avg', 'Avg'),
