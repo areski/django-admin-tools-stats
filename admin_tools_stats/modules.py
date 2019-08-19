@@ -198,7 +198,8 @@ def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
                 temp = '<select name="select_box_' + graph_key + '" onChange="$(this).closest(\'form\').submit();">'
-                dy_map = ast.literal_eval(dy_map)
+                if not isinstance(dy_map, dict):
+                    dy_map = ast.literal_eval(dy_map)
                 for key in dy_map:
                     value = dy_map[key]
                     if key == select_box_value:
