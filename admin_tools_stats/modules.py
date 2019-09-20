@@ -79,23 +79,26 @@ class DashboardChart(modules.DashboardModule):
         if self.days is None:
             self.days = self.get_day_intervals()
 
-        self.data = self.get_registrations(self.interval, self.days,
-                                           self.graph_key, self.select_box_value)
-        self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
-
     def init_with_context(self, context):
         super(DashboardChart, self).init_with_context(context)
         request = context['request']
+
+        self.data = self.get_registrations(request.user, self.interval, self.days,
+                                           self.graph_key, self.select_box_value)
+        self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
+
         if hasattr(self, 'error_message'):
             messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.title, self.error_message))
 
     @cached(60 * 5)
-    def get_registrations(self, interval, days, graph_key, select_box_value):
+    def get_registrations(self, user, interval, days, graph_key, select_box_value):
         """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
             model_name = apps.get_model(conf_data.model_app_name, conf_data.model_name)
             kwargs = {}
+            if not user.is_superuser and conf_data.user_field_name:
+                kwargs[conf_data.user_field_name] = user
             for i in conf_data.criteria.all():
                 # fixed mapping value passed info kwargs
                 if i.criteria_fix_mapping:
