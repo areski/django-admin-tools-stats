@@ -106,6 +106,9 @@ class DashboardStats(models.Model):
                                   help_text=_("ex. User"))
     date_field_name = models.CharField(max_length=90, verbose_name=_("date field name"),
                                        help_text=_("ex. date_joined, invitation__invitation_date"))
+    user_field_name = models.CharField(max_length=90, verbose_name=_("user field name"),
+                                       null=True, blank=True,
+                                       help_text=_("ex. owner, invitation__owner"))
     operation_field_name = models.CharField(max_length=90, verbose_name=_("Operate field name"),
                                       null=True, blank=True,
                                       help_text=_("The field you want to aggregate, ex. amount, salaries__total_income"))
