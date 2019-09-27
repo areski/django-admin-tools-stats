@@ -1,0 +1,4 @@
+{% load nvd3_tags %}
+function loadChart_{{ module.interval }}_{{ module.graph_key}}{% if module.select_box_value %}_{{ module.select_box_value }}{% endif %}(){
+   {% load_chart module.chart_type module.values module.chart_container module.extra %}
+}
