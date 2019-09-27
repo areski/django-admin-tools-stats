@@ -38,7 +38,13 @@ Configuration
     INSTALLED_APPS = (
         'admin_tools_stats',
         'django_nvd3',
+        ...
+        'admin_tools.dashboard',  # This should be after admin_tools_stats
     )
+
+   If you have overriden `DashboardChart` module, you will have to set it's path in your settings::
+
+   ADMIN_TOOLS_STATS_CHART_APP = 'admin_dashboard.dashboard_charts.YearDashboardChart'
 
 - Add the following code to your file dashboard.py::
 
@@ -64,6 +70,13 @@ Configuration
                 kwargs[key] = context['request'].POST[key]
 
         self.children.append(DashboardCharts(**kwargs))
+
+- Register stats views in your `urls.py`::
+
+  from django.urls import path
+  urlpatterns = [
+      path('admin_tools_stats/', include('admin_tools_stats.urls')),
+  ]
 
 - To create the tables needed by Django-admin-tools-stats, run the following command::
 

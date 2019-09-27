@@ -83,6 +83,16 @@ class DashboardChart(modules.DashboardModule):
         super(DashboardChart, self).init_with_context(context)
         request = context['request']
 
+        self.data = []
+        self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
+
+        if hasattr(self, 'error_message'):
+            messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.title, self.error_message))
+
+    def init_with_context_ajax(self, context):
+        super(DashboardChart, self).init_with_context(context)
+        request = context['request']
+
         self.data = self.get_registrations(request.user, self.interval, self.days,
                                            self.graph_key, self.select_box_value)
         self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
@@ -160,7 +170,7 @@ class DashboardChart(modules.DashboardModule):
 
         self.chart_container = self.interval + '_' + self.graph_key
         # add string into href attr
-        self.id = self.chart_container
+        self.id = self.interval + '__' + self.graph_key
 
         xdata = []
         ydata = []
@@ -199,7 +209,7 @@ def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
         for i in conf_data:
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
-                temp = '<select name="select_box_' + graph_key + '" onChange="$(this).closest(\'form\').submit();">'
+                temp = '<select class="dynamic_criteria_select_box" name="select_box_' + graph_key + '" >'
                 for key in dict(dy_map):
                     value = dy_map[key]
                     if key == select_box_value:
