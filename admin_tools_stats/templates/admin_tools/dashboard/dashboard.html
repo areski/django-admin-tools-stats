@@ -1,44 +1,6 @@
 {% extends "admin_tools/dashboard/dashboard.html" %}
 
 {% block dashboard_scripts %}
-<script type="text/javascript">
-   var html_string = '<svg style="width:{{module.chart_width}};height:{{module.chart_height}}px;"></svg>';
-   function loadChart(interval, graph_key, select_box_value){
-      var function_name = "loadChart_" + interval + "_" + graph_key;
-      if(select_box_value !== undefined && select_box_value != "") function_name += "_" + select_box_value;
-      if(function_name in window){
-         window[function_name]();
-      } else {
-         $("#" + interval + "__" + graph_key).empty().append(html_string);
-         url = "{% url 'chart-data' %}";
-         url += interval + "/" + graph_key + "/";
-         if(select_box_value !== undefined && select_box_value != "") url += select_box_value + "/";
-         $.getScript(url, function(){
-           window[function_name]();
-         });
-      };
-   }
-   function defer(method) {
-       if (window.jQuery && window.nv) {
-           method();
-       } else {
-           setTimeout(function() { defer(method) }, 50);
-       }
-   }
-   defer( function(){
-      function loadAnchor(){
-         var href = $(this).attr('href') || $(this).closest('.dashboard-module').attr('id');
-         var select_box_value = $(this).children("option:selected").attr('value');
-         href = href.replace('#', '').replace('module_', '').split("__");
-         var interval = href[0], graph_key = href[1];
-         loadChart(interval, graph_key, select_box_value);
-      }
-
-      $('a.ui-tabs-anchor').click(loadAnchor);
-      $('.dynamic_criteria_select_box').change(loadAnchor);
-      //TODO: init only visible modules - it is a bit tricky, because they are visible on page load
-      $('.dashboard-module:visible').find('li.ui-tabs-active').children('a.ui-tabs-anchor').each(loadAnchor)
-   });
-</script>
+<script src="{% url 'admin-charts' %}" type="text/javascript"></script>
 {{ block.super }}
 {% endblock %}
