@@ -9,9 +9,10 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+import warnings
+
 from django.db.models.aggregates import Count, Sum, Avg, Max, Min, StdDev, Variance
 from django.contrib.auth import get_user_model
-from django.utils.translation import ugettext_lazy as _
 from django.apps import apps
 try:  # Python 3
     from django.utils.encoding import force_text
@@ -36,13 +37,12 @@ class DashboardChart(modules.DashboardModule):
 
     Default values are best suited for 2-column dashboard layouts.
     """
-    title = _('dashboard stats').title()
     template = 'admin_tools_stats/modules/chart.html'
     days = None
     interval = 'days'
     tooltip_date_format = "%d %b %Y"
     interval_dateformat_map = {
-        'months': ("%b", "%b"),
+        'months': ("%b %Y", "%b"),
         'days': ("%d %b %Y", "%a"),
         'hours': ("%d %b %Y %H:%S", "%H"),
     }
@@ -60,24 +60,21 @@ class DashboardChart(modules.DashboardModule):
     def is_empty(self):
         return False
 
-    def get_day_intervals(self):
-        return {'hours': 24, 'days': 7, 'weeks': 7 * 1, 'months': 30 * 2}[self.interval]
-
     def __init__(self, *args, **kwargs):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.select_box_value = ''
         self.other_select_box_values = {}
         self.require_chart_jscss = kwargs['require_chart_jscss']
+        self.time_since = kwargs.get('time_since', None)
+        self.time_until = kwargs.get('time_until', None)
         self.graph_key = kwargs['graph_key']
+        self.title = get_title(self.graph_key)
         for key in kwargs:
             if key.startswith('select_box_'):
                 if key == 'select_box_' + self.graph_key:
                     self.select_box_value = kwargs[key]
                 else:
                     self.other_select_box_values[key] = kwargs[key]
-
-        if self.days is None:
-            self.days = self.get_day_intervals()
 
     def init_with_context(self, context):
         super(DashboardChart, self).init_with_context(context)
@@ -93,15 +90,15 @@ class DashboardChart(modules.DashboardModule):
         super(DashboardChart, self).init_with_context(context)
         request = context['request']
 
-        self.data = self.get_registrations(request.user, self.interval, self.days,
-                                           self.graph_key, self.select_box_value)
+        self.data = self.get_registrations(request.user, self.interval,
+                                           self.graph_key, request.GET)
         self.prepare_template_data(self.data, self.graph_key, self.select_box_value, self.other_select_box_values)
 
         if hasattr(self, 'error_message'):
             messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.title, self.error_message))
 
     @cached(60 * 5)
-    def get_registrations(self, user, interval, days, graph_key, select_box_value):
+    def get_registrations(self, user, interval, graph_key, get_params):
         """ Returns an array with new users count per interval."""
         try:
             conf_data = DashboardStats.objects.get(graph_key=graph_key)
@@ -117,8 +114,10 @@ class DashboardChart(modules.DashboardModule):
                         kwargs[key] = i.criteria_fix_mapping[key]
 
                 # dynamic mapping value passed info kwargs
-                if i.dynamic_criteria_field_name and select_box_value:
-                    kwargs[i.dynamic_criteria_field_name] = select_box_value
+                dynamic_key = "select_box_dynamic_%i" % i.id
+                if dynamic_key in get_params:
+                    if get_params[dynamic_key] != '':
+                        kwargs[i.dynamic_criteria_field_name] = get_params[dynamic_key]
 
             aggregate = None
             if conf_data.type_operation_field_name and conf_data.operation_field_name:
@@ -137,24 +136,13 @@ class DashboardChart(modules.DashboardModule):
             stats = QuerySetStats(model_name.objects.filter(**kwargs).distinct(),
                                   conf_data.date_field_name, aggregate)
             # stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
-            today = now()
-            if days == 24:
-                begin = today - timedelta(hours=days - 1)
-                return stats.time_series(begin, today + timedelta(hours=1), interval)
-
-            begin = today - timedelta(days=days - 1)
-            return stats.time_series(begin, today + timedelta(days=1), interval)
+            return stats.time_series(self.time_since, self.time_until, interval)
         except (LookupError, FieldError, TypeError) as e:
             self.error_message = str(e)
             User = get_user_model()
             stats = QuerySetStats(
                 User.objects.filter(is_active=True), 'date_joined')
-            today = now()
-            if days == 24:
-                begin = today - timedelta(hours=days - 1)
-                return stats.time_series(begin, today + timedelta(hours=1), interval)
-            begin = today - timedelta(days=days - 1)
-            return stats.time_series(begin, today + timedelta(days=1), interval)
+            return stats.time_series(self.time_since, self.time_until, interval)
 
     @cached(60 * 5)
     def prepare_template_data(self, data, graph_key, select_box_value, other_select_box_values):
@@ -168,9 +156,9 @@ class DashboardChart(modules.DashboardModule):
         if self.interval in self.interval_dateformat_map:
             self.tooltip_date_format, self.extra['x_axis_format'] = self.interval_dateformat_map[self.interval]
 
-        self.chart_container = self.interval + '_' + self.graph_key
+        self.chart_container = "chart_container_" + self.graph_key
         # add string into href attr
-        self.id = self.interval + '__' + self.graph_key
+        self.id = self.interval + '_' + self.graph_key
 
         xdata = []
         ydata = []
@@ -209,7 +197,7 @@ def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
         for i in conf_data:
             dy_map = i.criteria_dynamic_mapping
             if dy_map:
-                temp = '<select class="dynamic_criteria_select_box" name="select_box_' + graph_key + '" >'
+                temp += i.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
                 for key in dict(dy_map):
                     value = dy_map[key]
                     if key == select_box_value:
@@ -219,6 +207,15 @@ def get_dynamic_criteria(graph_key, select_box_value, other_select_box_values):
                 temp += '</select>'
 
         temp += "\n".join(['<input type="hidden" name="%s" value="%s">' % (key, other_select_box_values[key]) for key in other_select_box_values ])
+
+        temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % graph_key
+        temp += 'Aggregation: <select class="chart-input select_box_interval" name="select_box_interval" >'
+        for interval in ('hours', 'days', 'weeks', 'months', 'years'):
+            selected_str = 'selected=selected' if interval == 'days' else ''
+            temp += '<option class="chart-input" value="' + interval + '" ' + selected_str + '>' + interval + '</option>'
+        temp += '</select>'
+        temp += 'Date since: <input class="chart-input select_box_date_since" type="date" name="time_since" value="%s">' % (now() - timedelta(days=21)).strftime('%Y-%m-%d')
+        temp += 'Date until: <input class="chart-input select_box_date_since" type="date" name="time_until" value="%s">' % now().strftime('%Y-%m-%d')
 
         return mark_safe(force_text(temp))
     except LookupError as e:
@@ -235,21 +232,12 @@ def get_active_graph():
         return []
 
 
-class DashboardCharts(modules.Group):
-    """Group module with 3 default dashboard charts"""
-    title = _('new users')
-
-    def get_registration_charts(self, **kwargs):
-        """ Returns 3 basic chart modules (today, last 7 days & last 3 months) """
-        return [
-            DashboardChart(_('today').title(), interval='hours', **kwargs),
-            DashboardChart(_('last week').title(), interval='days', **kwargs),
-            DashboardChart(_('last 2 weeks'), interval='weeks', **kwargs),
-            DashboardChart(_('last 3 months').title(), interval='months', **kwargs),
-        ]
+class DashboardCharts(DashboardChart):
+    """Deprecated class left for compatibility."""
 
     def __init__(self, *args, **kwargs):
-        key_value = kwargs.get('graph_key')
-        self.title = get_title(key_value)
-        kwargs.setdefault('children', self.get_registration_charts(**kwargs))
+        warnings.warn(
+            "DashboardCharts are not required anymore. Use just DashboardChart instead",
+             PendingDeprecationWarning
+        )
         super(DashboardCharts, self).__init__(*args, **kwargs)
