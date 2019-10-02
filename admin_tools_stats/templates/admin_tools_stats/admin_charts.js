@@ -31,11 +31,13 @@ function defer(method) {
 }
 
 defer( function(){
-   function loadAnchor(){
-      var data = $(this).closest('form.stateform');
-      loadChart(data);
-   }
+   $( document ).ready(function() {
+      function loadAnchor(){
+         var data = $(this).closest('form.stateform');
+         loadChart(data);
+      }
 
-   $('.chart-input').closest('form.stateform').change(loadAnchor);
-   $('form.stateform').each(loadAnchor)
+      $('.chart-input').closest('form.stateform').change(loadAnchor);
+      $('form.stateform').each(loadAnchor);
+   });
 });
