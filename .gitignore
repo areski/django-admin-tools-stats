@@ -45,3 +45,5 @@ dist/
 *.egg-info/*
 *sublime*
 *~
+*.swp
+*.swo
