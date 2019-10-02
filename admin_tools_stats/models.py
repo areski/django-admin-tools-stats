@@ -8,13 +8,26 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+from datetime import timedelta
 
-from django.db import models
-from django.core.exceptions import FieldError, ValidationError
-from django.utils.encoding import python_2_unicode_compatible
-from django.utils.translation import ugettext_lazy as _
+try:  # Python 3
+    from django.utils.encoding import force_text
+except ImportError:  # Python 2
+    from django.utils.encoding import force_unicode as force_text
 from django.apps import apps
+from django.contrib import messages
+from django.core.exceptions import FieldError, ValidationError
+from django.db import models
+from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
+from django.utils.encoding import python_2_unicode_compatible
+from django.utils.safestring import mark_safe
+from django.utils.timezone import now
+from django.utils.translation import ugettext_lazy as _
+
 import jsonfield.fields
+
+from qsstats import QuerySetStats
+
 
 operation = (
     ('DistinctCount', 'DistinctCount'),
@@ -154,7 +167,70 @@ class DashboardStats(models.Model):
         raise ValidationError(errors)
         return super(DashboardStats, self).clean(*args, **kwargs)
 
+    def get_time_series(self, request, time_since, time_until, interval):
+        """ Get the stats time series """
+        try:
+            model_name = apps.get_model(self.model_app_name, self.model_name)
+            kwargs = {}
+            if not request.user.is_superuser and self.user_field_name:
+                kwargs[self.user_field_name] = request.user
+            for i in self.criteria.all():
+                # fixed mapping value passed info kwargs
+                if i.criteria_fix_mapping:
+                    for key in i.criteria_fix_mapping:
+                        # value => i.criteria_fix_mapping[key]
+                        kwargs[key] = i.criteria_fix_mapping[key]
 
+                # dynamic mapping value passed info kwargs
+                dynamic_key = "select_box_dynamic_%i" % i.id
+                if dynamic_key in request.GET:
+                    if request.GET[dynamic_key] != '':
+                        kwargs[i.dynamic_criteria_field_name] = request.GET[dynamic_key]
+
+            aggregate = None
+            if self.type_operation_field_name and self.operation_field_name:
+                operation = {
+                    'DistinctCount': Count(self.operation_field_name, distinct=True),
+                    'Count': Count(self.operation_field_name),
+                    'Sum': Sum(self.operation_field_name),
+                    'Avg': Avg(self.operation_field_name),
+                    'StdDev': StdDev(self.operation_field_name),
+                    'Max': Max(self.operation_field_name),
+                    'Min': Min(self.operation_field_name),
+                    'Variance': Variance(self.operation_field_name),
+                }
+                aggregate = operation[self.type_operation_field_name]
+
+            stats = QuerySetStats(model_name.objects.filter(**kwargs).distinct(),
+                                  self.date_field_name, aggregate)
+            return stats.time_series(time_since, time_until, interval)
+        except (LookupError, FieldError, TypeError) as e:
+            self.error_message = str(e)
+            messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.graph_title, str(e)))
+
+    def get_control_form(self):
+        """ Get content of the ajax control form """
+        temp = ''
+        for i in self.criteria.all():
+            dy_map = i.criteria_dynamic_mapping
+            if dy_map:
+                temp += i.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
+                for key in dict(dy_map):
+                    temp += '<option value="' + key + '">' + dy_map[key] + '</option>'
+                temp += '</select>'
+
+        temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
+        temp += 'Aggregation: <select class="chart-input select_box_interval" name="select_box_interval" >'
+        for interval in ('hours', 'days', 'weeks', 'months', 'years'):
+            selected_str = 'selected=selected' if interval == 'days' else ''
+            temp += '<option class="chart-input" value="' + interval + '" ' + selected_str + '>' + interval + '</option>'
+        temp += '</select>'
+        temp += 'Date since: <input class="chart-input select_box_date_since" type="date" name="time_since" value="%s">' % \
+            (now() - timedelta(days=21)).strftime('%Y-%m-%d')
+        temp += 'Date until: <input class="chart-input select_box_date_since" type="date" name="time_until" value="%s">' % \
+            now().strftime('%Y-%m-%d')
+
+        return mark_safe(force_text(temp))
 
     def __str__(self):
             return u"%s" % self.graph_key
