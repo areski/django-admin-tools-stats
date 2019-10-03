@@ -17,6 +17,8 @@
 {% endblock %}
 
 {% block footer %}
-   {% chart_containers %}
+   {% if request.resolver_match.view_name == 'admin:index' %}
+      {% chart_containers %}
+   {% endif %}
    {{ block.super }}
 {% endblock %}
