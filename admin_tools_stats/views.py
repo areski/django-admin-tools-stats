@@ -1,6 +1,8 @@
 import time
 from datetime import datetime
 
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
 import pytz
@@ -22,6 +24,7 @@ interval_dateformat_map = {
 }
 
 
+@method_decorator(user_passes_test(lambda u: u.is_superuser), name='dispatch')
 class ChartDataView(TemplateView):
     template_name = 'admin_tools_stats/chart_data.html'
 
