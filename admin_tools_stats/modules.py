@@ -39,6 +39,8 @@ class DashboardChart(modules.DashboardModule):
     def __init__(self, *args, **kwargs):
         super(DashboardChart, self).__init__(*args, **kwargs)
         self.require_chart_jscss = kwargs['require_chart_jscss']
+        global stat_dict  # We use this to came around current implementations of Dashboards which are query inefective
+        self.dashboard_stats = stat_dict[self.graph_key]
         self.title = self.get_title(self.graph_key)
 
     def init_with_context(self, context):
@@ -60,7 +62,7 @@ class DashboardChart(modules.DashboardModule):
     def get_title(self, graph_key):
         """Returns graph title"""
         try:
-            return DashboardStats.objects.get(graph_key=graph_key).graph_title
+            return self.dashboard_stats.graph_title
         except LookupError as e:
             self.error_message = str(e)
             return ''
@@ -68,8 +70,7 @@ class DashboardChart(modules.DashboardModule):
     def get_control_form(self, graph_key):
         """To get dynamic criteria & return into select box to display on dashboard"""
         try:
-            dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
-            return dashboard_stats.get_control_form()
+            return self.dashboard_stats.get_control_form()
         except LookupError as e:
             self.error_message = str(e)
             return ''
@@ -77,7 +78,13 @@ class DashboardChart(modules.DashboardModule):
 
 def get_active_graph():
     """Returns active graphs"""
-    return DashboardStats.objects.filter(is_visible=1)
+    global stat_dict
+    stat_dict = {}
+    stats = DashboardStats.objects.filter(is_visible=1).prefetch_related('criteria')
+    for stat in stats:
+        stat_dict[stat.graph_key] = stat
+    return stats
+
 
 
 class DashboardCharts(DashboardChart):
