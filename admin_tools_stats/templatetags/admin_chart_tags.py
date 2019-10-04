@@ -11,6 +11,6 @@ register = template.Library()
 
 @register.simple_tag(takes_context=True)
 def chart_containers(context):
-    context['charts'] = get_active_graph()
     if 'admin_tools.dashboard' not in settings.INSTALLED_APPS:
+        context['charts'] = get_active_graph()
         return render_to_string("admin_tools_stats/chart_containers.html", context.flatten())
