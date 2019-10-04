@@ -45,13 +45,13 @@ def parse_dependency_links(file_name):
 
 
 setup(
-    name='django-admin-tools-stats',
+    name='django-admin-charts',
     version=admin_tools_stats.__version__,
-    description='django-admin-tools-stats - Django-admin module to create charts and stats in your dashboard',
+    description='django-admin-charts - Easily configurable charts statistics for `django-admin` and `django-admin-tools`',
     long_description=read('README.rst'),
-    author='Belaid Arezqui',
-    author_email='areski@gmail.com',
-    url='https://github.com/areski/django-admin-tools-stats',
+    author='Petr Dlouhý',
+    author_email='petr.dlouhy@email.cz',
+    url='https://github.com/PetrDlouhy/django-admin-charts',
     include_package_data=True,
     zip_safe=False,
     package_dir={'admin_tools_stats': 'admin_tools_stats'},
