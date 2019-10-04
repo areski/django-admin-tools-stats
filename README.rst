@@ -1,63 +1,92 @@
-Django-admin-tools-stats
+Django admin charts
 ------------------------
 
-:Description: Django-admin module to create charts and stats in your dashboard
-:Documentation: http://django-admin-tools-stats.readthedocs.org/en/latest/
+:Description: Easily configurable charts statistics for `django-admin` and `django-admin-tools`.
+:Documentation: http://django-admin-charts.readthedocs.org/en/latest/
 
-.. image:: https://travis-ci.org/areski/django-admin-tools-stats.svg?branch=master
-    :target: https://travis-ci.org/areski/django-admin-tools-stats
+.. image:: https://travis-ci.org/PetrDlouhy/django-admin-charts.svg?branch=master
+    :target: https://travis-ci.org/PetrDlouhy/django-admin-charts
 
-.. image:: https://img.shields.io/pypi/v/django-admin-tools-stats.svg
-  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+.. image:: https://img.shields.io/pypi/v/django-admin-charts.svg
+  :target: https://pypi.python.org/pypi/django-admin-charts/
   :alt: Latest Version
 
-.. image:: https://img.shields.io/pypi/dm/django-admin-tools-stats.svg
-  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+.. image:: https://img.shields.io/pypi/dm/django-admin-charts.svg
+  :target: https://pypi.python.org/pypi/django-admin-charts/
   :alt: Downloads
 
-.. image:: https://img.shields.io/pypi/pyversions/django-admin-tools-stats.svg
-  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+.. image:: https://img.shields.io/pypi/pyversions/django-admin-charts.svg
+  :target: https://pypi.python.org/pypi/django-admin-charts/
   :alt: Supported Python versions
 
-.. image:: https://img.shields.io/pypi/l/django-admin-tools-stats.svg
-  :target: https://pypi.python.org/pypi/django-admin-tools-stats/
+.. image:: https://img.shields.io/pypi/l/django-admin-charts.svg
+  :target: https://pypi.python.org/pypi/django-admin-charts/
   :alt: License
 
 
-Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard based on specific models and criterias.
+Create beautiful configurable charts from your models and display them on the `django-admin` index page or on `django-admin-tools` dashboard.
+The charts are based on models and criterias defined through admin interface and some chart parameters are configurable in live view.
 
-It will query your models and provide reporting and statistics graphs, simple to read and display on your Dashboard.
+This is application is fork of _`django-admin-tools-stats` which has been reworked to display all charts through Ajax and made work with plain `django-admin`. The `django-admin-tools` are supported but not needed.
 
-.. image:: https://github.com/areski/django-admin-tools-stats/raw/master/docs/source/_static/admin_dashboard.png
+.. _`django-admin-tools-stats` https://github.com/areski/django-admin-tools-stats/
+
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/master/docs/source/_static/admin_dashboard.png
 
 
 Installation
 ------------
 
-Install, upgrade and uninstall django-admin-tools-stats with these commands::
+Install, upgrade and uninstall django-admin-charts with these commands::
 
-    $ pip install django-admin-tools-stats
-
-
-Dependencies
-------------
-
-django-admin-tools-stats is a django based application, the major requirements are :
-
-    - python-dateutil
-    - django-jsonfield
-    - django-qsstats-magic
-    - django-cache-utils
-    - django-admin-tools
-    - django-nvd3
-    - django-bower
+    $ pip install django-admin-charts
 
 
-Configure
+Basic setup with `django-admin`
+===========
+
+- Add ``admin_tools_stats`` & ``django_nvd3`` into INSTALLED_APPS in settings.py::
+
+    INSTALLED_APPS = (
+        'admin_tools_stats',  # this must be BEFORE 'admin_tools' and 'django.contrib.admin'
+        'django_nvd3',
+        ...
+        'django.contrib.admin',
+    )
+
+- Install the `nvd3` and `d3` javascript libraries. For installation with `django-bower` see section [#bower]_.
+
+- Register chart views in your `urls.py`::
+
+  from django.urls import path
+  urlpatterns = [
+      path('admin_tools_stats/', include('admin_tools_stats.urls')),
+  ]
+
+- Run migrations::
+
+    $ python manage.py migrate
+
+- Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats`` respectively
+
+
+Special configurations
+===========
+
+
+Update from `django-admin-tools-stats`:
 ---------
 
-- Configure ``admin_tools``
-- Configure ``django-bower``
+- Uninstall `django-admin-tools-stats`.
+- Follow `django-admin-charts` installation according to previous section. Especially pay attention to these steps:
+   - Move `admin_tools_stats` in `INSTALLED_APPS` before `admin_tools` and `django.contrib.admin`.
+   - Configure `urls.py`.
+- Change `DashboardCharts` to `DashboardChart` in dashboard definition (this is recomended even if dummy class is left for compatibility reasons).
+- Check any overridden template from `admin_tools_stats` or `DashboardChart(s)` class that might interfere with the changes.
+
+
+[#bower] Installation of javascript libraries with `django-bower`:
+---------
 
   - Add ``django-bower`` to INSTALLED_APPS in settings.py::
 
@@ -73,10 +102,8 @@ Configure
 
 
         BOWER_INSTALLED_APPS = (
-            'jquery#2.0.3',
-            'jquery-ui#~1.10.3',
-            'd3#3.3.6',
-            'nvd3#1.1.12-beta',
+            'd3#3.3.13',
+            'nvd3#1.7.1',
         )
 
   - Add django-bower finder to your static file finders::
@@ -91,17 +118,15 @@ Configure
         $ python manage.py bower_install
         $ python manage.py collectstatic
 
-- Add ``admin_tools_stats`` & ``django_nvd3`` into INSTALLED_APPS in settings.py::
 
-    INSTALLED_APPS = (
-        ...
-        'admin_tools_stats',
-        'django_nvd3',
-    )
 
+Usage with `django-admin-tools`:
+---------
+
+- Configure ``admin_tools``
 - Add following code to dashboard.py::
 
-    from admin_tools_stats.modules import DashboardCharts, get_active_graph
+    from admin_tools_stats.modules import DashboardChart, get_active_graph
 
     # append an app list module
     self.children.append(modules.AppList(
@@ -122,41 +147,49 @@ Configure
             if key.startswith('select_box_'):
                 kwargs[key] = context['request'].POST[key]
 
-        self.children.append(DashboardCharts(**kwargs))
+        self.children.append(DashboardChart(**kwargs))
 
-- To create the tables needed by Django-admin-tools-stats, run the following command::
-
-    $ python manage.py syncdb
 
 - You may also need to add some includes to your template admin base, see an example on the demo project:
 
     demoproject/demoproject/templates/admin/base_site.html
 
-- Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats respectively``
+
+Development
+============
+
+
+Dependencies
+------------
+
+django-admin-charts is a django based application, the major requirements are :
+
+    - django-jsonfield
+    - django-qsstats-magic
+    - django-nvd3
+    - django-bower
 
 
 Contributing
 ------------
 
-If you've found a bug, add a feature or improve django-admin-tools-stats and
+If you've found a bug, add a feature or improve django-admin-charts and
 think it is useful then please consider contributing.
 Patches, pull requests or just suggestions are always welcome!
 
-Source code: http://github.com/areski/django-admin-tools-stats
+Source code: http://github.com/PetrDlouhy/django-admin-charts
 
-Bug tracker: https://github.com/areski/django-admin-tools-stats/issues
+Bug tracker: https://github.com/PetrDlouhy/django-admin-charts/issues
 
 
 Documentation
 -------------
 
 Documentation is available on 'Read the Docs':
-http://readthedocs.org/docs/django-admin-tools-stats/
+http://readthedocs.org/docs/django-admin-charts/
 
 
 License
 -------
 
-Copyright (c) 2011-2017 Star2Billing S.L. <info@star2billing.com>
-
-django-admin-tools-stats is licensed under MIT, see `MIT-LICENSE.txt`.
+django-admin-charts is licensed under MIT, see `MIT-LICENSE.txt`.
