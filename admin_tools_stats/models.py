@@ -220,15 +220,35 @@ class DashboardStats(models.Model):
                 temp += '</select>'
 
         temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
-        temp += 'Aggregation: <select class="chart-input select_box_interval" name="select_box_interval" >'
+
+        temp += 'Scale: <select class="chart-input select_box_interval" name="select_box_interval" >'
         for interval in ('hours', 'days', 'weeks', 'months', 'years'):
             selected_str = 'selected=selected' if interval == 'days' else ''
             temp += '<option class="chart-input" value="' + interval + '" ' + selected_str + '>' + interval + '</option>'
         temp += '</select>'
-        temp += 'Date since: <input class="chart-input select_box_date_since" type="date" name="time_since" value="%s">' % \
+
+        temp += 'Since: <input class="chart-input select_box_date_since" type="date" name="time_since" value="%s">' % \
             (now() - timedelta(days=21)).strftime('%Y-%m-%d')
-        temp += 'Date until: <input class="chart-input select_box_date_since" type="date" name="time_until" value="%s">' % \
+        temp += 'Until: <input class="chart-input select_box_date_since" type="date" name="time_until" value="%s">' % \
             now().strftime('%Y-%m-%d')
+
+        chart_types = (
+            ('discreteBarChart',        'Bar'),
+            ('lineChart',               'Line'),
+            ('multiBarChart',           'Multi Bar'),
+            ('pieChart',                'Pie'),
+            ('stackedAreaChart',        'Stacked Area'),
+            ('multiBarHorizontalChart', 'Multi Bar Horizontal'),
+            ('linePlusBarChart',        'Line Plus Bar'),
+            ('scatterChart',            'Scatter'),
+            ('cumulativeLineChart',     'Cumulative Line'),
+            ('lineWithFocusChart',      'Line With Focus'),
+        )
+        temp += 'Chart: <select class="chart-input select_box_chart_type" name="select_box_chart_type" >'
+        for chart_type_str, chart_type_name in chart_types:
+            selected_str = 'selected=selected' if chart_type_str == 'discreteBarChart' else ''
+            temp += '<option class="chart-input" value="' + chart_type_str + '" ' + selected_str + '>' + chart_type_name + '</option>'
+        temp += '</select>'
 
         return mark_safe(force_text(temp))
 

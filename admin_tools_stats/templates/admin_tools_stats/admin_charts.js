@@ -1,9 +1,9 @@
 
+var html_string = '<svg style="width:{{chart_width}};height:{{chart_height}}px;"></svg>';
 var chart_scripts = {};
 
-function loadChart(data){
+function loadChart(data, graph_key){
    data_str = data.serialize();
-   var graph_key = data.children(".hidden_graph_key").first().val();
 
    if(data_str in chart_scripts){
       console.log("run " + data_str);
@@ -34,10 +34,14 @@ defer( function(){
    $( document ).ready(function() {
       function loadAnchor(){
          var data = $(this).closest('form.stateform');
-         loadChart(data);
+         var graph_key = data.children(".hidden_graph_key").first().val();
+         if($(this).hasClass('select_box_chart_type') || $(this).hasClass('stateform')){
+            $("#chart_container_" + graph_key).empty().append(html_string);
+         };
+         loadChart(data, graph_key);
       }
 
-      $('.chart-input').closest('form.stateform').change(loadAnchor);
+      $('.chart-input').change(loadAnchor);
       $('form.stateform').each(loadAnchor);
    });
 });
