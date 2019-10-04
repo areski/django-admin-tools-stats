@@ -13,8 +13,8 @@
 #
 
 
-__version__ = '0.9.0'  # edit also docs/source/conf.py and update requirements.txt
-__author__ = "Arezqui Belaid"
-__contact__ = "areski@gmail.com"
-__homepage__ = "http://www.areskibelaid.com"
+__version__ = '0.10.0'  # edit also docs/source/conf.py and update requirements.txt
+__author__ = "Petr Dlouhy"
+__contact__ = "petr.dlouhy@emai.cz"
+__homepage__ = "https://github.com/PetrDlouhy"
 __docformat__ = "restructuredtext"
