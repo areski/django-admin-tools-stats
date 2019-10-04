@@ -182,10 +182,10 @@ htmlhelp_basename = 'django-admin-tools-stats-doc'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
-latex_documents = [
-  ('index.html', 'django-admin-tools-stats.tex', u'django-admin-tools-stats Documentation',
-   u'Arezqui Belaid', 'manual'),
-]
+# latex_documents = [
+#   ('index.html', 'django-admin-tools-stats.tex', u'django-admin-tools-stats Documentation',
+#    u'Arezqui Belaid', 'manual'),
+# ]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
