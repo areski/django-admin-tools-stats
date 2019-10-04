@@ -13,8 +13,13 @@ from .models import DashboardStats
 class AdminChartsView(TemplateView):
     template_name = 'admin_tools_stats/admin_charts.js'
 
+    def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context['chart_height'] = 300
+        context['chart_width'] = '100%'
+        return context
 
-chart_type = 'discreteBarChart'
+
 interval_dateformat_map = {
     'years': ("%Y", "%Y"),
     'weeks': ("%b %Y", "%b"),
@@ -33,6 +38,7 @@ class ChartDataView(TemplateView):
     def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         interval = self.request.GET.get('select_box_interval', interval)
+        context['chart_type'] = self.request.GET.get('select_box_chart_type', interval)
         try:
             time_since = datetime.strptime(self.request.GET.get('time_since', None), '%Y-%m-%d')
             time_until = datetime.strptime(self.request.GET.get('time_until', None), '%Y-%m-%d')
@@ -71,5 +77,4 @@ class ChartDataView(TemplateView):
         }
 
         context['chart_container'] = "chart_container_" + graph_key
-        context['chart_type'] = chart_type
         return context

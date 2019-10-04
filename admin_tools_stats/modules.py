@@ -25,8 +25,6 @@ class DashboardChart(modules.DashboardModule):
     """
     template = 'admin_tools_stats/modules/chart.html'
     days = None
-    chart_height = 300
-    chart_width = '100%'
     require_chart_jscss = False
     extra = {}
 
