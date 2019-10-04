@@ -24,6 +24,7 @@ Django admin charts
   :target: https://pypi.python.org/pypi/django-admin-charts/
   :alt: License
 
+.. inclusion-marker-do-not-remove
 
 Create beautiful configurable charts from your models and display them on the ``django-admin`` index page or on ``django-admin-tools`` dashboard.
 The charts are based on models and criterias defined through admin interface and some chart parameters are configurable in live view.

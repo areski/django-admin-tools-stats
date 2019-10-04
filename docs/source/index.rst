@@ -5,7 +5,7 @@
 
 
 Django Admin Tools Stats Documentation!
-==========================
+=======================================
 
 :Release: |version|
 :Date: |today|
@@ -20,7 +20,6 @@ Contents:
     :maxdepth: 2
 
     introduction
-    installation-overview
     developer-doc
 
 
