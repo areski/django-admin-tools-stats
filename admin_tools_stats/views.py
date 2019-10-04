@@ -22,8 +22,8 @@ class AdminChartsView(TemplateView):
 
 interval_dateformat_map = {
     'years': ("%Y", "%Y"),
-    'weeks': ("%b %Y", "%b"),
     'months': ("%b %Y", "%b"),
+    'weeks': ("%a %d %b %Y", "%W"),
     'days': ("%a %d %b %Y", "%a"),
     'hours': ("%a %d %b %Y %H:%S", "%H"),
 }
