@@ -27,6 +27,8 @@ class DashboardChart(modules.DashboardModule):
     days = None
     require_chart_jscss = False
     extra = {}
+    chart_height = 300
+    chart_width = '100%'
 
     model = None
     graph_key = None

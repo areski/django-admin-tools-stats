@@ -49,7 +49,7 @@ setup(
     version=admin_tools_stats.__version__,
     description='django-admin-charts - Easily configurable charts statistics for `django-admin` and `django-admin-tools`',
     long_description=read('README.rst'),
-    author='Petr Dlouhý',
+    author='Petr Dlouhy',
     author_email='petr.dlouhy@email.cz',
     url='https://github.com/PetrDlouhy/django-admin-charts',
     include_package_data=True,

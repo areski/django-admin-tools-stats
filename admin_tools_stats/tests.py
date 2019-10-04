@@ -74,12 +74,12 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
             response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
             self.assertContains(
                 response,
-                '<input type="hidden" name="select_box_user_graph" value="true">',
+                '<input type="hidden" class="hidden_graph_key" name="graph_key" value="user_graph">',
                 html=True,
             )
             self.assertContains(
                 response,
-                '<option value="true" selected="selected">Active</option>',
+                '<option value="true">Active</option>',
                 html=True,
             )
 
