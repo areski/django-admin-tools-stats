@@ -82,7 +82,7 @@ def get_active_graph():
     """Returns active graphs"""
     global stat_dict
     stat_dict = {}
-    stats = DashboardStats.objects.filter(is_visible=1).prefetch_related('criteria')
+    stats = DashboardStats.get_active_graph()
     for stat in stats:
         stat_dict[stat.graph_key] = stat
     return stats

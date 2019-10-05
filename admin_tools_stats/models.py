@@ -254,3 +254,8 @@ class DashboardStats(models.Model):
 
     def __str__(self):
             return u"%s" % self.graph_key
+
+    @classmethod
+    def get_active_graph(cls):
+        """Returns active graphs"""
+        return DashboardStats.objects.filter(is_visible=1).prefetch_related('criteria')
