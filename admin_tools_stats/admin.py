@@ -20,7 +20,7 @@ class DashboardStatsCriteriaAdmin(admin.ModelAdmin):
     Allows the administrator to view and modify certain attributes
     of a DashboardStats.
     """
-    list_display = ('id', 'criteria_name', 'created_date')
+    list_display = ('id', 'criteria_name', 'created_date', 'use_as')
     list_filter = ['created_date']
     ordering = ('id', )
     save_as = True
@@ -34,7 +34,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     of a DashboardStats.
     """
     list_display = ('id', 'graph_key', 'graph_title', 'model_name',
-                    'is_visible', 'created_date')
+                    'is_visible', 'created_date', 'default_chart_type')
     list_filter = ['created_date']
     ordering = ('id', )
     save_as = True

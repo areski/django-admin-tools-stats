@@ -40,6 +40,26 @@ operation = (
     ('Variance', 'Variance'),
 )
 
+chart_types = (
+    ('discreteBarChart',        'Bar'),
+    ('lineChart',               'Line'),
+    ('multiBarChart',           'Multi Bar'),
+    ('pieChart',                'Pie'),
+    ('stackedAreaChart',        'Stacked Area'),
+    ('multiBarHorizontalChart', 'Multi Bar Horizontal'),
+    ('linePlusBarChart',        'Line Plus Bar'),
+    ('scatterChart',            'Scatter'),
+    ('cumulativeLineChart',     'Cumulative Line'),
+    ('lineWithFocusChart',      'Line With Focus'),
+)
+time_scales = (
+    ('hours', 'Hours'),
+    ('days', 'Days'),
+    ('weeks', 'Weeks'),
+    ('months', 'Months'),
+    ('years', 'Years'),
+)
+
 
 @python_2_unicode_compatible
 class DashboardStatsCriteria(models.Model):
@@ -72,9 +92,31 @@ class DashboardStatsCriteria(models.Model):
         null=True, blank=True,
         verbose_name=_("dynamic criteria / value"),
         help_text=_(
-            "a JSON dictionary of key-value pairs that will be used for the criteria"
-            " Ex. \"{'false': 'Inactive', 'true': 'Active'}\"",
+            mark_safe(
+                "a JSON dictionary with records in two following possible formats:"
+                '<br/>"key_value": "name"'
+                '<br/>"key": [value, "name"]'
+                '<br/>use blank key for no filter'
+                '<br/>Example:'
+                '<br/><pre>{'
+                '<br/>  "": [null, "All"],'
+                '<br/>  "True": [true, "True"],'
+                '<br/>  "False": [false, "False"]'
+                '<br/>}</pre>'
+                "<br/>Left blank to exploit all choices of CharField with choices",
+            ),
         ),
+    )
+    use_as = models.CharField(
+        max_length=90,
+        blank=False,
+        null=False,
+        verbose_name=_("Use dynamic criteria as"),
+        choices=(
+            ('chart_filter', 'Chart filter'),
+            ('multiple_series', 'Multiple series'),
+        ),
+        default='chart_filter',
     )
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
@@ -87,6 +129,30 @@ class DashboardStatsCriteria(models.Model):
 
     def __str__(self):
             return u"%s" % self.criteria_name
+
+    def get_dynamic_choices(self, dashboard_stats):
+        field_name = self.dynamic_criteria_field_name
+        if field_name:
+            model = apps.get_model(dashboard_stats.model_app_name, dashboard_stats.model_name)
+            query = model.objects.all().query
+            if self.criteria_dynamic_mapping:
+                return dict(self.criteria_dynamic_mapping)
+            else:
+                if field_name.endswith('__isnull'):
+                    return {
+                        '': ('', 'All'),
+                        'False': (False, 'Non blank'),
+                        'True': (True, 'Blank'),
+                    }
+                field = query.resolve_ref(field_name).field
+                if field.__class__ == models.BooleanField:
+                    return {
+                        '': ('', 'All'),
+                        'False': (False, 'False'),
+                        'True': (True, 'True'),
+                    }
+                else:
+                    return dict(field.choices)
 
 
 @python_2_unicode_compatible
@@ -128,6 +194,29 @@ class DashboardStats(models.Model):
     type_operation_field_name = models.CharField(max_length=90, verbose_name=_("Choose Type operation"),
                                       null=True, blank=True, choices=operation,
                                       help_text=_("choose the type operation what you want to aggregate, ex. Sum"))
+    default_chart_type = models.CharField(
+        max_length=90,
+        verbose_name=_("Default chart type"),
+        null=False,
+        blank=False,
+        choices=chart_types,
+        default='discreteBarChart',
+    )
+    default_time_period = models.PositiveIntegerField(
+        verbose_name=_("Default period"),
+        help_text=_("Number of days"),
+        null=False,
+        blank=False,
+        default=31,
+    )
+    default_time_scale = models.CharField(
+        verbose_name=_("Default time scale"),
+        null=False,
+        blank=False,
+        default='days',
+        choices=time_scales,
+        max_length=90,
+    )
     criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True)
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
@@ -167,7 +256,7 @@ class DashboardStats(models.Model):
         raise ValidationError(errors)
         return super(DashboardStats, self).clean(*args, **kwargs)
 
-    def get_time_series(self, request, time_since, time_until, interval):
+    def get_time_series(self, dynamic_criteria, request, time_since, time_until, interval):
         """ Get the stats time series """
         try:
             model_name = apps.get_model(self.model_app_name, self.model_name)
@@ -183,9 +272,12 @@ class DashboardStats(models.Model):
 
                 # dynamic mapping value passed info kwargs
                 dynamic_key = "select_box_dynamic_%i" % i.id
-                if dynamic_key in request.GET:
-                    if request.GET[dynamic_key] != '':
-                        kwargs[i.dynamic_criteria_field_name] = request.GET[dynamic_key]
+                if dynamic_key in dynamic_criteria:
+                    if dynamic_criteria[dynamic_key] != '':
+                        criteria_value = i.get_dynamic_choices(self)[dynamic_criteria[dynamic_key]]
+                        if isinstance(criteria_value, (list, tuple)):
+                            criteria_value = criteria_value[0]
+                        kwargs[i.dynamic_criteria_field_name] = criteria_value
 
             aggregate = None
             if self.type_operation_field_name and self.operation_field_name:
@@ -208,45 +300,48 @@ class DashboardStats(models.Model):
             self.error_message = str(e)
             messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.graph_title, str(e)))
 
+    def get_multi_time_series(self, request, time_since, time_until, interval):
+        criteria = self.criteria.filter(use_as='multiple_series').first()
+        series = {}
+        if criteria and criteria.dynamic_criteria_field_name:
+            for key, name in criteria.get_dynamic_choices(self).items():
+                if key != '':
+                    if isinstance(name, (list, tuple)):
+                        name = name[1]
+                    series[name] = self.get_time_series({'select_box_dynamic_' + str(criteria.id): key}, request, time_since, time_until, interval)
+        else:
+            series[''] = self.get_time_series(request.GET, request, time_since, time_until, interval)
+        return series
+
     def get_control_form(self):
         """ Get content of the ajax control form """
         temp = ''
-        for i in self.criteria.all():
-            dy_map = i.criteria_dynamic_mapping
+        for i in self.criteria.filter(use_as='chart_filter'):
+            dy_map = i.get_dynamic_choices(self)
             if dy_map:
                 temp += i.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
-                for key in dict(dy_map):
-                    temp += '<option value="' + key + '">' + dy_map[key] + '</option>'
+                for key, name in dy_map.items():
+                    if isinstance(name, (list, tuple)):
+                        name = name[1]
+                    temp += '<option value="%s">%s</option>' % (key, name)
                 temp += '</select>'
 
         temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
 
         temp += 'Scale: <select class="chart-input select_box_interval" name="select_box_interval" >'
-        for interval in ('hours', 'days', 'weeks', 'months', 'years'):
-            selected_str = 'selected=selected' if interval == 'days' else ''
-            temp += '<option class="chart-input" value="' + interval + '" ' + selected_str + '>' + interval + '</option>'
+        for interval, interval_name in time_scales:
+            selected_str = 'selected=selected' if interval == self.default_time_scale else ''
+            temp += '<option class="chart-input" value="' + interval + '" ' + selected_str + '>' + interval_name + '</option>'
         temp += '</select>'
 
         temp += 'Since: <input class="chart-input select_box_date_since" type="date" name="time_since" value="%s">' % \
-            (now() - timedelta(days=21)).strftime('%Y-%m-%d')
+            (now() - timedelta(days=self.default_time_period)).strftime('%Y-%m-%d')
         temp += 'Until: <input class="chart-input select_box_date_since" type="date" name="time_until" value="%s">' % \
             now().strftime('%Y-%m-%d')
 
-        chart_types = (
-            ('discreteBarChart',        'Bar'),
-            ('lineChart',               'Line'),
-            ('multiBarChart',           'Multi Bar'),
-            ('pieChart',                'Pie'),
-            ('stackedAreaChart',        'Stacked Area'),
-            ('multiBarHorizontalChart', 'Multi Bar Horizontal'),
-            ('linePlusBarChart',        'Line Plus Bar'),
-            ('scatterChart',            'Scatter'),
-            ('cumulativeLineChart',     'Cumulative Line'),
-            ('lineWithFocusChart',      'Line With Focus'),
-        )
         temp += 'Chart: <select class="chart-input select_box_chart_type" name="select_box_chart_type" >'
         for chart_type_str, chart_type_name in chart_types:
-            selected_str = 'selected=selected' if chart_type_str == 'discreteBarChart' else ''
+            selected_str = 'selected=selected' if chart_type_str == self.default_chart_type else ''
             temp += '<option class="chart-input" value="' + chart_type_str + '" ' + selected_str + '>' + chart_type_name + '</option>'
         temp += '</select>'
 

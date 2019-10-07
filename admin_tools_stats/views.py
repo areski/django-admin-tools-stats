@@ -53,13 +53,21 @@ class ChartDataView(TemplateView):
         time_until = time_until.replace(hour=23, minute=59)
 
         dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
-        data = dashboard_stats.get_time_series(self.request, time_since, time_until, interval)
-        xdata = []
-        ydata = []
-        for data_date in data:
-            start_time = int(time.mktime(data_date[0].timetuple()) * 1000)
-            xdata.append(start_time)
-            ydata.append(data_date[1])
+        # data = dashboard_stats.get_time_series(self.request.GET, self.request, time_since, time_until, interval)
+        series = dashboard_stats.get_multi_time_series(self.request, time_since, time_until, interval)
+        ydata_serie = {}
+        names = {}
+        i = 0
+        for key, data in series.items():
+            i += 1
+            xdata = []
+            ydata = []
+            for data_date in data:
+                start_time = int(time.mktime(data_date[0].timetuple()) * 1000)
+                xdata.append(start_time)
+                ydata.append(data_date[1])
+            ydata_serie['y' + str(i)] = ydata
+            names['name' + str(i)] = str(key)
 
         context['extra'] = {
             'x_is_date': True,
@@ -73,7 +81,7 @@ class ChartDataView(TemplateView):
 
         context['values'] = {
             'x': xdata,
-            'name1': interval, 'y1': ydata, 'extra1': extra_serie,
+            'name1': interval, **ydata_serie, **names, 'extra1': extra_serie,
         }
 
         context['chart_container'] = "chart_container_" + graph_key
