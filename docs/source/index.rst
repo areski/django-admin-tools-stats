@@ -10,7 +10,7 @@ Django Admin Tools Stats Documentation!
 :Release: |version|
 :Date: |today|
 :Keywords: django, python, plot, graph, nvd3, d3, dashboard
-:Author: Arezqui Belaid
+:Author: Arezqui Belaid, Petr Dlouhý
 :Description: Django-admin-tools-stats is a Django admin module that allow you to create easily charts on your dashboard based on specific models and criterias.
 
 

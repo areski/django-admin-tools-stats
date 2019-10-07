@@ -45,7 +45,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'django-admin-tools-stats'
+project = u'django-admin-charts'
 copyright = u'2011-2014, Arezqui Belaid'
 
 # The version info for the project you're documenting, acts as replacement for
