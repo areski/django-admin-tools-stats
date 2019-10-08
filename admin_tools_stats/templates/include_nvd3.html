@@ -1,0 +1,8 @@
+{% load admin_chart_tags %}
+{% load static %}
+{% set_nvd3_js_path as nvd3_js_path %}
+{% set_nvd3_css_path as nvd3_css_path %}
+{% set_d3_js_path as d3_js_path %}
+<link media="all" href="{% static nvd3_css_path|default:'nvd3/build/nv.d3.css' %}" type="text/css" rel="stylesheet" />
+<script src="{% static d3_js_path|default:'d3/d3.js' %}" type="text/javascript"></script>
+<script src="{% static nvd3_js_path|default:'nvd3/build/nv.d3.js'%}" type="text/javascript"></script>
