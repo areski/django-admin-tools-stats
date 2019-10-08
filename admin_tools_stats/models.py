@@ -129,15 +129,19 @@ class DashboardStatsCriteria(models.Model):
         verbose_name_plural = _("dashboard stats criteria")
 
     def __str__(self):
-            return u"%s" % self.criteria_name
+        return u"%s" % self.criteria_name
+
+    def get_dynamic_field(self, model):
+        field_name = self.dynamic_criteria_field_name
+        query = model.objects.all().query
+        return query.resolve_ref(field_name).field
 
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
     @cached(60 * 5)
     def get_dynamic_choices(self, slef, dashboard_stats):
+        model = dashboard_stats.get_model()
         field_name = self.dynamic_criteria_field_name
         if field_name:
-            model = apps.get_model(dashboard_stats.model_app_name, dashboard_stats.model_name)
-            query = model.objects.all().query
             if self.criteria_dynamic_mapping:
                 return dict(self.criteria_dynamic_mapping)
             else:
@@ -147,7 +151,7 @@ class DashboardStatsCriteria(models.Model):
                         'False': (False, 'Non blank'),
                         'True': (True, 'Blank'),
                     }
-                field = query.resolve_ref(field_name).field
+                field = self.get_dynamic_field(model)
                 if field.__class__ == models.BooleanField:
                     return {
                         '': ('', 'All'),
@@ -157,7 +161,7 @@ class DashboardStatsCriteria(models.Model):
                 elif len(field.choices) > 0:
                     return dict(field.choices)
                 else:
-                    return {i: (i,i) for i in model.objects.values_list(field_name, flat=True)}
+                    return {i: (i, i) for i in model.objects.values_list(field_name, flat=True)}
 
 
 @python_2_unicode_compatible
@@ -233,6 +237,17 @@ class DashboardStats(models.Model):
         verbose_name = _("dashboard stats")
         verbose_name_plural = _("dashboard stats")
 
+    def get_model(self):
+        return apps.get_model(self.model_app_name, self.model_name)
+
+    def get_operation_field(self):
+        query = self.get_model().objects.all().query
+        return query.resolve_ref(self.operation_field_name).field
+
+    def get_date_field(self):
+        query = self.get_model().objects.all().query
+        return query.resolve_ref(self.date_field_name).field
+
     def clean(self, *args, **kwargs):
         errors = {}
         model = None
@@ -242,19 +257,19 @@ class DashboardStats(models.Model):
             errors['model_app_name'] = str(e)
 
         try:
-            model = apps.get_model(self.model_app_name, self.model_name)
+            model = self.get_model()
         except LookupError as e:
             errors['model_name'] = str(e)
 
         try:
             if model and self.operation_field_name:
-                model.objects.all().query.resolve_ref(self.operation_field_name)
+                self.get_operation_field()
         except FieldError as e:
             errors['operation_field_name'] = str(e)
 
         try:
             if model and self.date_field_name:
-                model.objects.all().query.resolve_ref(self.date_field_name)
+                self.get_date_field()
         except FieldError as e:
             errors['date_field_name'] = str(e)
 
@@ -369,7 +384,7 @@ class DashboardStats(models.Model):
         return mark_safe(force_text(temp))
 
     def __str__(self):
-            return u"%s" % self.graph_key
+        return u"%s" % self.graph_key
 
     @classmethod
     def get_active_graph(cls):
