@@ -282,6 +282,8 @@ class DashboardStats(models.Model):
                         criteria_value = i.get_dynamic_choices(i, self)[dynamic_criteria[dynamic_key]]
                         if isinstance(criteria_value, (list, tuple)):
                             criteria_value = criteria_value[0]
+                        else:
+                            criteria_value = dynamic_criteria[dynamic_key]
                         kwargs[i.dynamic_criteria_field_name] = criteria_value
 
             aggregate = None
