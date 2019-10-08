@@ -154,8 +154,10 @@ class DashboardStatsCriteria(models.Model):
                         'False': (False, 'False'),
                         'True': (True, 'True'),
                     }
-                else:
+                elif len(field.choices) > 0:
                     return dict(field.choices)
+                else:
+                    return {i: (i,i) for i in model.objects.values_list(field_name, flat=True)}
 
 
 @python_2_unicode_compatible
