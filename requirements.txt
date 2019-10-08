@@ -1,5 +1,6 @@
 django-jsonfield>=0.9.2
 django-qsstats-magic>=0.7.2
+djcacheutils>=3.0.0
 django-nvd3>=0.5.0
 django-bower
 python-dateutil

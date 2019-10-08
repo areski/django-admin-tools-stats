@@ -23,6 +23,7 @@ from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
+from cache_utils.decorators import cached
 
 import jsonfield.fields
 
@@ -130,7 +131,9 @@ class DashboardStatsCriteria(models.Model):
     def __str__(self):
             return u"%s" % self.criteria_name
 
-    def get_dynamic_choices(self, dashboard_stats):
+    # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
+    @cached(60 * 5)
+    def get_dynamic_choices(self, slef, dashboard_stats):
         field_name = self.dynamic_criteria_field_name
         if field_name:
             model = apps.get_model(dashboard_stats.model_app_name, dashboard_stats.model_name)
@@ -274,7 +277,7 @@ class DashboardStats(models.Model):
                 dynamic_key = "select_box_dynamic_%i" % i.id
                 if dynamic_key in dynamic_criteria:
                     if dynamic_criteria[dynamic_key] != '':
-                        criteria_value = i.get_dynamic_choices(self)[dynamic_criteria[dynamic_key]]
+                        criteria_value = i.get_dynamic_choices(i, self)[dynamic_criteria[dynamic_key]]
                         if isinstance(criteria_value, (list, tuple)):
                             criteria_value = criteria_value[0]
                         kwargs[i.dynamic_criteria_field_name] = criteria_value
@@ -308,7 +311,7 @@ class DashboardStats(models.Model):
             criteria = None
         series = {}
         if criteria and criteria.dynamic_criteria_field_name:
-            for key, name in criteria.get_dynamic_choices(self).items():
+            for key, name in criteria.get_dynamic_choices(criteria, self).items():
                 if key != '':
                     if isinstance(name, (list, tuple)):
                         name = name[1]
@@ -321,7 +324,7 @@ class DashboardStats(models.Model):
         """ Get content of the ajax control form """
         temp = ''
         for i in self.criteria.filter(use_as='chart_filter'):
-            dy_map = i.get_dynamic_choices(self)
+            dy_map = i.get_dynamic_choices(i, self)
             if dy_map:
                 temp += i.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
                 for key, name in dy_map.items():
