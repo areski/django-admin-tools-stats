@@ -301,7 +301,11 @@ class DashboardStats(models.Model):
             messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.graph_title, str(e)))
 
     def get_multi_time_series(self, request, time_since, time_until, interval):
-        criteria = self.criteria.filter(use_as='multiple_series').first()
+        try:
+            criteria_id = int(request.GET.get('select_box_multiple_series', ''))
+            criteria = self.criteria.get(use_as='multiple_series', pk=criteria_id)
+        except (DashboardStatsCriteria.DoesNotExist, ValueError):
+            criteria = None
         series = {}
         if criteria and criteria.dynamic_criteria_field_name:
             for key, name in criteria.get_dynamic_choices(self).items():
@@ -327,6 +331,16 @@ class DashboardStats(models.Model):
                 temp += '</select>'
 
         temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
+
+        multiple_series = self.criteria.filter(use_as='multiple_series')
+        if multiple_series.exists():
+            temp += 'Divide: <select class="chart-input select_box_multiple_series" name="select_box_multiple_series" >'
+            temp += '<option class="chart-input" value="">-------</option>'
+            selected_str = 'selected=selected'
+            for serie in multiple_series.all():
+                temp += '<option class="chart-input" value="%s" %s>%s</option>' % (serie.id, selected_str, serie.criteria_name)
+                selected_str = ""
+            temp += '</select>'
 
         temp += 'Scale: <select class="chart-input select_box_interval" name="select_box_interval" >'
         for interval, interval_name in time_scales:
