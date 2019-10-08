@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
@@ -48,11 +49,13 @@ class ChartDataView(TemplateView):
         # TODO: current timezone doesn't work for years with queryset stats
         # current_tz = timezone.get_current_timezone()
         current_tz = pytz.utc
-        time_since = current_tz.localize(time_since)
-        time_until = current_tz.localize(time_until)
-        time_until = time_until.replace(hour=23, minute=59)
-
         dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
+
+        if settings.USE_TZ:
+            time_since = current_tz.localize(time_since)
+            time_until = current_tz.localize(time_until)
+            time_until = time_until.replace(hour=23, minute=59)
+
         # data = dashboard_stats.get_time_series(self.request.GET, self.request, time_since, time_until, interval)
         series = dashboard_stats.get_multi_time_series(self.request, time_since, time_until, interval)
         ydata_serie = {}
