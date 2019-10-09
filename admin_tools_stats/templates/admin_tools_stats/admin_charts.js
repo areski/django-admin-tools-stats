@@ -41,7 +41,7 @@ defer( function(){
          loadChart(data, graph_key);
       }
 
-      $('.chart-input').change(loadAnchor);
+      $('body').on('change', '.chart-input', loadAnchor);
       $('form.stateform').each(loadAnchor);
    });
 });
