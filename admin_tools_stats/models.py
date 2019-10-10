@@ -8,7 +8,12 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+from collections import OrderedDict
 from datetime import timedelta
+
+from cache_utils.decorators import cached
+
+from dateutil.relativedelta import relativedelta
 
 try:  # Python 3
     from django.utils.encoding import force_text
@@ -19,15 +24,15 @@ from django.contrib import messages
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
+from django.db.models.functions import Trunc
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from cache_utils.decorators import cached
 
 import jsonfield.fields
 
-from qsstats import QuerySetStats
+from qsstats.utils import get_bounds
 
 
 operation = (
@@ -161,7 +166,7 @@ class DashboardStatsCriteria(models.Model):
                 elif len(field.choices) > 0:
                     return dict(field.choices)
                 else:
-                    return {i: (i, i) for i in model.objects.values_list(field_name, flat=True)}
+                    return {i: (i, i) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)}
 
 
 @python_2_unicode_compatible
@@ -276,14 +281,14 @@ class DashboardStats(models.Model):
         raise ValidationError(errors)
         return super(DashboardStats, self).clean(*args, **kwargs)
 
-    def get_time_series(self, dynamic_criteria, request, time_since, time_until, interval):
+    def get_time_series(self, dynamic_criteria_field_name, dynamic_criteria, all_criteria, request, time_since, time_until, interval):
         """ Get the stats time series """
         try:
             model_name = apps.get_model(self.model_app_name, self.model_name)
             kwargs = {}
             if not request.user.is_superuser and self.user_field_name:
                 kwargs[self.user_field_name] = request.user
-            for i in self.criteria.all():
+            for i in all_criteria:
                 # fixed mapping value passed info kwargs
                 if i.criteria_fix_mapping:
                     for key in i.criteria_fix_mapping:
@@ -314,10 +319,23 @@ class DashboardStats(models.Model):
                     'Variance': Variance(self.operation_field_name),
                 }
                 aggregate = operation[self.type_operation_field_name]
+            else:
+                aggregate = Count('id', distinct=True)
 
-            stats = QuerySetStats(model_name.objects.filter(**kwargs).distinct(),
-                                  self.date_field_name, aggregate)
-            return stats.time_series(time_since, time_until, interval)
+            # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
+            time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
+            qs = model_name.objects
+            qs = qs.filter(**time_range)
+            qs = qs.filter(**kwargs)
+            qs = qs.annotate(d=Trunc(self.date_field_name, interval, tzinfo=time_since.tzinfo))
+            if dynamic_criteria_field_name:
+                qs = qs.values_list('d', dynamic_criteria_field_name)
+                qs = qs.order_by('d', dynamic_criteria_field_name)
+            else:
+                qs = qs.values_list('d')
+                qs = qs.order_by('d')
+            qs = qs.annotate(agg=aggregate)
+            return qs
         except (LookupError, FieldError, TypeError) as e:
             self.error_message = str(e)
             messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.graph_title, str(e)))
@@ -329,14 +347,56 @@ class DashboardStats(models.Model):
         except (DashboardStatsCriteria.DoesNotExist, ValueError):
             criteria = None
         series = {}
+        all_criteria = self.criteria.all()  # Outside of get_time_series just for performance reasons
         if criteria and criteria.dynamic_criteria_field_name:
-            for key, name in criteria.get_dynamic_choices(criteria, self).items():
-                if key != '':
-                    if isinstance(name, (list, tuple)):
-                        name = name[1]
-                    series[name] = self.get_time_series({'select_box_dynamic_' + str(criteria.id): key}, request, time_since, time_until, interval)
+            choices = criteria.get_dynamic_choices(criteria, self)
+
+            if criteria.criteria_dynamic_mapping:
+                serie_map = {}
+                names = []
+                for key, name in choices.items():
+                    if key != '':
+                        if isinstance(name, (list, tuple)):
+                            name = name[1]
+                        names.append(name)
+                        serie_map[name] = self.get_time_series(
+                            None, {'select_box_dynamic_' + str(criteria.id): key}, all_criteria, request, time_since, time_until, interval
+                        )
+                for name, serie in serie_map.items():
+                    for time, value in serie:
+                        if time not in series:
+                            series[time] = OrderedDict()
+                        series[time][name] = value
+            else:
+                serie = self.get_time_series(
+                    criteria.dynamic_criteria_field_name, request.GET, all_criteria, request, time_since, time_until, interval
+                )
+                names = choices.keys()
+                for time, key, value in serie:
+                    if time not in series:
+                        series[time] = OrderedDict()
+                        for name in names:
+                            series[time][name] = 0
+                    series[time][key] = value
         else:
-            series[''] = self.get_time_series(request.GET, request, time_since, time_until, interval)
+            serie = self.get_time_series(None, request.GET, all_criteria, request, time_since, time_until, interval)
+            for time, value in serie:
+                series[time] = {'': value}
+            names = {'': ''}
+
+        # fill with zeros where the records are missing
+        interval_s = interval.rstrip('s')
+        start, _ = get_bounds(time_since, interval_s)
+        _, end = get_bounds(time_until, interval_s)
+
+        time = start
+        while time < end:
+            if time not in series:
+                series[time] = OrderedDict()
+            for key in names:
+                if key not in series[time]:
+                    series[time][key] = 0
+            time = time + relativedelta(**{interval: 1})
         return series
 
     def get_control_form(self):

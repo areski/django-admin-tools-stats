@@ -1,4 +1,5 @@
 import time
+from collections import OrderedDict
 from datetime import datetime
 
 from django.conf import settings
@@ -54,23 +55,24 @@ class ChartDataView(TemplateView):
         if settings.USE_TZ:
             time_since = current_tz.localize(time_since)
             time_until = current_tz.localize(time_until)
-            time_until = time_until.replace(hour=23, minute=59)
+        time_until = time_until.replace(hour=23, minute=59)
 
-        # data = dashboard_stats.get_time_series(self.request.GET, self.request, time_since, time_until, interval)
         series = dashboard_stats.get_multi_time_series(self.request, time_since, time_until, interval)
+
         ydata_serie = {}
         names = {}
-        i = 0
-        for key, data in series.items():
-            i += 1
-            xdata = []
-            ydata = []
-            for data_date in data:
-                start_time = int(time.mktime(data_date[0].timetuple()) * 1000)
-                xdata.append(start_time)
-                ydata.append(data_date[1])
-            ydata_serie['y' + str(i)] = ydata
-            names['name' + str(i)] = str(key)
+        xdata = []
+        serie_i_map = OrderedDict()
+        for date in sorted(series.keys()):
+            xdata.append(int(time.mktime(date.timetuple()) * 1000))
+            for key, value in series[date].items():
+                if key not in serie_i_map:
+                    serie_i_map[key] = len(serie_i_map)
+                y_key = 'y%i' % serie_i_map[key]
+                if y_key not in ydata_serie:
+                    ydata_serie[y_key] = []
+                    names['name%i' % serie_i_map[key]] = str(key)
+                ydata_serie[y_key].append(value)
 
         context['extra'] = {
             'x_is_date': True,

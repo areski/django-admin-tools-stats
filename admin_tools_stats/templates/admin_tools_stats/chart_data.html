@@ -1,5 +1,7 @@
 {% load nvd3_tags %}
+{% if values %}
 function loadChartScript(){
    {% load_chart chart_type values chart_container extra %}
 };
 loadChartScript();
+{% endif %}
