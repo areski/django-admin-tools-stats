@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+from django.urls import include, path
 
 # Uncomment the next two lines to enable the admin:
 from django.contrib import admin
@@ -6,13 +6,14 @@ from .views import home
 admin.autodiscover()
 
 urlpatterns = [
-    url(r'^$', home, name='home'),
+    path('', home, name='home'),
 
     # url(r'^demoproject/', include('demoproject.foo.urls')),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
-    url(r'^admin_tools/', include('admin_tools.urls')),
-    url(r'^admin/', admin.site.urls),
+    path('admin_tools_stats/', include('admin_tools_stats.urls')),
+    path('admin_tools/', include('admin_tools.urls')),
+    path('admin/', admin.site.urls),
 ]

@@ -65,7 +65,7 @@ Set library paths if they differ from the ``django-bower`` defaults::
 
 Register chart views in your ``urls.py``::
 
-    from django.urls import path
+    from django.urls import include, path
     urlpatterns = [
         path('admin_tools_stats/', include('admin_tools_stats.urls')),
     ]

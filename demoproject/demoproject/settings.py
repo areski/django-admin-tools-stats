@@ -157,6 +157,8 @@ WSGI_APPLICATION = 'demoproject.wsgi.application'
 
 INSTALLED_APPS = (
     #admin tool apps
+    'django_nvd3',
+    'admin_tools_stats',
     'admin_tools',
     'admin_tools.theming',
     'admin_tools.menu',
@@ -168,10 +170,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_nvd3',
     'djangobower',
     'demoproject',
-    'admin_tools_stats',
     # 'south',
 )
 
@@ -222,10 +222,8 @@ BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'components')
 BOWER_PATH = '/usr/local/bin/bower'
 
 BOWER_INSTALLED_APPS = (
-    'jquery#2.0.3',
-    'jquery-ui#~1.10.3',
-    'd3#3.3.6',
-    'nvd3#1.1.12-beta',
+    'd3#3.3.13',
+    'nvd3#1.7.1',
 )
 
 #DJANGO-ADMIN-TOOL

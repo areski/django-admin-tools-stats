@@ -2,25 +2,6 @@
 {% load i18n admin_tools_menu_tags static %}
 
 {% block title %}{% trans 'Admin' %}{% endblock %}
-{% block extrahead %}
-
-<!-- Javascript -->
-<script type="text/javascript" src="{{ STATIC_URL }}jquery/jquery.min.js"></script>
-
-<link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
-<!--For Chart-->
-<link media="all" href="{% static 'nvd3/src/nv.d3.css' %}" type="text/css" rel="stylesheet" />
-<script src="{% static 'd3/d3.js' %}" type="text/javascript"></script>
-<script src="{% static 'nvd3/nv.d3.js'%}" type="text/javascript"></script>
-
-<link media="all" href="{{ STATIC_URL }}jquery-ui/themes/flick/jquery-ui.min.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="{{ STATIC_URL }}jquery-ui/ui/minified/jquery-ui.min.js"></script>
-
-<style>
-
-
-</style>
-{% endblock %}
 
 {% block extrastyle %}
     {{ block.super }}
