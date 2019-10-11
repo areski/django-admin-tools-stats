@@ -1,9 +1,27 @@
 Changelog
 =========
 
-1.0.0 (2019-08-06)
+0.11.0 (2019-XX-XX)
 ------------------
 
+* added support to display dynamic criteria as multiple series <Petr Dlouhý>
+* chart type switcher was added <Petr Dlouhý>
+* default values for charts switches can be configured in DashboardStatsAdmin <Petr Dlouhý>
+* fix for USE_TZ=False <Petr Dlouhý>
+* fix switches action that was not working in some cases <Petr Dlouhý>
+* dynamic criteria values are automatically generated if dynamic criteria mapping not filled in (in some cases) <Petr Dlouhý>
+* dynamic criteria JSON can now contain filter value <Petr Dlouhý>
+
+0.10.1 (2019-10-07)
+------------------
+
+* removed remaining forced dependency on django-admin-tools <Petr Dlouhý>
+
+0.10.0 (2019-10-04)
+------------------
+
+* charts are now loaded through Ajax with live configuration  <Petr Dlouhý>
+* charts can now work only with django-admin, dependency on django-admin-tools was made optional <Petr Dlouhý>
 * DistinctCount qualifier added <Petr Dlouhý>
 * date/operate fields can now contain related reference <Petr Dlouhý>
 * fix loading charts on page load <Petr Dlouhý>
