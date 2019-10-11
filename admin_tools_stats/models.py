@@ -15,17 +15,13 @@ from cache_utils.decorators import cached
 
 from dateutil.relativedelta import relativedelta
 
-try:  # Python 3
-    from django.utils.encoding import force_text
-except ImportError:  # Python 2
-    from django.utils.encoding import force_unicode as force_text
 from django.apps import apps
 from django.contrib import messages
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.db.models.functions import Trunc
-from django.utils.encoding import python_2_unicode_compatible
+from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
@@ -67,7 +63,6 @@ time_scales = (
 )
 
 
-@python_2_unicode_compatible
 class DashboardStatsCriteria(models.Model):
     """
     To configure criteria for dashboard graphs
@@ -168,7 +163,6 @@ class DashboardStatsCriteria(models.Model):
                 return {i: (i, i) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)}
 
 
-@python_2_unicode_compatible
 class DashboardStats(models.Model):
     """To configure graphs for dashboard
 

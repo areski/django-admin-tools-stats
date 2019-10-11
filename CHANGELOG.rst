@@ -11,6 +11,7 @@ Changelog
 * fix switches action that was not working in some cases <Petr Dlouhý>
 * dynamic criteria values are automatically generated if dynamic criteria mapping not filled in (in some cases) <Petr Dlouhý>
 * dynamic criteria JSON can now contain filter value <Petr Dlouhý>
+* support for Django<2.0 and Python<3.5 was dropped <Petr Dlouhý>
 
 0.10.1 (2019-10-07)
 ------------------

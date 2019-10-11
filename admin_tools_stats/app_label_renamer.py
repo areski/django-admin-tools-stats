@@ -10,10 +10,7 @@
 #
 from django.contrib import admin
 from django.db.models.base import ModelBase
-try:
-    from django.urls import resolve
-except ImportError:  # Django<2.0
-    from django.core.urlresolvers import resolve
+from django.urls import resolve
 
 
 # TODO: Follow evolution of https://code.djangoproject.com/ticket/3591
