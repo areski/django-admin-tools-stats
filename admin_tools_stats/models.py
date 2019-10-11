@@ -146,27 +146,26 @@ class DashboardStatsCriteria(models.Model):
     def get_dynamic_choices(self, slef, dashboard_stats):
         model = dashboard_stats.get_model()
         field_name = self.dynamic_criteria_field_name
+        if self.criteria_dynamic_mapping:
+            return dict(self.criteria_dynamic_mapping)
         if field_name:
-            if self.criteria_dynamic_mapping:
-                return dict(self.criteria_dynamic_mapping)
+            if field_name.endswith('__isnull'):
+                return {
+                    '': ('', 'All'),
+                    'False': (False, 'Non blank'),
+                    'True': (True, 'Blank'),
+                }
+            field = self.get_dynamic_field(model)
+            if field.__class__ == models.BooleanField:
+                return {
+                    '': ('', 'All'),
+                    'False': (False, 'False'),
+                    'True': (True, 'True'),
+                }
+            elif len(field.choices) > 0:
+                return dict(field.choices)
             else:
-                if field_name.endswith('__isnull'):
-                    return {
-                        '': ('', 'All'),
-                        'False': (False, 'Non blank'),
-                        'True': (True, 'Blank'),
-                    }
-                field = self.get_dynamic_field(model)
-                if field.__class__ == models.BooleanField:
-                    return {
-                        '': ('', 'All'),
-                        'False': (False, 'False'),
-                        'True': (True, 'True'),
-                    }
-                elif len(field.choices) > 0:
-                    return dict(field.choices)
-                else:
-                    return {i: (i, i) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)}
+                return {i: (i, i) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)}
 
 
 @python_2_unicode_compatible
@@ -304,7 +303,7 @@ class DashboardStats(models.Model):
                             criteria_value = criteria_value[0]
                         else:
                             criteria_value = dynamic_criteria[dynamic_key]
-                        kwargs[i.dynamic_criteria_field_name] = criteria_value
+                        kwargs['id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name] = criteria_value
 
             aggregate = None
             if self.type_operation_field_name and self.operation_field_name:
