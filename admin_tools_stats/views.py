@@ -57,7 +57,7 @@ class ChartDataView(TemplateView):
             time_until = current_tz.localize(time_until)
         time_until = time_until.replace(hour=23, minute=59)
 
-        series = dashboard_stats.get_multi_time_series(self.request, time_since, time_until, interval)
+        series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, self.request)
         criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
         if criteria:
             choices = criteria.get_dynamic_choices(criteria, dashboard_stats)

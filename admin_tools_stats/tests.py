@@ -8,13 +8,17 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+import datetime
 
-import django
+from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
+from admin_tools_stats.utils import BaseAuthenticatedClient, assertContainsAny
 
-from django.test import TestCase
 from django.core.exceptions import ValidationError
-from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
-from admin_tools_stats.utils import BaseAuthenticatedClient
+from django.test import TestCase
+from django.test.utils import override_settings
+from django.urls import reverse
+
+from model_mommy import mommy
 
 
 class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
@@ -39,49 +43,98 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
 class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
     fixtures = ['test_data', 'auth_user']
 
-    if django.VERSION >= (1,8,0):
-        def test_admin_dashboard_page(self):
-            """Test function to check dashboardstatscriteria admin pages"""
-            response = self.client.get('/admin/')
-            self.assertContains(
-                response,
-                '<h2>User graph</h2>',
-                html=True,
-            )
-            self.assertContains(
-                response,
-                '<h2>User logged in graph</h2>',
-                html=True,
-            )
-            self.assertContains(
-                response,
-                '<svg style="width:100%;height:300px;"></svg>',
-                html=True,
-            )
-            self.assertContains(
-                response,
-                '<option value="true">Active</option>',
-                html=True,
-            )
-            self.assertContains(
-                response,
-                '<option value="false">Inactive</option>',
-                html=True,
-            )
+    def test_admin_dashboard_page(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        response = self.client.get('/admin/')
+        self.assertContains(
+            response,
+            '<h2>User graph</h2>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<h2>User logged in graph</h2>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<svg style="width:100%;height:300px;"></svg>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option value="true">Active</option>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option value="false">Inactive</option>',
+            html=True,
+        )
 
-        def test_admin_dashboard_page_post(self):
-            """Test function to check dashboardstatscriteria admin pages"""
-            response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
-            self.assertContains(
-                response,
-                '<input type="hidden" class="hidden_graph_key" name="graph_key" value="user_graph">',
-                html=True,
-            )
-            self.assertContains(
-                response,
-                '<option value="true">Active</option>',
-                html=True,
-            )
+    def test_admin_dashboard_page_post(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
+        self.assertContains(
+            response,
+            '<input type="hidden" class="hidden_graph_key" name="graph_key" value="user_graph">',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option value="true">Active</option>',
+            html=True,
+        )
+
+
+class ModelTests(TestCase):
+    def setUp(self):
+        self.stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        time_since = datetime.date(2010, 10, 8)
+        time_until = datetime.date(2010, 10, 12)
+
+        interval = "days"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 10, 0, 0): {'': 1},
+            datetime.datetime(2010, 10, 11, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 12, 0, 0): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+
+class ViewsTests(BaseAuthenticatedClient):
+    def setUp(self):
+        self.stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+        super().setUp()
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc))
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'))
 
 
 class AdminToolsStatsModel(TestCase):
