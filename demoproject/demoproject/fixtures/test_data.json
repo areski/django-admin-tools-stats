@@ -8,10 +8,11 @@
          },
          "updated_date":"2011-09-01 09:06:12",
          "criteria_name":"active",
-	 "dynamic_criteria_field_name":"",
-         "criteria_dynamic_mapping":{
-            "true": "Active",
-            "false": "Inactive"
+	 "dynamic_criteria_field_name":"is_active",
+         "criteria_dynamic_mapping": {
+           "": [null, "All"],
+           "false": [true, "Inactive"],
+           "true": [false, "Active"]
          },
          "created_date":"2011-09-01 09:01:40"
       }
