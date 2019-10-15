@@ -157,10 +157,13 @@ class DashboardStatsCriteria(models.Model):
                     'False': (False, 'False'),
                     'True': (True, 'True'),
                 }
-            elif len(field.choices) > 0:
-                return dict(field.choices)
             else:
-                return {i: (i, i) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)}
+                choices = OrderedDict()
+                fchoices = dict(field.choices)
+                choices.update(
+                    ((i, (i, fchoices[i] if i in fchoices else i)) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)),
+                )
+                return choices
 
 
 class DashboardStats(models.Model):
@@ -333,14 +336,18 @@ class DashboardStats(models.Model):
             self.error_message = str(e)
             messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.graph_title, str(e)))
 
-    def get_multi_time_series(self, request, time_since, time_until, interval):
+    def get_multi_series_criteria(self, request_get):
         try:
-            criteria_id = int(request.GET.get('select_box_multiple_series', ''))
+            criteria_id = int(request_get.get('select_box_multiple_series', ''))
             criteria = self.criteria.get(use_as='multiple_series', pk=criteria_id)
         except (DashboardStatsCriteria.DoesNotExist, ValueError):
             criteria = None
+        return criteria
+
+    def get_multi_time_series(self, request, time_since, time_until, interval):
         series = {}
         all_criteria = self.criteria.all()  # Outside of get_time_series just for performance reasons
+        criteria = self.get_multi_series_criteria(request.GET)
         if criteria and criteria.dynamic_criteria_field_name:
             choices = criteria.get_dynamic_choices(criteria, self)
 

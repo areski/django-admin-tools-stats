@@ -58,6 +58,11 @@ class ChartDataView(TemplateView):
         time_until = time_until.replace(hour=23, minute=59)
 
         series = dashboard_stats.get_multi_time_series(self.request, time_since, time_until, interval)
+        criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
+        if criteria:
+            choices = criteria.get_dynamic_choices(criteria, dashboard_stats)
+        else:
+            choices = {}
 
         ydata_serie = {}
         names = {}
@@ -71,7 +76,7 @@ class ChartDataView(TemplateView):
                 y_key = 'y%i' % serie_i_map[key]
                 if y_key not in ydata_serie:
                     ydata_serie[y_key] = []
-                    names['name%i' % serie_i_map[key]] = str(key)
+                    names['name%i' % serie_i_map[key]] = str(choices[key][1] if key in choices else key)
                 ydata_serie[y_key].append(value)
 
         context['extra'] = {
