@@ -129,12 +129,37 @@ class ViewsTests(BaseAuthenticatedClient):
 
     @override_settings(USE_TZ=True, TIME_ZONE='UTC')
     def test_get_multi_series(self):
-        """Test function to check dashboardstatscriteria admin pages"""
+        """Test function view rendering multi series"""
         mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc))
         url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
         url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
         response = self.client.get(url)
         assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'))
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series_dynamic_criteria(self):
+        """Test function view rendering multi series with dynamic criteria"""
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [True, "Inactive"],
+                "true": [False, "Active"]
+            },
+            use_as='multiple_series',
+            id=5,
+        )
+        self.stats.criteria.add(criteria)
+        self.stats.save()
+        self.stats.refresh_from_db()
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc))
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart&select_box_multiple_series=5"
+        response = self.client.get(url)
+        self.assertContains(response, ('"key": "Inactive"'))
+        self.assertContains(response, ('"key": "Active"'))
 
 
 class AdminToolsStatsModel(TestCase):
