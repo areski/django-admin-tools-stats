@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.11.0 (2019-XX-XX)
+0.11.0 (2019-11-21)
 ------------------
 
 * added support to display dynamic criteria as multiple series <Petr Dlouhý>
