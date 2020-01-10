@@ -8,6 +8,7 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+import logging
 from collections import OrderedDict
 from datetime import timedelta
 
@@ -30,6 +31,7 @@ import jsonfield.fields
 
 from qsstats.utils import get_bounds
 
+logger = logging.getLogger(__name__)
 
 operation = (
     ('DistinctCount', 'DistinctCount'),
@@ -279,66 +281,62 @@ class DashboardStats(models.Model):
 
     def get_time_series(self, dynamic_criteria_field_name, dynamic_criteria, all_criteria, request, time_since, time_until, interval):
         """ Get the stats time series """
-        try:
-            model_name = apps.get_model(self.model_app_name, self.model_name)
-            kwargs = {}
-            if request and not request.user.is_superuser and self.user_field_name:
-                kwargs[self.user_field_name] = request.user
-            for i in all_criteria:
-                # fixed mapping value passed info kwargs
-                if i.criteria_fix_mapping:
-                    for key in i.criteria_fix_mapping:
-                        # value => i.criteria_fix_mapping[key]
-                        kwargs[key] = i.criteria_fix_mapping[key]
+        model_name = apps.get_model(self.model_app_name, self.model_name)
+        kwargs = {}
+        if request and not request.user.is_superuser and self.user_field_name:
+            kwargs[self.user_field_name] = request.user
+        for i in all_criteria:
+            # fixed mapping value passed info kwargs
+            if i.criteria_fix_mapping:
+                for key in i.criteria_fix_mapping:
+                    # value => i.criteria_fix_mapping[key]
+                    kwargs[key] = i.criteria_fix_mapping[key]
 
-                # dynamic mapping value passed info kwargs
-                dynamic_key = "select_box_dynamic_%i" % i.id
-                if dynamic_key in dynamic_criteria:
-                    if dynamic_criteria[dynamic_key] != '':
-                        criteria_value = i.get_dynamic_choices(i, self)[dynamic_criteria[dynamic_key]]
-                        if isinstance(criteria_value, (list, tuple)):
-                            criteria_value = criteria_value[0]
-                        else:
-                            criteria_value = dynamic_criteria[dynamic_key]
-                        kwargs['id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name] = criteria_value
+            # dynamic mapping value passed info kwargs
+            dynamic_key = "select_box_dynamic_%i" % i.id
+            if dynamic_key in dynamic_criteria:
+                if dynamic_criteria[dynamic_key] != '':
+                    criteria_value = i.get_dynamic_choices(i, self)[dynamic_criteria[dynamic_key]]
+                    if isinstance(criteria_value, (list, tuple)):
+                        criteria_value = criteria_value[0]
+                    else:
+                        criteria_value = dynamic_criteria[dynamic_key]
+                    kwargs['id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name] = criteria_value
 
-            aggregate = None
-            if self.type_operation_field_name and self.operation_field_name:
-                operation = {
-                    'DistinctCount': Count(self.operation_field_name, distinct=True),
-                    'Count': Count(self.operation_field_name),
-                    'Sum': Sum(self.operation_field_name),
-                    'Avg': Avg(self.operation_field_name),
-                    'StdDev': StdDev(self.operation_field_name),
-                    'Max': Max(self.operation_field_name),
-                    'Min': Min(self.operation_field_name),
-                    'Variance': Variance(self.operation_field_name),
-                }
-                aggregate = operation[self.type_operation_field_name]
-            else:
-                aggregate = Count('id', distinct=True)
+        aggregate = None
+        if self.type_operation_field_name and self.operation_field_name:
+            operation = {
+                'DistinctCount': Count(self.operation_field_name, distinct=True),
+                'Count': Count(self.operation_field_name),
+                'Sum': Sum(self.operation_field_name),
+                'Avg': Avg(self.operation_field_name),
+                'StdDev': StdDev(self.operation_field_name),
+                'Max': Max(self.operation_field_name),
+                'Min': Min(self.operation_field_name),
+                'Variance': Variance(self.operation_field_name),
+            }
+            aggregate = operation[self.type_operation_field_name]
+        else:
+            aggregate = Count('id', distinct=True)
 
-            # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
-            time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
-            qs = model_name.objects
-            qs = qs.filter(**time_range)
-            qs = qs.filter(**kwargs)
-            if hasattr(time_since, 'tzinfo') and time_since.tzinfo:
-                tzinfo = {'tzinfo': time_since.tzinfo}
-            else:
-                tzinfo = {}
-            qs = qs.annotate(d=Trunc(self.date_field_name, interval, **tzinfo))
-            if dynamic_criteria_field_name:
-                qs = qs.values_list('d', dynamic_criteria_field_name)
-                qs = qs.order_by('d', dynamic_criteria_field_name)
-            else:
-                qs = qs.values_list('d')
-                qs = qs.order_by('d')
-            qs = qs.annotate(agg=aggregate)
-            return qs
-        except (LookupError, FieldError, TypeError) as e:
-            self.error_message = str(e)
-            messages.add_message(request, messages.ERROR, "%s dashboard: %s" % (self.graph_title, str(e)))
+        # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
+        time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
+        qs = model_name.objects
+        qs = qs.filter(**time_range)
+        qs = qs.filter(**kwargs)
+        if hasattr(time_since, 'tzinfo') and time_since.tzinfo:
+            tzinfo = {'tzinfo': time_since.tzinfo}
+        else:
+            tzinfo = {}
+        qs = qs.annotate(d=Trunc(self.date_field_name, interval, **tzinfo))
+        if dynamic_criteria_field_name:
+            qs = qs.values_list('d', dynamic_criteria_field_name)
+            qs = qs.order_by('d', dynamic_criteria_field_name)
+        else:
+            qs = qs.values_list('d')
+            qs = qs.order_by('d')
+        qs = qs.annotate(agg=aggregate)
+        return qs
 
     def get_multi_series_criteria(self, request_get):
         try:
@@ -410,6 +408,7 @@ class DashboardStats(models.Model):
             dy_map = i.get_dynamic_choices(i, self)
             if dy_map:
                 temp += i.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
+                temp += '<option value="">-------</option>'
                 for key, name in dy_map.items():
                     if isinstance(name, (list, tuple)):
                         name = name[1]

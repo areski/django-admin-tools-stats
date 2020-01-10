@@ -1,3 +1,4 @@
+import logging
 import time
 from collections import OrderedDict
 from datetime import datetime
@@ -10,6 +11,9 @@ from django.views.generic import TemplateView
 import pytz
 
 from .models import DashboardStats
+
+
+logger = logging.getLogger(__name__)
 
 
 class AdminChartsView(TemplateView):
@@ -57,7 +61,12 @@ class ChartDataView(TemplateView):
             time_until = current_tz.localize(time_until)
         time_until = time_until.replace(hour=23, minute=59)
 
-        series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, self.request)
+        try:
+            series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, self.request)
+        except Exception as e:
+            context['error'] = str(e)
+            logger.exception(e)
+            return context
         criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
         if criteria:
             choices = criteria.get_dynamic_choices(criteria, dashboard_stats)
