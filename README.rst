@@ -1,3 +1,6 @@
+NOTE: This project was rewritten to be more flexible and to work with common Django admin and released as `django-admin-charts <https://github.com/PetrDlouhy/django-admin-charts>`_. The `django-admin-charts` project is backward-compatible with `django-admin-tools-stats`, so you can migrate to that. All development and maintanence continues on `django-admin-charts` repository.
+
+
 Django-admin-tools-stats
 ------------------------
 
