@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.12.0 (2020-01-16)
+------------------
+
+* fix problem with date as Date field
+* report errors as javascript alerts
+
 0.11.0 (2019-11-21)
 ------------------
 
