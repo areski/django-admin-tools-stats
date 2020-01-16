@@ -77,7 +77,7 @@ class ChartDataView(TemplateView):
         names = {}
         xdata = []
         serie_i_map = OrderedDict()
-        for date in sorted(series.keys()):
+        for date in sorted(series.keys(), key=lambda d: datetime(d.year, d.month, d.day)):
             xdata.append(int(time.mktime(date.timetuple()) * 1000))
             for key, value in series[date].items():
                 if key not in serie_i_map:
