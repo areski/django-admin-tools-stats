@@ -92,6 +92,8 @@ class ChartDataView(TemplateView):
             'x_is_date': True,
             'tag_script_js': False,
         }
+        if context['chart_type'] == 'stackedAreaChart':
+            context['extra']['use_interactive_guideline'] = True
 
         tooltip_date_format, context['extra']['x_axis_format'] = interval_dateformat_map[interval]
 
