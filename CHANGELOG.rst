@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.13.0 (2020-01-16)
+------------------
+* add x_axis_format as DashboardStats field
+* add interactive guideline to StackedAreaChart
+
 0.12.0 (2020-01-16)
 ------------------
 

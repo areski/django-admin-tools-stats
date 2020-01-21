@@ -92,6 +92,10 @@ class ChartDataView(TemplateView):
             'x_is_date': True,
             'tag_script_js': False,
         }
+
+        if dashboard_stats.y_axis_format:
+            context['extra']['y_axis_format'] = dashboard_stats.y_axis_format
+
         if context['chart_type'] == 'stackedAreaChart':
             context['extra']['use_interactive_guideline'] = True
 

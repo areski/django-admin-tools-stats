@@ -229,6 +229,17 @@ class DashboardStats(models.Model):
         choices=time_scales,
         max_length=90,
     )
+    y_axis_format = models.CharField(
+        max_length=90,
+        verbose_name=_("Y axis format"),
+        help_text=_(
+            "Format of Y axis."
+            "<a href='https://github.com/d3/d3-format' target='_blank'>See description of possible values</a>."
+        ),
+        null=True,
+        blank=True,
+        default=None,
+    )
     criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True)
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
