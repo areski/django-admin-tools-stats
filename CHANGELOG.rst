@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.14.0 (2020-01-28)
+------------------
+* fix js cache mismatches
+
 0.13.0 (2020-01-16)
 ------------------
 * add x_axis_format as DashboardStats field
