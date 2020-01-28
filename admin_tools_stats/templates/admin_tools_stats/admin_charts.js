@@ -3,6 +3,13 @@ var html_string = '<svg style="width:{{chart_width}};height:{{chart_height}}px;"
 var chart_scripts = {};
 
 function loadChart(data, graph_key){
+   var storeToChartScripts = function(data_str) {
+      return function(data, textStatus, jqXHR) {
+            console.log("call " + data_str);
+            chart_scripts[data_str] = loadChartScript;
+      };
+   };
+
    data_str = data.serialize();
 
    if(data_str in chart_scripts){
@@ -14,10 +21,7 @@ function loadChart(data, graph_key){
          dataType: "script",
          'url': url,
          'data': data.serialize(),
-         success: function(){
-            console.log("call " + data_str);
-            chart_scripts[data_str] = loadChartScript;
-         }
+         success: storeToChartScripts(data_str)
       });
    };
 }
