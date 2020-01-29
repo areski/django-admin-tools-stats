@@ -163,7 +163,11 @@ class DashboardStatsCriteria(models.Model):
                 choices = OrderedDict()
                 fchoices = dict(field.choices)
                 choices.update(
-                    ((i, (i, fchoices[i] if i in fchoices else i)) for i in model.objects.values_list(field_name, flat=True).order_by(field_name)),
+                    (
+                        (i, (i, fchoices[i] if i in fchoices else i))
+                        for i in
+                        model.objects.values_list(field_name, flat=True).distinct().order_by(field_name)
+                    ),
                 )
                 return choices
 
