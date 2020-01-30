@@ -17,9 +17,9 @@ from cache_utils.decorators import cached
 from dateutil.relativedelta import relativedelta
 
 from django.apps import apps
-from django.contrib import messages
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
+from django.db.models import Q
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.db.models.functions import Trunc
 from django.utils.encoding import force_text
@@ -298,6 +298,7 @@ class DashboardStats(models.Model):
         """ Get the stats time series """
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
+        dynamic_kwargs = []
         if request and not request.user.is_superuser and self.user_field_name:
             kwargs[self.user_field_name] = request.user
         for i in all_criteria:
@@ -311,28 +312,38 @@ class DashboardStats(models.Model):
             dynamic_key = "select_box_dynamic_%i" % i.id
             if dynamic_key in dynamic_criteria:
                 if dynamic_criteria[dynamic_key] != '':
-                    criteria_value = i.get_dynamic_choices(i, self)[dynamic_criteria[dynamic_key]]
-                    if isinstance(criteria_value, (list, tuple)):
-                        criteria_value = criteria_value[0]
-                    else:
-                        criteria_value = dynamic_criteria[dynamic_key]
-                    kwargs['id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name] = criteria_value
+                    dynamic_values = dynamic_criteria[dynamic_key]
+                    for dynamic_value in dynamic_values:
+                        criteria_value = i.get_dynamic_choices(i, self)[dynamic_value]
+                        if isinstance(criteria_value, (list, tuple)):
+                            criteria_value = criteria_value[0]
+                        else:
+                            criteria_value = dynamic_criteria[dynamic_key]
+                        dynamic_kwargs.append(Q(**{'id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name: criteria_value}))
 
-        aggregate = None
-        if self.type_operation_field_name and self.operation_field_name:
+        aggregate_dict = {}
+        i = 0
+        if not dynamic_kwargs:
+            dynamic_kwargs = [None]
+
+        for dkwargs in dynamic_kwargs:
+            i += 1
+            if not self.type_operation_field_name:
+                self.type_operation_field_name = 'DistinctCount'
+            if not self.operation_field_name:
+                self.operation_field_name = 'id'
+
             operation = {
-                'DistinctCount': Count(self.operation_field_name, distinct=True),
-                'Count': Count(self.operation_field_name),
-                'Sum': Sum(self.operation_field_name),
-                'Avg': Avg(self.operation_field_name),
-                'StdDev': StdDev(self.operation_field_name),
-                'Max': Max(self.operation_field_name),
-                'Min': Min(self.operation_field_name),
-                'Variance': Variance(self.operation_field_name),
+                'DistinctCount': Count(self.operation_field_name, distinct=True, filter=dkwargs),
+                'Count': Count(self.operation_field_name, filter=dkwargs),
+                'Sum': Sum(self.operation_field_name, filter=dkwargs),
+                'Avg': Avg(self.operation_field_name, filter=dkwargs),
+                'StdDev': StdDev(self.operation_field_name, filter=dkwargs),
+                'Max': Max(self.operation_field_name, filter=dkwargs),
+                'Min': Min(self.operation_field_name, filter=dkwargs),
+                'Variance': Variance(self.operation_field_name, filter=dkwargs),
             }
-            aggregate = operation[self.type_operation_field_name]
-        else:
-            aggregate = Count('id', distinct=True)
+            aggregate_dict['agg_%i' % i] = operation[self.type_operation_field_name]
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
         time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
@@ -350,7 +361,7 @@ class DashboardStats(models.Model):
         else:
             qs = qs.values_list('d')
             qs = qs.order_by('d')
-        qs = qs.annotate(agg=aggregate)
+        qs = qs.annotate(**aggregate_dict)
         return qs
 
     def get_multi_series_criteria(self, request_get):
@@ -371,19 +382,24 @@ class DashboardStats(models.Model):
             if criteria.criteria_dynamic_mapping:
                 serie_map = {}
                 names = []
+                values = []
                 for key, name in choices.items():
                     if key != '':
                         if isinstance(name, (list, tuple)):
                             name = name[1]
                         names.append(name)
-                        serie_map[name] = self.get_time_series(
-                            None, {'select_box_dynamic_' + str(criteria.id): key}, all_criteria, request, time_since, time_until, interval
-                        )
-                for name, serie in serie_map.items():
-                    for time, value in serie:
-                        if time not in series:
-                            series[time] = OrderedDict()
-                        series[time][name] = value
+                        values.append(key)
+                serie_map = self.get_time_series(
+                    None, {'select_box_dynamic_' + str(criteria.id): values}, all_criteria, request, time_since, time_until, interval
+                )
+                for tv in serie_map:
+                    time = tv[0]
+                    if time not in series:
+                        series[time] = OrderedDict()
+                    i = 0
+                    for name in names:
+                        i += 1
+                        series[time][name] = tv[i]
             else:
                 serie = self.get_time_series(
                     criteria.dynamic_criteria_field_name, configuration, all_criteria, request, time_since, time_until, interval
