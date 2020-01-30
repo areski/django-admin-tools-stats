@@ -147,18 +147,18 @@ class DashboardStatsCriteria(models.Model):
             return dict(self.criteria_dynamic_mapping)
         if field_name:
             if field_name.endswith('__isnull'):
-                return {
-                    '': ('', 'All'),
-                    'False': (False, 'Non blank'),
-                    'True': (True, 'Blank'),
-                }
+                return OrderedDict((
+                    ('', ('', 'All')),
+                    ('True', (True, 'Blank')),
+                    ('False', (False, 'Non blank')),
+                ))
             field = self.get_dynamic_field(model)
             if field.__class__ == models.BooleanField:
-                return {
-                    '': ('', 'All'),
-                    'False': (False, 'False'),
-                    'True': (True, 'True'),
-                }
+                return OrderedDict((
+                    ('', ('', 'All')),
+                    ('True', (True, 'True')),
+                    ('False', (False, 'False')),
+                ))
             else:
                 choices = OrderedDict()
                 fchoices = dict(field.choices)
@@ -303,7 +303,7 @@ class DashboardStats(models.Model):
         raise ValidationError(errors)
         return super(DashboardStats, self).clean(*args, **kwargs)
 
-    def get_time_series(self, dynamic_criteria_field_name, dynamic_criteria, all_criteria, request, time_since, time_until, interval):
+    def get_time_series(self, dynamic_criteria, all_criteria, request, time_since, time_until, interval):
         """ Get the stats time series """
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
@@ -322,13 +322,23 @@ class DashboardStats(models.Model):
             if dynamic_key in dynamic_criteria:
                 if dynamic_criteria[dynamic_key] != '':
                     dynamic_values = dynamic_criteria[dynamic_key]
+                    criteria_key = 'id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name
+                    if isinstance(dynamic_values, (list, tuple)):
+                        single_value = False
+                    else:
+                        dynamic_values = (dynamic_values,)
+                        single_value = True
+
                     for dynamic_value in dynamic_values:
                         criteria_value = i.get_dynamic_choices(i, self)[dynamic_value]
                         if isinstance(criteria_value, (list, tuple)):
                             criteria_value = criteria_value[0]
                         else:
-                            criteria_value = dynamic_criteria[dynamic_key]
-                        dynamic_kwargs.append(Q(**{'id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name: criteria_value}))
+                            criteria_value = dynamic_value
+                        if single_value:
+                            kwargs[criteria_key] = criteria_value
+                        else:
+                            dynamic_kwargs.append(Q(**{criteria_key: criteria_value}))
 
         aggregate_dict = {}
         i = 0
@@ -364,12 +374,8 @@ class DashboardStats(models.Model):
         else:
             tzinfo = {}
         qs = qs.annotate(d=Trunc(self.date_field_name, interval, **tzinfo))
-        if dynamic_criteria_field_name:
-            qs = qs.values_list('d', dynamic_criteria_field_name)
-            qs = qs.order_by('d', dynamic_criteria_field_name)
-        else:
-            qs = qs.values_list('d')
-            qs = qs.order_by('d')
+        qs = qs.values_list('d')
+        qs = qs.order_by('d')
         qs = qs.annotate(**aggregate_dict)
         return qs
 
@@ -382,46 +388,34 @@ class DashboardStats(models.Model):
         return criteria
 
     def get_multi_time_series(self, configuration, time_since, time_until, interval, request=None):
+        configuration = configuration.copy()
         series = {}
         all_criteria = self.criteria.all()  # Outside of get_time_series just for performance reasons
         criteria = self.get_multi_series_criteria(configuration)
         if criteria and criteria.dynamic_criteria_field_name:
             choices = criteria.get_dynamic_choices(criteria, self)
 
-            if criteria.criteria_dynamic_mapping:
-                serie_map = {}
-                names = []
-                values = []
-                for key, name in choices.items():
-                    if key != '':
-                        if isinstance(name, (list, tuple)):
-                            name = name[1]
-                        names.append(name)
-                        values.append(key)
-                serie_map = self.get_time_series(
-                    None, {'select_box_dynamic_' + str(criteria.id): values}, all_criteria, request, time_since, time_until, interval
-                )
-                for tv in serie_map:
-                    time = tv[0]
-                    if time not in series:
-                        series[time] = OrderedDict()
-                    i = 0
-                    for name in names:
-                        i += 1
-                        series[time][name] = tv[i]
-            else:
-                serie = self.get_time_series(
-                    criteria.dynamic_criteria_field_name, configuration, all_criteria, request, time_since, time_until, interval
-                )
-                names = choices.keys()
-                for time, key, value in serie:
-                    if time not in series:
-                        series[time] = OrderedDict()
-                        for name in names:
-                            series[time][name] = 0
-                    series[time][key] = value
+            serie_map = {}
+            names = []
+            values = []
+            for key, name in choices.items():
+                if key != '':
+                    if isinstance(name, (list, tuple)):
+                        name = name[1]
+                    names.append(name)
+                    values.append(key)
+            configuration['select_box_dynamic_' + str(criteria.id)] = values
+            serie_map = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
+            for tv in serie_map:
+                time = tv[0]
+                if time not in series:
+                    series[time] = OrderedDict()
+                i = 0
+                for name in names:
+                    i += 1
+                    series[time][name] = tv[i]
         else:
-            serie = self.get_time_series(None, configuration, all_criteria, request, time_since, time_until, interval)
+            serie = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
             for time, value in serie:
                 series[time] = {'': value}
             names = {'': ''}
