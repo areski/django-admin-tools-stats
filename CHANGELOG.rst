@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.15.0 (2020-XX-XX)
+------------------
+* cleanups and refactoring
+* faster queries
+
 0.14.0 (2020-01-28)
 ------------------
 * fix js cache mismatches
