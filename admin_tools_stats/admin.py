@@ -8,10 +8,13 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
+
 from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
-from admin_tools_stats.models import DashboardStatsCriteria, DashboardStats
+
 from admin_tools_stats.app_label_renamer import AppLabelRenamer
+from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
+
 AppLabelRenamer(native_app_label=u'admin_tools_stats', app_label=_('Admin Tools Stats')).main()
 
 
@@ -24,6 +27,7 @@ class DashboardStatsCriteriaAdmin(admin.ModelAdmin):
     list_filter = ['created_date']
     ordering = ('id', )
     save_as = True
+
 
 admin.site.register(DashboardStatsCriteria, DashboardStatsCriteriaAdmin)
 
@@ -38,5 +42,6 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     list_filter = ['created_date']
     ordering = ('id', )
     save_as = True
+
 
 admin.site.register(DashboardStats, DashboardStatsAdmin)

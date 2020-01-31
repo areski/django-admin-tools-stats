@@ -1,10 +1,12 @@
-from setuptools import setup, find_packages
 import os
 import re
+
+from setuptools import find_packages, setup
+
 import admin_tools_stats
 
 
-def runtests():
+def runtests(*args, **kwargs):
     import os
     import sys
 

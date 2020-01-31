@@ -156,7 +156,7 @@ ROOT_URLCONF = 'demoproject.urls'
 WSGI_APPLICATION = 'demoproject.wsgi.application'
 
 INSTALLED_APPS = (
-    #admin tool apps
+    # admin tool apps
     'django_nvd3',
     'admin_tools_stats',
     'admin_tools',
@@ -177,7 +177,7 @@ INSTALLED_APPS = (
 
 # Django extensions
 try:
-    import django_extensions
+    import django_extensions  # noqa
 except ImportError:
     pass
 else:
@@ -226,25 +226,17 @@ BOWER_INSTALLED_APPS = (
     'nvd3#1.7.1',
 )
 
-#DJANGO-ADMIN-TOOL
-#=================
+# DJANGO-ADMIN-TOOL
+# =================
 ADMIN_TOOLS_MENU = 'menu.CustomMenu'
 ADMIN_TOOLS_INDEX_DASHBOARD = 'dashboard.CustomIndexDashboard'
 ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'dashboard.CustomAppIndexDashboard'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
-# Django extensions
-try:
-    import django_extensions
-except ImportError:
-    pass
-else:
-    INSTALLED_APPS = INSTALLED_APPS + ('django_extensions',)
 
-
-#IMPORT LOCAL SETTINGS
-#=====================
+# IMPORT LOCAL SETTINGS
+# =====================
 try:
-    from settings_local import *
+    from settings_local import *  # noqa
 except ImportError:
     pass

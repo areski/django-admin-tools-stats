@@ -101,8 +101,10 @@ class ChartDataView(TemplateView):
 
         tooltip_date_format, context['extra']['x_axis_format'] = interval_dateformat_map[interval]
 
-        extra_serie = {"tooltip": {"y_start": "", "y_end": ""},
-                       "date_format": tooltip_date_format}
+        extra_serie = {
+            "tooltip": {"y_start": "", "y_end": ""},
+            "date_format": tooltip_date_format,
+        }
 
         context['values'] = {
             'x': xdata,

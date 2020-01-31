@@ -9,12 +9,13 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 
-from django.contrib.auth.models import User
-from django.test import TestCase, Client
-from django.test.client import RequestFactory
 import base64
-import unittest
 import inspect
+import unittest
+
+from django.contrib.auth.models import User
+from django.test import Client, TestCase
+from django.test.client import RequestFactory
 
 
 def build_test_suite_from(test_cases):
@@ -35,8 +36,11 @@ def build_test_suite_from(test_cases):
         for item in mod.__dict__.values():
             if type(item) is type and issubclass(item, test_case):
                 tests.append(item)
-        test_suites.append(unittest.TestSuite(
-            map(unittest.TestLoader().loadTestsFromTestCase, tests)))
+        test_suites.append(
+            unittest.TestSuite(
+                map(unittest.TestLoader().loadTestsFromTestCase, tests),
+            ),
+        )
 
     return unittest.TestSuite(test_suites)
 
@@ -63,8 +67,11 @@ class BaseAuthenticatedClient(TestCase):
 
         self.factory = RequestFactory()
 
-def assertContainsAny(self, response, texts, status_code=200,
-                      msg_prefix='', html=False):
+
+def assertContainsAny(
+        self, response, texts, status_code=200,
+        msg_prefix='', html=False,
+):
     total_count = 0
     for text in texts:
         text_repr, real_count, msg_prefix = self._assert_contains(response, text, status_code, msg_prefix, html)

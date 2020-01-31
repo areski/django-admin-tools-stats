@@ -6,10 +6,10 @@ To activate your custom menu add the following to your settings.py::
     ADMIN_TOOLS_MENU = 'demoproject.menu.CustomMenu'
 """
 
+from admin_tools.menu import Menu, items
+
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
-
-from admin_tools.menu import items, Menu
 
 
 class CustomMenu(Menu):

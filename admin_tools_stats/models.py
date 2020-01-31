@@ -80,17 +80,21 @@ class DashboardStatsCriteria(models.Model):
 
     **Name of DB table**: dash_stats_criteria
     """
-    criteria_name = models.CharField(max_length=90, db_index=True,
-                                     verbose_name=_('criteria name'),
-                                     help_text=_("it needs to be one word unique. Ex. status, yesno"))
+    criteria_name = models.CharField(
+        max_length=90, db_index=True,
+        verbose_name=_('criteria name'),
+        help_text=_("it needs to be one word unique. Ex. status, yesno"),
+    )
     criteria_fix_mapping = jsonfield.fields.JSONField(
         null=True, blank=True,
         verbose_name=_("fixed criteria / value"),
-        help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"))
+        help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"),
+    )
     dynamic_criteria_field_name = models.CharField(
         max_length=90, blank=True, null=True,
         verbose_name=_("dynamic criteria field name"),
-        help_text=_("ex. for call records - disposition"))
+        help_text=_("ex. for call records - disposition"),
+    )
     criteria_dynamic_mapping = jsonfield.fields.JSONField(
         null=True, blank=True,
         verbose_name=_("dynamic criteria / value"),
@@ -192,17 +196,21 @@ class DashboardStats(models.Model):
     graph_key = models.CharField(
         unique=True, max_length=90,
         verbose_name=_('graph identifier'),
-        help_text=_("it needs to be one word unique. ex. auth, mygraph"))
+        help_text=_("it needs to be one word unique. ex. auth, mygraph"),
+    )
     graph_title = models.CharField(
         max_length=90, db_index=True,
         verbose_name=_('graph title'),
-        help_text=_("heading title of graph box"))
+        help_text=_("heading title of graph box"),
+    )
     model_app_name = models.CharField(
         max_length=90, verbose_name=_('app name'),
-        help_text=_("ex. auth / dialer_cdr"))
+        help_text=_("ex. auth / dialer_cdr"),
+    )
     model_name = models.CharField(
         max_length=90, verbose_name=_('model name'),
-        help_text=_("ex. User"))
+        help_text=_("ex. User"),
+    )
     date_field_name = models.CharField(
         max_length=90, verbose_name=_("date field name"),
         help_text=_("ex. date_joined, invitation__invitation_date"),
@@ -210,15 +218,18 @@ class DashboardStats(models.Model):
     user_field_name = models.CharField(
         max_length=90, verbose_name=_("user field name"),
         null=True, blank=True,
-        help_text=_("ex. owner, invitation__owner"))
+        help_text=_("ex. owner, invitation__owner"),
+    )
     operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Operate field name"),
         null=True, blank=True,
-        help_text=_("The field you want to aggregate, ex. amount, salaries__total_income"))
+        help_text=_("The field you want to aggregate, ex. amount, salaries__total_income"),
+    )
     type_operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Choose Type operation"),
         null=True, blank=True, choices=operation,
-        help_text=_("choose the type operation what you want to aggregate, ex. Sum"))
+        help_text=_("choose the type operation what you want to aggregate, ex. Sum"),
+    )
     default_chart_type = models.CharField(
         max_length=90,
         verbose_name=_("Default chart type"),

@@ -35,8 +35,11 @@ class AppLabelRenamer(object):
         def title(self):
             return self._title
 
-        __copy__ = lambda self: self
-        __deepcopy__ = lambda self, memodict: self
+        def __copy__(self):
+            return self
+
+        def __deepcopy__(self, memodict):
+            return self
 
     def rename_app_label(self, f):
         app_label = self.app_label

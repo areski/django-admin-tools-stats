@@ -88,7 +88,6 @@ def get_active_graph():
     return stats
 
 
-
 class DashboardCharts(DashboardChart):
     """Deprecated class left for compatibility."""
 

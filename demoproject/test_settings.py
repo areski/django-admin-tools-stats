@@ -1,4 +1,4 @@
-from .demoproject.settings import *
+from .demoproject.settings import *  # noqa
 
 ROOT_URLCONF = 'demoproject.demoproject.urls'
 ADMIN_TOOLS_MENU = 'demoproject.menu.CustomMenu'

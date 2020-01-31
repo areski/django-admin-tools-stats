@@ -23,7 +23,7 @@ cache:
 install:
   - pip install 'coverage<4' # coverage>=4 has issues with python3
   - pip install -q $DJANGO_VERSION
-  - pip install -q coveralls
+  - pip install -q coveralls flake8
   - pip install -r demoproject/requirements.txt
   - pip install -r requirements.txt
 
@@ -43,6 +43,7 @@ before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
 
 script:
+    - flake8
     - django-admin --version
     - python -Wall $VIRTUAL_ENV/bin/coverage run setup.py test
 

@@ -11,9 +11,6 @@
 import datetime
 from collections import OrderedDict
 
-from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
-from admin_tools_stats.utils import BaseAuthenticatedClient, assertContainsAny
-
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -21,6 +18,9 @@ from django.test.utils import override_settings
 from django.urls import reverse
 
 from model_mommy import mommy
+
+from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
+from admin_tools_stats.utils import BaseAuthenticatedClient, assertContainsAny
 
 
 class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
@@ -96,7 +96,7 @@ class ClearCacheMixin(object):
 
 
 class ModelTests(ClearCacheMixin, TestCase):
-    maxDiff=None
+    maxDiff = None
 
     def setUp(self):
         self.stats = mommy.make(
@@ -135,7 +135,7 @@ class ModelTests(ClearCacheMixin, TestCase):
             criteria_dynamic_mapping={
                 "": [None, "All"],
                 "false": [False, "Inactive"],
-                "true": [True, "Active"]
+                "true": [True, "Active"],
             },
             use_as='multiple_series',
         )
@@ -169,7 +169,7 @@ class ModelTests(ClearCacheMixin, TestCase):
             dynamic_criteria_field_name="is_active",
             criteria_dynamic_mapping={
                 "False": "Inactive",
-                "True": "Active"
+                "True": "Active",
             },
             use_as='multiple_series',
         )
@@ -359,7 +359,7 @@ class ViewsTests(BaseAuthenticatedClient):
             criteria_dynamic_mapping={
                 "": [None, "All"],
                 "false": [True, "Inactive"],
-                "true": [False, "Active"]
+                "true": [False, "Active"],
             },
             use_as='multiple_series',
             id=5,
@@ -369,7 +369,11 @@ class ViewsTests(BaseAuthenticatedClient):
         self.stats.refresh_from_db()
         mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc))
         url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
-        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart&select_box_multiple_series=5"
+        url += "?time_since=2010-10-08"
+        url += "&time_until=2010-10-12"
+        url += "&select_box_interval=days"
+        url += "&select_box_chart_type=discreteBarChart"
+        url += "&select_box_multiple_series=5"
         response = self.client.get(url)
         self.assertContains(response, ('"key": "Inactive"'))
         self.assertContains(response, ('"key": "Active"'))
@@ -396,12 +400,11 @@ class AdminToolsStatsModel(TestCase):
                 "CHANUNAVAIL": "CHANUNAVAIL",
                 "NOANSWER": "NOANSWER",
                 "CONGESTION": "CONGESTION",
-                "CANCEL": "CANCEL"
+                "CANCEL": "CANCEL",
             },
         )
         self.dashboard_stats_criteria.save()
-        self.assertEqual(
-            self.dashboard_stats_criteria.__str__(), 'call_type')
+        self.assertEqual(self.dashboard_stats_criteria.__str__(), 'call_type')
 
         # DashboardStats model
         self.dashboard_stats = DashboardStats(
@@ -421,8 +424,7 @@ class AdminToolsStatsModel(TestCase):
         self.assertEqual(self.dashboard_stats.__str__(), 'user_graph_test')
 
     def test_dashboard_criteria(self):
-        self.assertEqual(
-            self.dashboard_stats_criteria.criteria_name, "call_type")
+        self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
         self.assertEqual(self.dashboard_stats.graph_key, 'user_graph_test')
 
     def teardown(self):
