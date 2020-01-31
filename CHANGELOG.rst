@@ -6,6 +6,7 @@ Changelog
 * cleanups and refactoring
 * faster queries
 * add Django 3.0 support
+* invalidate cache on models save
 
 0.14.0 (2020-01-28)
 ------------------

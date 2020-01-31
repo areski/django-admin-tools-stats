@@ -11,7 +11,6 @@
 import datetime
 from collections import OrderedDict
 
-from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -89,13 +88,7 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
         )
 
 
-class ClearCacheMixin(object):
-    def tearDown(self):
-        super().tearDown()
-        cache.clear()
-
-
-class ModelTests(ClearCacheMixin, TestCase):
+class ModelTests(TestCase):
     maxDiff = None
 
     def setUp(self):

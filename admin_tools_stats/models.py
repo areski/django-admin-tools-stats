@@ -22,6 +22,8 @@ from django.db import models
 from django.db.models import Q
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.db.models.functions import Trunc
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
@@ -498,3 +500,15 @@ class DashboardStats(models.Model):
     def get_active_graph(cls):
         """Returns active graphs"""
         return DashboardStats.objects.filter(is_visible=1).prefetch_related('criteria')
+
+
+@receiver(post_save, sender=DashboardStatsCriteria)
+def clear_caches_criteria(sender, instance, **kwargs):
+    for dashboard_stats in instance.dashboardstats_set.all():
+        instance.get_dynamic_choices.invalidate(instance, dashboard_stats)
+
+
+@receiver(post_save, sender=DashboardStats)
+def clear_caches_stats(sender, instance, **kwargs):
+    for criteria in instance.criteria.all():
+        criteria.get_dynamic_choices.invalidate(criteria, instance)
