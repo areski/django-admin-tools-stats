@@ -161,7 +161,7 @@ class DashboardStatsCriteria(models.Model):
                 ))
             else:
                 choices = OrderedDict()
-                fchoices = dict(field.choices)
+                fchoices = dict(field.choices or [])
                 choices.update(
                     (
                         (i, (i, fchoices[i] if i in fchoices else i))
