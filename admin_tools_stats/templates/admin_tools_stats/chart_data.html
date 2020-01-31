@@ -1,4 +1,8 @@
 {% load nvd3_tags %}
+{% if request.GET.debug %}
+{# If &debug=True is added to URL show the page as HTML to enable django-debug-toolbar (if installed) #}
+<html><body><pre>
+{% endif %}
 {% if error %}
 alert('{{ error|escapejs }}');
 {% elif values %}
@@ -6,4 +10,7 @@ function loadChartScript(){
    {% load_chart chart_type values chart_container extra %}
 };
 loadChartScript();
+{% endif %}
+{% if request.GET.debug %}
+</html></body></pre>
 {% endif %}
