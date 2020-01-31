@@ -39,8 +39,6 @@ interval_dateformat_map = {
 class ChartDataView(TemplateView):
     template_name = 'admin_tools_stats/chart_data.html'
 
-    cache_cache_name = "pages"
-
     def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
         context = super().get_context_data(*args, **kwargs)
         interval = self.request.GET.get('select_box_interval', interval)

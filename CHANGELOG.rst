@@ -7,6 +7,7 @@ Changelog
 * faster queries
 * add Django 3.0 support
 * invalidate cache on models save
+* dropped support of Python 3.5 (in which cache invalidation does not work)
 
 0.14.0 (2020-01-28)
 ------------------

@@ -33,6 +33,11 @@ This is application is fork of `django-admin-tools-stats <https://github.com/are
 
 .. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/develop/docs/source/_static/admin_dashboard.png
 
+============
+Requirements
+============
+
+Django>=2.0, Python>3.6
 
 ============
 Installation
