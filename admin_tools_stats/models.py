@@ -19,7 +19,7 @@ from dateutil.relativedelta import relativedelta
 from django.apps import apps
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import ExpressionWrapper, Q
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.db.models.functions import Trunc
 from django.db.models.signals import post_save
@@ -39,7 +39,8 @@ operation = (
     ('DistinctCount', 'DistinctCount'),
     ('Count', 'Count'),
     ('Sum', 'Sum'),
-    ('Avg', 'Avg'),
+    ('Avg', 'Avgerage'),
+    ('AvgCountPerInstance', 'Avgerage count per active model instance'),
     ('Max', 'Max'),
     ('Min', 'Min'),
     ('StdDev', 'StdDev'),
@@ -367,6 +368,12 @@ class DashboardStats(models.Model):
 
             operation = {
                 'DistinctCount': Count(self.operation_field_name, distinct=True, filter=dkwargs),
+                'AvgCountPerInstance': ExpressionWrapper(
+                    1.0 *
+                    Count(self.operation_field_name, distinct=True, filter=dkwargs) /
+                    Count('id', distinct=True, filter=Q(**{self.operation_field_name + "__isnull": False})),
+                    output_field=models.FloatField()
+                ),
                 'Count': Count(self.operation_field_name, filter=dkwargs),
                 'Sum': Sum(self.operation_field_name, filter=dkwargs),
                 'Avg': Avg(self.operation_field_name, filter=dkwargs),
