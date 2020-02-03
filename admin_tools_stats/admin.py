@@ -25,11 +25,25 @@ class DashboardStatsCriteriaAdmin(admin.ModelAdmin):
     """
     list_display = ('id', 'criteria_name', 'created_date', 'use_as')
     list_filter = ['created_date']
+    search_fields = ('criteria_name',)
     ordering = ('id', )
     save_as = True
 
 
 admin.site.register(DashboardStatsCriteria, DashboardStatsCriteriaAdmin)
+
+
+class DashboardStatsCriteriaInline(admin.TabularInline):
+    model = DashboardStats.criteria.through
+    readonly_fields = ('criteria__dynamic_criteria_field_name', 'use_as')
+    autocomplete_fields = ('dashboardstatscriteria',)
+    extra = 0
+
+    def criteria__dynamic_criteria_field_name(self, obj):
+        return obj.dashboardstatscriteria.dynamic_criteria_field_name
+
+    def use_as(self, obj):
+        return obj.dashboardstatscriteria.use_as
 
 
 class DashboardStatsAdmin(admin.ModelAdmin):
@@ -38,8 +52,10 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     of a DashboardStats.
     """
     list_display = ('id', 'graph_key', 'graph_title', 'model_name',
-                    'is_visible', 'created_date', 'default_chart_type')
+                    'is_visible', 'created_date', 'date_field_name', 'operation_field_name', 'default_chart_type')
     list_filter = ['created_date']
+    exclude = ('criteria',)
+    inlines = [DashboardStatsCriteriaInline]
     ordering = ('id', )
     save_as = True
 
