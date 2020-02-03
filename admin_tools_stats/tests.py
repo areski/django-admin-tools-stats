@@ -100,6 +100,26 @@ class ModelTests(TestCase):
             graph_key="user_graph",
         )
 
+    def test_clean_error_model_app_app_name(self):
+        stats = mommy.make('DashboardStats', model_name="User1", model_app_name="auth1", graph_key="error_graph")
+        with self.assertRaisesRegexp(ValidationError, "model_name.*No installed app with label"):
+            stats.clean()
+
+    def test_clean_error_model_name(self):
+        stats = mommy.make('DashboardStats', model_name="User1", model_app_name="auth", graph_key="error_graph")
+        with self.assertRaisesRegexp(ValidationError, "model_name.*App 'auth' doesn't have a 'User1' model."):
+            stats.clean()
+
+    def test_clean_error_operation_field(self):
+        stats = mommy.make('DashboardStats', model_name="User", model_app_name="auth", graph_key="error_graph", operation_field_name='asdf')
+        with self.assertRaisesRegexp(ValidationError, "operation_field_name.*Cannot resolve keyword 'asdf' into field. Choices are:"):
+            stats.clean()
+
+    def test_clean_error_date_field(self):
+        stats = mommy.make('DashboardStats', model_name="User", model_app_name="auth", graph_key="error_graph", date_field_name='asdf')
+        with self.assertRaisesRegexp(ValidationError, "date_field_name.*Cannot resolve keyword 'asdf' into field. Choices are:"):
+            stats.clean()
+
     @override_settings(USE_TZ=False)
     def test_get_multi_series(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
