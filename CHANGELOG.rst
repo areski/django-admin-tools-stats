@@ -8,6 +8,9 @@ Changelog
 * add Django 3.0 support
 * invalidate cache on models save
 * dropped support of Python 3.5 (in which cache invalidation does not work)
+* add AvgCountPerInstance operation type
+* allow to set &debug=True GET parameter in chart-data view for easier debugging
+* move distinct to separate field
 
 0.14.0 (2020-01-28)
 ------------------
