@@ -36,7 +36,6 @@ from qsstats.utils import get_bounds
 logger = logging.getLogger(__name__)
 
 operation = (
-    ('DistinctCount', 'DistinctCount'),
     ('Count', 'Count'),
     ('Sum', 'Sum'),
     ('Avg', 'Avgerage'),
@@ -228,6 +227,15 @@ class DashboardStats(models.Model):
         null=True, blank=True,
         help_text=_("The field you want to aggregate, ex. amount, salaries__total_income"),
     )
+    distinct = models.BooleanField(
+        default=False,
+        null=False,
+        blank=True,
+        help_text=_(
+            "Note: Distinct is supported only for Count, Sum, Avg and 'Avgerage count per active model instance'.<br/>"
+            "Django>=3.0 is needed for distinct Sum and Avg."
+        ),
+    )
     type_operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Choose Type operation"),
         null=True, blank=True, choices=operation,
@@ -362,21 +370,20 @@ class DashboardStats(models.Model):
         for dkwargs in dynamic_kwargs:
             i += 1
             if not self.type_operation_field_name:
-                self.type_operation_field_name = 'DistinctCount'
+                self.type_operation_field_name = 'Count'
             if not self.operation_field_name:
                 self.operation_field_name = 'id'
 
             operation = {
-                'DistinctCount': Count(self.operation_field_name, distinct=True, filter=dkwargs),
                 'AvgCountPerInstance': ExpressionWrapper(
                     1.0 *
-                    Count(self.operation_field_name, distinct=True, filter=dkwargs) /
+                    Count(self.operation_field_name, distinct=self.distinct, filter=dkwargs) /
                     Count('id', distinct=True, filter=Q(**{self.operation_field_name + "__isnull": False})),
                     output_field=models.FloatField()
                 ),
-                'Count': Count(self.operation_field_name, filter=dkwargs),
-                'Sum': Sum(self.operation_field_name, filter=dkwargs),
-                'Avg': Avg(self.operation_field_name, filter=dkwargs),
+                'Count': Count(self.operation_field_name, distinct=self.distinct, filter=dkwargs),
+                'Sum': Sum(self.operation_field_name, distinct=self.distinct, filter=dkwargs),
+                'Avg': Avg(self.operation_field_name, distinct=self.distinct, filter=dkwargs),
                 'StdDev': StdDev(self.operation_field_name, filter=dkwargs),
                 'Max': Max(self.operation_field_name, filter=dkwargs),
                 'Min': Min(self.operation_field_name, filter=dkwargs),

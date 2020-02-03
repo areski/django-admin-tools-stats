@@ -51,7 +51,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     Allows the administrator to view and modify certain attributes
     of a DashboardStats.
     """
-    list_display = ('id', 'graph_key', 'graph_title', 'model_name',
+    list_display = ('id', 'graph_key', 'graph_title', 'model_name', 'distinct', 'type_operation_field_name',
                     'is_visible', 'created_date', 'date_field_name', 'operation_field_name', 'default_chart_type')
     list_filter = ['created_date']
     exclude = ('criteria',)
