@@ -155,7 +155,7 @@ ROOT_URLCONF = 'demoproject.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'demoproject.wsgi.application'
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     # admin tool apps
     'django_nvd3',
     'admin_tools_stats',
@@ -173,7 +173,7 @@ INSTALLED_APPS = (
     'djangobower',
     'demoproject',
     # 'south',
-)
+]
 
 # Django extensions
 try:
