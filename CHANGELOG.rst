@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.15.0 (2020-XX-XX)
+0.15.0 (2020-02-04)
 ------------------
 * cleanups and refactoring
 * faster queries
