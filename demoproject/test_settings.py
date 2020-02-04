@@ -1,4 +1,5 @@
 from .demoproject.settings import *  # noqa
+from .demoproject.settings import INSTALLED_APPS
 
 ROOT_URLCONF = 'demoproject.demoproject.urls'
 ADMIN_TOOLS_MENU = 'demoproject.menu.CustomMenu'

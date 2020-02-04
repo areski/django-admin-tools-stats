@@ -12,5 +12,3 @@ class TestKid(models.Model):
     wanted_games_qtd = models.BigIntegerField()
     birthday = models.DateField()
     appointment = models.DateTimeField()
-
-
