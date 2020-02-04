@@ -139,6 +139,65 @@ class ModelTests(TestCase):
         self.assertDictEqual(serie, testing_data)
 
     @override_settings(USE_TZ=False)
+    def test_get_multi_series_distinct_count(self):
+        """Test function to check DashboardStats.get_multi_time_series() with distinct count."""
+        stats = mommy.make(
+            'DashboardStats',
+            model_name="User",
+            date_field_name='date_joined',
+            model_app_name="auth",
+            type_operation_field_name="Count",
+            distinct=True,
+            operation_field_name='first_name',
+        )
+        mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Foo")
+        mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Foo")
+        mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Bar")
+        time_since = datetime.date(2010, 10, 8)
+        time_until = datetime.date(2010, 10, 12)
+
+        interval = "days"
+        serie = stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 10, 0, 0): {'': 2},
+            datetime.datetime(2010, 10, 11, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 12, 0, 0): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_distinct_functions(self):
+        """Test function to check DashboardStats.get_multi_time_series() with various functions."""
+        for func, result in (
+                ("Sum", 15),
+                ("Avg", 5),
+                ("Min", 1),
+                ("Max", 12),
+                ("StdDev", 4.96655480858378),
+                ("Variance", 24.666666666666668),
+                ("AvgCountPerInstance", 1),
+        ):
+            stats = mommy.make(
+                'DashboardStats',
+                model_name="TestKid",
+                date_field_name='birthday',
+                model_app_name="demoproject",
+                type_operation_field_name=func,
+                operation_field_name='age',
+            )
+            mommy.make('TestKid', birthday=datetime.date(2010, 10, 10), age=12)
+            mommy.make('TestKid', birthday=datetime.date(2010, 10, 10), age=1)
+            mommy.make('TestKid', birthday=datetime.date(2010, 10, 10), age=2)
+            time_since = datetime.date(2010, 10, 9)
+            time_until = datetime.date(2010, 10, 10)
+
+            interval = "days"
+            serie = stats.get_multi_time_series({}, time_since, time_until, interval)
+            self.assertEqual(serie[datetime.datetime(2010, 10, 10, 0, 0)][''], result, "Bad value for function %s" % func),
+
+    @override_settings(USE_TZ=False)
     def test_get_multi_series_dynamic_field_name(self):
         """Test function to check DashboardStats.get_multi_time_series() with dynamic criteria mapping"""
         criteria = mommy.make(

@@ -10,7 +10,7 @@
 #
 import logging
 from collections import OrderedDict
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 
 from cache_utils.decorators import cached
 
@@ -375,21 +375,21 @@ class DashboardStats(models.Model):
                 self.operation_field_name = 'id'
 
             operation = {
-                'AvgCountPerInstance': ExpressionWrapper(
+                'AvgCountPerInstance': lambda field_name, distinct, dkwargs: ExpressionWrapper(
                     1.0 *
-                    Count(self.operation_field_name, distinct=self.distinct, filter=dkwargs) /
-                    Count('id', distinct=True, filter=Q(**{self.operation_field_name + "__isnull": False})),
+                    Count(field_name, distinct=distinct, filter=dkwargs) /
+                    Count('id', distinct=True, filter=Q(**{field_name + "__isnull": False})),
                     output_field=models.FloatField()
                 ),
-                'Count': Count(self.operation_field_name, distinct=self.distinct, filter=dkwargs),
-                'Sum': Sum(self.operation_field_name, distinct=self.distinct, filter=dkwargs),
-                'Avg': Avg(self.operation_field_name, distinct=self.distinct, filter=dkwargs),
-                'StdDev': StdDev(self.operation_field_name, filter=dkwargs),
-                'Max': Max(self.operation_field_name, filter=dkwargs),
-                'Min': Min(self.operation_field_name, filter=dkwargs),
-                'Variance': Variance(self.operation_field_name, filter=dkwargs),
+                'Count': lambda field_name, distinct, dkwargs: Count(field_name, distinct=distinct, filter=dkwargs),
+                'Sum': lambda field_name, distinct, dkwargs: Sum(field_name, distinct=distinct, filter=dkwargs),
+                'Avg': lambda field_name, distinct, dkwargs: Avg(field_name, distinct=distinct, filter=dkwargs),
+                'StdDev': lambda field_name, distinct, dkwargs: StdDev(field_name, filter=dkwargs),
+                'Max': lambda field_name, distinct, dkwargs: Max(field_name, filter=dkwargs),
+                'Min': lambda field_name, distinct, dkwargs: Min(field_name, filter=dkwargs),
+                'Variance': lambda field_name, distinct, dkwargs: Variance(field_name, filter=dkwargs),
             }
-            aggregate_dict['agg_%i' % i] = operation[self.type_operation_field_name]
+            aggregate_dict['agg_%i' % i] = operation[self.type_operation_field_name](self.operation_field_name, self.distinct, dkwargs)
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
         time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
@@ -444,6 +444,8 @@ class DashboardStats(models.Model):
         else:
             serie = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
             for time, value in serie:
+                if type(time) == date:
+                    time = datetime.combine(time, datetime.min.time())
                 series[time] = {'': value}
             names = {'': ''}
 
