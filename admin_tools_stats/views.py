@@ -65,6 +65,7 @@ class ChartDataView(TemplateView):
             if 'debug' in self.request.GET:
                 raise e
             context['error'] = str(e)
+            context['graph_title'] = dashboard_stats.graph_title
             logger.exception(e)
             return context
         criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)

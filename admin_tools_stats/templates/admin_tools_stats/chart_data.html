@@ -4,7 +4,7 @@
 <html><body><pre>
 {% endif %}
 {% if error %}
-alert('{{ error|escapejs }}');
+alert('{{ graph_title }} error: \n{{ error|escapejs }}');
 {% elif values %}
 function loadChartScript(){
    {% load_chart chart_type values chart_container extra %}
