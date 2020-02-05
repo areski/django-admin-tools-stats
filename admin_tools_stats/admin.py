@@ -13,7 +13,7 @@ from django.contrib import admin
 from django.utils.translation import ugettext_lazy as _
 
 from admin_tools_stats.app_label_renamer import AppLabelRenamer
-from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
+from admin_tools_stats.models import CriteriaToStatsM2M, DashboardStats, DashboardStatsCriteria
 
 AppLabelRenamer(native_app_label=u'admin_tools_stats', app_label=_('Admin Tools Stats')).main()
 
@@ -23,7 +23,7 @@ class DashboardStatsCriteriaAdmin(admin.ModelAdmin):
     Allows the administrator to view and modify certain attributes
     of a DashboardStats.
     """
-    list_display = ('id', 'criteria_name', 'created_date', 'use_as')
+    list_display = ('id', 'criteria_name', 'created_date')
     list_filter = ['created_date']
     search_fields = ('criteria_name',)
     ordering = ('id', )
@@ -34,16 +34,14 @@ admin.site.register(DashboardStatsCriteria, DashboardStatsCriteriaAdmin)
 
 
 class DashboardStatsCriteriaInline(admin.TabularInline):
-    model = DashboardStats.criteria.through
-    readonly_fields = ('criteria__dynamic_criteria_field_name', 'use_as')
-    autocomplete_fields = ('dashboardstatscriteria',)
+    model = CriteriaToStatsM2M
+    readonly_fields = ('criteria__dynamic_criteria_field_name',)
+    fields = ('criteria', 'order', 'prefix', 'criteria__dynamic_criteria_field_name', 'use_as')
+    autocomplete_fields = ('criteria',)
     extra = 0
 
     def criteria__dynamic_criteria_field_name(self, obj):
-        return obj.dashboardstatscriteria.dynamic_criteria_field_name
-
-    def use_as(self, obj):
-        return obj.dashboardstatscriteria.use_as
+        return obj.criteria.dynamic_criteria_field_name
 
 
 class DashboardStatsAdmin(admin.ModelAdmin):

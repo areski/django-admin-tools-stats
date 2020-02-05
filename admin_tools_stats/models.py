@@ -116,17 +116,6 @@ class DashboardStatsCriteria(models.Model):
             ),
         ),
     )
-    use_as = models.CharField(
-        max_length=90,
-        blank=False,
-        null=False,
-        verbose_name=_("Use dynamic criteria as"),
-        choices=(
-            ('chart_filter', 'Chart filter'),
-            ('multiple_series', 'Multiple series'),
-        ),
-        default='chart_filter',
-    )
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
 
@@ -138,44 +127,6 @@ class DashboardStatsCriteria(models.Model):
 
     def __str__(self):
         return u"%s" % self.criteria_name
-
-    def get_dynamic_field(self, model):
-        field_name = self.dynamic_criteria_field_name
-        query = model.objects.all().query
-        return query.resolve_ref(field_name).field
-
-    # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
-    @cached(60 * 5)
-    def get_dynamic_choices(self, slef, dashboard_stats):
-        model = dashboard_stats.get_model()
-        field_name = self.dynamic_criteria_field_name
-        if self.criteria_dynamic_mapping:
-            return dict(self.criteria_dynamic_mapping)
-        if field_name:
-            if field_name.endswith('__isnull'):
-                return OrderedDict((
-                    ('', ('', 'All')),
-                    ('True', (True, 'Blank')),
-                    ('False', (False, 'Non blank')),
-                ))
-            field = self.get_dynamic_field(model)
-            if field.__class__ == models.BooleanField:
-                return OrderedDict((
-                    ('', ('', 'All')),
-                    ('True', (True, 'True')),
-                    ('False', (False, 'False')),
-                ))
-            else:
-                choices = OrderedDict()
-                fchoices = dict(field.choices or [])
-                choices.update(
-                    (
-                        (i, (i, fchoices[i] if i in fchoices else i))
-                        for i in
-                        model.objects.values_list(field_name, flat=True).distinct().order_by(field_name)
-                    ),
-                )
-                return choices
 
 
 class DashboardStats(models.Model):
@@ -275,7 +226,7 @@ class DashboardStats(models.Model):
         blank=True,
         default=None,
     )
-    criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True)
+    criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True, through='CriteriaToStatsM2M')
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
@@ -332,19 +283,21 @@ class DashboardStats(models.Model):
         dynamic_kwargs = []
         if request and not request.user.is_superuser and self.user_field_name:
             kwargs[self.user_field_name] = request.user
-        for i in all_criteria:
+        for m2m in all_criteria:
+            criteria = m2m.criteria
             # fixed mapping value passed info kwargs
-            if i.criteria_fix_mapping:
-                for key in i.criteria_fix_mapping:
-                    # value => i.criteria_fix_mapping[key]
-                    kwargs[key] = i.criteria_fix_mapping[key]
+            if criteria.criteria_fix_mapping:
+                for key in criteria.criteria_fix_mapping:
+                    # value => criteria.criteria_fix_mapping[key]
+                    kwargs[key] = criteria.criteria_fix_mapping[key]
 
             # dynamic mapping value passed info kwargs
-            dynamic_key = "select_box_dynamic_%i" % i.id
+            dynamic_key = "select_box_dynamic_%i" % m2m.id
             if dynamic_key in dynamic_criteria:
                 if dynamic_criteria[dynamic_key] != '':
                     dynamic_values = dynamic_criteria[dynamic_key]
-                    criteria_key = 'id' if i.dynamic_criteria_field_name == '' else i.dynamic_criteria_field_name
+                    dynamic_field_name = m2m.get_dynamic_criteria_field_name()
+                    criteria_key = 'id' if dynamic_field_name == '' else dynamic_field_name
                     if isinstance(dynamic_values, (list, tuple)):
                         single_value = False
                     else:
@@ -352,7 +305,7 @@ class DashboardStats(models.Model):
                         single_value = True
 
                     for dynamic_value in dynamic_values:
-                        criteria_value = i.get_dynamic_choices(i, self)[dynamic_value]
+                        criteria_value = m2m.get_dynamic_choices()[dynamic_value]
                         if isinstance(criteria_value, (list, tuple)):
                             criteria_value = criteria_value[0]
                         else:
@@ -408,8 +361,8 @@ class DashboardStats(models.Model):
 
     def get_multi_series_criteria(self, request_get):
         try:
-            criteria_id = int(request_get.get('select_box_multiple_series', ''))
-            criteria = self.criteria.get(use_as='multiple_series', pk=criteria_id)
+            m2m_id = int(request_get.get('select_box_multiple_series', ''))
+            criteria = self.criteriatostatsm2m_set.get(use_as='multiple_series', pk=m2m_id)
         except (DashboardStatsCriteria.DoesNotExist, ValueError):
             criteria = None
         return criteria
@@ -417,10 +370,10 @@ class DashboardStats(models.Model):
     def get_multi_time_series(self, configuration, time_since, time_until, interval, request=None):
         configuration = configuration.copy()
         series = {}
-        all_criteria = self.criteria.all()  # Outside of get_time_series just for performance reasons
-        criteria = self.get_multi_series_criteria(configuration)
-        if criteria and criteria.dynamic_criteria_field_name:
-            choices = criteria.get_dynamic_choices(criteria, self)
+        all_criteria = self.criteriatostatsm2m_set.all()  # Outside of get_time_series just for performance reasons
+        m2m = self.get_multi_series_criteria(configuration)
+        if m2m and m2m.criteria.dynamic_criteria_field_name:
+            choices = m2m.get_dynamic_choices()
 
             serie_map = {}
             names = []
@@ -431,7 +384,7 @@ class DashboardStats(models.Model):
                         name = name[1]
                     names.append(name)
                     values.append(key)
-            configuration['select_box_dynamic_' + str(criteria.id)] = values
+            configuration['select_box_dynamic_' + str(m2m.id)] = values
             serie_map = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
             for tv in serie_map:
                 time = tv[0]
@@ -467,10 +420,10 @@ class DashboardStats(models.Model):
     def get_control_form(self):
         """ Get content of the ajax control form """
         temp = ''
-        for i in self.criteria.filter(use_as='chart_filter'):
-            dy_map = i.get_dynamic_choices(i, self)
+        for i in self.criteriatostatsm2m_set.filter(use_as='chart_filter').order_by('order'):
+            dy_map = i.get_dynamic_choices()
             if dy_map:
-                temp += i.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
+                temp += i.criteria.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
                 temp += '<option value="">-------</option>'
                 for key, name in dy_map.items():
                     if isinstance(name, (list, tuple)):
@@ -480,13 +433,13 @@ class DashboardStats(models.Model):
 
         temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
 
-        multiple_series = self.criteria.filter(use_as='multiple_series')
+        multiple_series = self.criteriatostatsm2m_set.filter(use_as='multiple_series')
         if multiple_series.exists():
             temp += 'Divide: <select class="chart-input select_box_multiple_series" name="select_box_multiple_series" >'
             temp += '<option class="chart-input" value="">-------</option>'
             selected_str = 'selected=selected'
-            for serie in multiple_series.all():
-                temp += '<option class="chart-input" value="%s" %s>%s</option>' % (serie.id, selected_str, serie.criteria_name)
+            for serie in multiple_series.order_by('order').all():
+                temp += '<option class="chart-input" value="%s" %s>%s</option>' % (serie.id, selected_str, serie.criteria.criteria_name)
                 selected_str = ""
             temp += '</select>'
 
@@ -518,13 +471,102 @@ class DashboardStats(models.Model):
         return DashboardStats.objects.filter(is_visible=1).prefetch_related('criteria')
 
 
+class CriteriaToStatsM2M(models.Model):
+    class Meta:
+        ordering = ('order',)
+
+    criteria = models.ForeignKey(
+        DashboardStatsCriteria,
+        on_delete=models.CASCADE,
+    )
+    stats = models.ForeignKey(
+        DashboardStats,
+        on_delete=models.CASCADE,
+    )
+    order = models.PositiveIntegerField(
+        unique=True,
+        null=True,
+        blank=True,
+    )
+    prefix = models.CharField(
+        max_length=255,
+        verbose_name=_('criteria field prefix'),
+        default="",
+        help_text=_("prefix, that will be added befor all lookup paths of criteria"),
+        blank=True,
+    )
+    use_as = models.CharField(
+        max_length=90,
+        blank=False,
+        null=False,
+        verbose_name=_("Use dynamic criteria as"),
+        choices=(
+            ('chart_filter', 'Chart filter'),
+            ('multiple_series', 'Multiple series'),
+        ),
+        default='chart_filter',
+    )
+
+    def get_dynamic_criteria_field_name(self):
+        if self.prefix:
+            return self.prefix + self.criteria.dynamic_criteria_field_name
+        return self.criteria.dynamic_criteria_field_name
+
+    def get_dynamic_field(self, model):
+        field_name = self.get_dynamic_criteria_field_name()
+        query = model.objects.all().query
+        return query.resolve_ref(field_name).field
+
+    # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
+    @cached(60 * 5)
+    def _get_dynamic_choices(self, slef):
+        model = self.stats.get_model()
+        field_name = self.get_dynamic_criteria_field_name()
+        if self.criteria.criteria_dynamic_mapping:
+            return dict(self.criteria.criteria_dynamic_mapping)
+        if field_name:
+            if field_name.endswith('__isnull'):
+                return OrderedDict((
+                    ('', ('', 'All')),
+                    ('True', (True, 'Blank')),
+                    ('False', (False, 'Non blank')),
+                ))
+            field = self.get_dynamic_field(model)
+            if field.__class__ == models.BooleanField:
+                return OrderedDict((
+                    ('', ('', 'All')),
+                    ('True', (True, 'True')),
+                    ('False', (False, 'False')),
+                ))
+            else:
+                choices = OrderedDict()
+                fchoices = dict(field.choices or [])
+                choices.update(
+                    (
+                        (i, (i, fchoices[i] if i in fchoices else i))
+                        for i in
+                        model.objects.values_list(field_name, flat=True).distinct().order_by(field_name)
+                    ),
+                )
+                return choices
+
+    def get_dynamic_choices(self):
+        choices = self._get_dynamic_choices(self)
+        return choices
+
+
 @receiver(post_save, sender=DashboardStatsCriteria)
 def clear_caches_criteria(sender, instance, **kwargs):
-    for dashboard_stats in instance.dashboardstats_set.all():
-        instance.get_dynamic_choices.invalidate(instance, dashboard_stats)
+    for m2m in instance.criteriatostatsm2m_set.all():
+        m2m._get_dynamic_choices.invalidate(m2m)
 
 
 @receiver(post_save, sender=DashboardStats)
 def clear_caches_stats(sender, instance, **kwargs):
-    for criteria in instance.criteria.all():
-        criteria.get_dynamic_choices.invalidate(criteria, instance)
+    for m2m in instance.criteriatostatsm2m_set.all():
+        m2m._get_dynamic_choices.invalidate(m2m)
+
+
+@receiver(post_save, sender=CriteriaToStatsM2M)
+def clear_caches_stats_m2m(sender, instance, **kwargs):
+    instance._get_dynamic_choices.invalidate(instance)
