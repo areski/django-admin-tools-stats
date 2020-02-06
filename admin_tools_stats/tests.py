@@ -18,7 +18,7 @@ from django.urls import reverse
 
 from model_mommy import mommy
 
-from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
+from admin_tools_stats.models import DashboardStatsCriteria
 from admin_tools_stats.utils import BaseAuthenticatedClient, assertContainsAny
 
 
@@ -195,7 +195,7 @@ class ModelTests(TestCase):
 
             interval = "days"
             serie = stats.get_multi_time_series({}, time_since, time_until, interval)
-            self.assertEqual(serie[datetime.datetime(2010, 10, 10, 0, 0)][''], result, "Bad value for function %s" % func),
+            self.assertEqual(serie[datetime.datetime(2010, 10, 10, 0, 0)][''], result, "Bad value for function %s" % func)
 
     @override_settings(USE_TZ=False)
     def test_get_multi_series_dynamic_field_name(self):
@@ -462,7 +462,8 @@ class AdminToolsStatsModel(TestCase):
         self.assertEqual(self.dashboard_stats_criteria.__str__(), 'call_type')
 
         # DashboardStats model
-        self.dashboard_stats = DashboardStats(
+        self.dashboard_stats = mommy.make(
+            'DashboardStats',
             graph_key='user_graph_test',
             graph_title='User graph',
             model_app_name='auth',
@@ -470,9 +471,7 @@ class AdminToolsStatsModel(TestCase):
             date_field_name='date_joined',
             is_visible=1,
         )
-        self.dashboard_stats.save()
-        self.dashboard_stats.criteria.add(self.dashboard_stats_criteria)
-        self.dashboard_stats.save()
+        mommy.make('CriteriaToStatsM2M', criteria=self.dashboard_stats_criteria, stats=self.dashboard_stats, use_as='multiple_series')
         with self.assertRaises(ValidationError) as e:
             self.dashboard_stats.clean()
         self.assertEqual(e.exception.message_dict, {})
