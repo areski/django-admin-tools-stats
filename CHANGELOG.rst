@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.16.0 (2020-02-06)
+------------------
+* move use_as to the m2m model to make criteria more universal
+* add prefix for criteria
+
 0.15.0 (2020-02-04)
 ------------------
 * cleanups and refactoring
