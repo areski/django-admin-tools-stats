@@ -53,7 +53,7 @@ copyright = u'2011-2014, Arezqui Belaid'
 # built documents.
 #
 # The short X.Y version.
-version = '0.15.1'
+version = '0.16.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
