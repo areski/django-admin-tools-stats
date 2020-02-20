@@ -74,6 +74,37 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
             html=True,
         )
 
+    def test_admin_dashboard_page_multi_series(self):
+        stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph1",
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [False, "Inactive"],
+                "true": [True, "Active"],
+            },
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats, use_as='multiple_series')
+        response = self.client.get('/admin/')
+        self.assertContains(
+            response,
+            '<option class="chart-input" value="">-------</option>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option class="chart-input" value="%s" selected="selected">active</option>' % stats.id,
+            html=True,
+        )
+
     def test_admin_dashboard_page_post(self):
         """Test function to check dashboardstatscriteria admin pages"""
         response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
