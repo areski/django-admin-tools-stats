@@ -149,13 +149,13 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=True, TIME_ZONE='Europe/Prague')
     def test_get_multi_series_datetime_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        current_tz = timezone.get_current_timezone()
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=current_tz))
         time_since = datetime.datetime(2010, 10, 9, 0, 0)
         time_until = datetime.datetime(2010, 10, 11, 0, 0)
 
         interval = "days"
         serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
-        current_tz = timezone.get_current_timezone()
         testing_data = {
             current_tz.localize(datetime.datetime(2010, 10, 9, 0, 0)): {'': 0},
             current_tz.localize(datetime.datetime(2010, 10, 10, 0, 0)): {'': 1},
