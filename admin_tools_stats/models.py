@@ -10,20 +10,23 @@
 #
 import logging
 from collections import OrderedDict
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 
 from cache_utils.decorators import cached
 
 from dateutil.relativedelta import relativedelta
 
 from django.apps import apps
+from django.conf import settings
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
 from django.db.models import ExpressionWrapper, Q
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
+from django.db.models.fields import DateField
 from django.db.models.functions import Trunc
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
@@ -368,6 +371,13 @@ class DashboardStats(models.Model):
         return criteria
 
     def get_multi_time_series(self, configuration, time_since, time_until, interval, request=None):
+        current_tz = timezone.get_current_timezone()
+
+        if settings.USE_TZ:
+            time_since = current_tz.localize(time_since)
+            time_until = current_tz.localize(time_until)
+        time_until = time_until.replace(hour=23, minute=59)
+
         configuration = configuration.copy()
         series = {}
         all_criteria = self.criteriatostatsm2m_set.all()  # Outside of get_time_series just for performance reasons
@@ -397,8 +407,6 @@ class DashboardStats(models.Model):
         else:
             serie = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
             for time, value in serie:
-                if type(time) == date:
-                    time = datetime.combine(time, datetime.min.time())
                 series[time] = {'': value}
             names = {'': ''}
 
@@ -406,9 +414,12 @@ class DashboardStats(models.Model):
         interval_s = interval.rstrip('s')
         start, _ = get_bounds(time_since, interval_s)
         _, end = get_bounds(time_until, interval_s)
+        if self.get_date_field().__class__ == DateField:
+            start = start.date()
+            end = end.date()
 
         time = start
-        while time < end:
+        while time <= end:
             if time not in series:
                 series[time] = OrderedDict()
             for key in names:
