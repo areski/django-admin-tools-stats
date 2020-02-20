@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.17.0 (2020-02-20)
+------------------
+* fixes for DateField and timezones
+
 0.16.0 (2020-02-06)
 ------------------
 * move use_as to the m2m model to make criteria more universal
