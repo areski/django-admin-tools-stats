@@ -14,7 +14,7 @@ from datetime import timedelta
 
 from cache_utils.decorators import cached
 
-from dateutil.relativedelta import relativedelta
+from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY
 
 from django.apps import apps
 from django.conf import settings
@@ -33,8 +33,6 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 import jsonfield.fields
-
-from qsstats.utils import get_bounds
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +66,13 @@ time_scales = (
     ('months', 'Months'),
     ('years', 'Years'),
 )
+freqs = {
+    'years': YEARLY,
+    'months': MONTHLY,
+    'weeks': WEEKLY,
+    'days': DAILY,
+    'hours': HOURLY
+}
 
 
 class DashboardStatsCriteria(models.Model):
@@ -352,11 +357,7 @@ class DashboardStats(models.Model):
         qs = model_name.objects
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
-        if hasattr(time_since, 'tzinfo') and time_since.tzinfo:
-            tzinfo = {'tzinfo': time_since.tzinfo}
-        else:
-            tzinfo = {}
-        qs = qs.annotate(d=Trunc(self.date_field_name, interval, **tzinfo))
+        qs = qs.annotate(d=Trunc(self.date_field_name, interval))
         qs = qs.values_list('d')
         qs = qs.order_by('d')
         qs = qs.annotate(**aggregate_dict)
@@ -372,11 +373,8 @@ class DashboardStats(models.Model):
 
     def get_multi_time_series(self, configuration, time_since, time_until, interval, request=None):
         current_tz = timezone.get_current_timezone()
-
-        if settings.USE_TZ:
-            time_since = current_tz.localize(time_since)
-            time_until = current_tz.localize(time_until)
-        time_until = time_until.replace(hour=23, minute=59)
+        time_since_tz = current_tz.localize(time_since)
+        time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
 
         configuration = configuration.copy()
         series = {}
@@ -395,7 +393,7 @@ class DashboardStats(models.Model):
                     names.append(name)
                     values.append(key)
             configuration['select_box_dynamic_' + str(m2m.id)] = values
-            serie_map = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
+            serie_map = self.get_time_series(configuration, all_criteria, request, time_since_tz, time_until_tz, interval)
             for tv in serie_map:
                 time = tv[0]
                 if time not in series:
@@ -405,27 +403,24 @@ class DashboardStats(models.Model):
                     i += 1
                     series[time][name] = tv[i]
         else:
-            serie = self.get_time_series(configuration, all_criteria, request, time_since, time_until, interval)
+            serie = self.get_time_series(configuration, all_criteria, request, time_since_tz, time_until_tz, interval)
             for time, value in serie:
                 series[time] = {'': value}
             names = {'': ''}
 
         # fill with zeros where the records are missing
-        interval_s = interval.rstrip('s')
-        start, _ = get_bounds(time_since, interval_s)
-        _, end = get_bounds(time_until, interval_s)
-        if self.get_date_field().__class__ == DateField:
-            start = start.date()
-            end = end.date()
+        dates = list(rrule(freq=freqs[interval], dtstart=time_since, until=time_until))
+        for time in dates:
+            if self.get_date_field().__class__ == DateField:
+                time = time.date()
+            elif settings.USE_TZ:
+                time = current_tz.localize(time)
 
-        time = start
-        while time <= end:
             if time not in series:
                 series[time] = OrderedDict()
             for key in names:
                 if key not in series[time]:
                     series[time][key] = 0
-            time = time + relativedelta(**{interval: 1})
         return series
 
     def get_control_form(self):

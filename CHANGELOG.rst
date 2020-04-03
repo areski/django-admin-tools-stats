@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.18.0 (2020-03-03)
+------------------
+* fix problem with saw-like charts arount DST times
+* remove dependency on qsstats-magic
+
 0.17.0 (2020-02-20)
 ------------------
 * fixes for DateField and timezones

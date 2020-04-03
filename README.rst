@@ -180,7 +180,6 @@ Dependencies
 django-admin-charts is a django based application, the major requirements are:
 
     - django-jsonfield
-    - django-qsstats-magic
     - django-nvd3
     - django-bower
 

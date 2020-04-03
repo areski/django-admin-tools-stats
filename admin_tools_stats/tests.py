@@ -210,6 +210,23 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @override_settings(USE_TZ=True, TIME_ZONE='Europe/Prague')
+    def test_get_multi_series_change_dst(self):
+        """Test function to check DashboardStats.get_multi_time_series() on edge of daylight saving time change """
+        current_tz = timezone.get_current_timezone()
+        mommy.make('User', date_joined=datetime.datetime(2019, 10, 28, tzinfo=current_tz))
+        time_since = datetime.datetime(2019, 10, 27, 0, 0)
+        time_until = datetime.datetime(2019, 10, 29, 0, 0)
+
+        interval = "days"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            current_tz.localize(datetime.datetime(2019, 10, 27, 0, 0)): {'': 0},
+            current_tz.localize(datetime.datetime(2019, 10, 28, 0, 0)): {'': 1},
+            current_tz.localize(datetime.datetime(2019, 10, 29, 0, 0)): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
     @override_settings(USE_TZ=False)
     def test_get_multi_series_distinct_count(self):
         """Test function to check DashboardStats.get_multi_time_series() with distinct count."""
