@@ -9,11 +9,13 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 import logging
+import datetime
 from collections import OrderedDict
 from datetime import timedelta
 
 from cache_utils.decorators import cached
 
+from dateutil.relativedelta import relativedelta, MO
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY
 
 from django.apps import apps
@@ -73,6 +75,23 @@ freqs = {
     'days': DAILY,
     'hours': HOURLY
 }
+
+
+def truncate(dt, interval):
+    ''' Returns interval bounds the datetime is in. '''
+
+    day = datetime.datetime(dt.year, dt.month, dt.day, tzinfo=dt.tzinfo)
+
+    if interval == 'hours':
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo)
+    elif interval == 'days':
+        return day
+    elif interval == 'weeks':
+        return day - relativedelta(weekday=MO(-1))
+    elif interval == 'months':
+        return datetime.datetime(dt.year, dt.month, 1, tzinfo=dt.tzinfo)
+    elif interval == 'years':
+        return datetime.datetime(dt.year, 1, 1, tzinfo=dt.tzinfo)
 
 
 class DashboardStatsCriteria(models.Model):
@@ -409,7 +428,9 @@ class DashboardStats(models.Model):
             names = {'': ''}
 
         # fill with zeros where the records are missing
-        dates = list(rrule(freq=freqs[interval], dtstart=time_since, until=time_until))
+        start = truncate(time_since, interval)
+
+        dates = list(rrule(freq=freqs[interval], dtstart=start, until=time_until))
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()

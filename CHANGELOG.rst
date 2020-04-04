@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.18.1 (2020-03-04)
+------------------
+* fix problem with saw-like charts on longer time periods
+
 0.18.0 (2020-03-03)
 ------------------
 * fix problem with saw-like charts arount DST times

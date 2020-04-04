@@ -177,6 +177,70 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_hours(self):
+        """Test function to check DashboardStats.get_multi_time_series()"""
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 8, 23, 13))
+        time_since = datetime.datetime(2010, 10, 8, 22)
+        time_until = datetime.datetime(2010, 10, 8, 23)
+
+        interval = "hours"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 22, 0): {'': 0},
+            datetime.datetime(2010, 10, 8, 23, 0): {'': 1},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_weeks(self):
+        """Test function to check DashboardStats.get_multi_time_series()"""
+        mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2010, 11, 8)
+
+        interval = "weeks"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            datetime.datetime(2010, 10, 4, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 11, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 18, 0, 0): {'': 0},
+            datetime.datetime(2010, 10, 25, 0, 0): {'': 1},
+            datetime.datetime(2010, 11, 1, 0, 0): {'': 0},
+            datetime.datetime(2010, 11, 8, 0, 0): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_months(self):
+        """Test function to check DashboardStats.get_multi_time_series()"""
+        mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2010, 11, 30)
+
+        interval = "months"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            datetime.datetime(2010, 10, 1, 0, 0): {'': 1},
+            datetime.datetime(2010, 11, 1, 0, 0): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_years(self):
+        """Test function to check DashboardStats.get_multi_time_series()"""
+        mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2011, 10, 8)
+
+        interval = "years"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        testing_data = {
+            datetime.datetime(2010, 1, 1, 0, 0): {'': 1},
+            datetime.datetime(2011, 1, 1, 0, 0): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
     @override_settings(USE_TZ=True, TIME_ZONE='Europe/Prague')
     def test_get_multi_series_datetime_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
