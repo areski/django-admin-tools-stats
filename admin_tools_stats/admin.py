@@ -10,6 +10,7 @@
 #
 
 from django.contrib import admin
+from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
 from admin_tools_stats.app_label_renamer import AppLabelRenamer
@@ -18,32 +19,58 @@ from admin_tools_stats.models import CriteriaToStatsM2M, DashboardStats, Dashboa
 AppLabelRenamer(native_app_label=u'admin_tools_stats', app_label=_('Admin Tools Stats')).main()
 
 
+@admin.register(DashboardStatsCriteria)
 class DashboardStatsCriteriaAdmin(admin.ModelAdmin):
     """
     Allows the administrator to view and modify certain attributes
     of a DashboardStats.
     """
-    list_display = ('id', 'criteria_name', 'created_date')
+    list_display = (
+        'id',
+        'criteria_name',
+        'criteria_name',
+        'dynamic_criteria_field_name',
+        'criteria_dynamic_mapping_preview',
+    )
     list_filter = ['created_date']
+    readonly_fields = (
+        'created_date',
+        'updated_date',
+    )
     search_fields = ('criteria_name',)
     ordering = ('id', )
     save_as = True
 
 
-admin.site.register(DashboardStatsCriteria, DashboardStatsCriteriaAdmin)
-
-
 class DashboardStatsCriteriaInline(admin.TabularInline):
     model = CriteriaToStatsM2M
-    readonly_fields = ('criteria__dynamic_criteria_field_name',)
-    fields = ('criteria', 'order', 'prefix', 'criteria__dynamic_criteria_field_name', 'use_as')
+    readonly_fields = (
+        'criteria__dynamic_criteria_field_name',
+        'criteria__criteria_dynamic_mapping_preview',
+    )
+    fields = (
+        'criteria',
+        'order',
+        'prefix',
+        'use_as',
+        'criteria__dynamic_criteria_field_name',
+        'criteria__criteria_dynamic_mapping_preview',
+    )
     autocomplete_fields = ('criteria',)
     extra = 0
 
     def criteria__dynamic_criteria_field_name(self, obj):
-        return obj.criteria.dynamic_criteria_field_name
+        return format_html(
+            "<strong>{}</strong>{}",
+            str(obj.prefix or ""),
+            str(obj.criteria.dynamic_criteria_field_name or ""),
+        )
+
+    def criteria__criteria_dynamic_mapping_preview(self, obj):
+        return obj.criteria.criteria_dynamic_mapping_preview()
 
 
+@admin.register(DashboardStats)
 class DashboardStatsAdmin(admin.ModelAdmin):
     """
     Allows the administrator to view and modify certain attributes
@@ -56,6 +83,3 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     inlines = [DashboardStatsCriteriaInline]
     ordering = ('id', )
     save_as = True
-
-
-admin.site.register(DashboardStats, DashboardStatsAdmin)

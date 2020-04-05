@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.19.0 (2020-03-05)
+------------------
+* improvements to the admin interface
+
 0.18.1 (2020-03-04)
 ------------------
 * fix problem with saw-like charts on longer time periods

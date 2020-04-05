@@ -146,6 +146,11 @@ class DashboardStatsCriteria(models.Model):
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
 
+    def criteria_dynamic_mapping_preview(self):
+        if self.criteria_dynamic_mapping:
+            return str(self.criteria_dynamic_mapping)[0:100] + ("..." if len(str(self.criteria_dynamic_mapping)) > 100 else "")
+        return ""
+
     class Meta:
         app_label = "admin_tools_stats"
         db_table = u'dash_stats_criteria'
