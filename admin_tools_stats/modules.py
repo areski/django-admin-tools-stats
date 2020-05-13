@@ -20,15 +20,13 @@ except ImportError:  # Python 2
 from django.contrib import messages
 from django.core.exceptions import FieldError
 from django.utils.safestring import mark_safe
+from django.utils import timezone
 from qsstats import QuerySetStats
 from cache_utils.decorators import cached
 from admin_tools.dashboard import modules
 from admin_tools_stats.models import DashboardStats
-from datetime import datetime, timedelta
-
+from datetime import timedelta
 import time
-
-from django.utils.timezone import now
 
 
 class DashboardChart(modules.DashboardModule):
@@ -127,7 +125,7 @@ class DashboardChart(modules.DashboardModule):
             stats = QuerySetStats(model_name.objects.filter(**kwargs).distinct(),
                                   conf_data.date_field_name, aggregate)
             # stats = QuerySetStats(User.objects.filter(is_active=True), 'date_joined')
-            today = now()
+            today = timezone.now()
             if days == 24:
                 begin = today - timedelta(hours=days - 1)
                 return stats.time_series(begin, today + timedelta(hours=1), interval)
@@ -139,7 +137,7 @@ class DashboardChart(modules.DashboardModule):
             User = get_user_model()
             stats = QuerySetStats(
                 User.objects.filter(is_active=True), 'date_joined')
-            today = now()
+            today = timezone.now()
             if days == 24:
                 begin = today - timedelta(hours=days - 1)
                 return stats.time_series(begin, today + timedelta(hours=1), interval)
@@ -164,8 +162,9 @@ class DashboardChart(modules.DashboardModule):
 
         xdata = []
         ydata = []
+        current_tz = timezone.get_current_timezone()
         for data_date in self.data:
-            start_time = int(time.mktime(data_date[0].timetuple()) * 1000)
+            start_time = int(time.mktime(data_date[0].astimezone(current_tz).timetuple()) * 1000)
             xdata.append(start_time)
             ydata.append(data_date[1])
 
