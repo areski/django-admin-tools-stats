@@ -103,3 +103,12 @@ class ChartDataView(TemplateView):
 
         context['chart_container'] = "chart_container_" + graph_key
         return context
+
+
+class AnalyticsView(TemplateView):
+    template_name = 'admin_tools_stats/analytics.html'
+
+    def get_context_data(self, *args, **kwargs):
+        context_data = super().get_context_data(*args, **kwargs)
+        context_data['charts'] = DashboardStats.objects.all()
+        return context_data

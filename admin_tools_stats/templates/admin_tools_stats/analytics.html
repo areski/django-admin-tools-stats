@@ -1,0 +1,26 @@
+{% extends "admin/base.html" %}
+{% load admin_chart_tags %}
+{% load static %}
+
+{% block extrastyle %}
+   {{ block.super }}
+   <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+   {% include '../include_nvd3.html' %}
+   <script src="{% url 'admin-charts' %}" type="text/javascript"></script>
+   <style>
+   .admin_charts {
+       padding: 0px 0px;
+   }
+   .chrt_container svg {
+        bottom: 0px !important;
+   }
+   </style>
+{% endblock %}
+
+{% block content %}
+   {% for chart in charts %}
+      <a href="javascript:$('.chrt_container').hide();$('#chart_{{ chart.graph_key }}').show();$('form.stateform:visible').each(loadAnchor)">{{ chart.graph_title }}</a>
+      <br/>
+   {% endfor %}
+   {% include "./chart_containers.html" %}
+{% endblock %}
