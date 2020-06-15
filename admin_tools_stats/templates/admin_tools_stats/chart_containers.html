@@ -1,13 +1,15 @@
 <div class="admin_charts">
 {% for chart in charts %}
 <div id="chart_{{ chart.graph_key }}" class="chrt_container" style="display:none">
+<div class="chrt_flex">
     <h3>{{ chart.graph_title }}</h3>
     <form class="stateform" action="." method="POST" enctype="multipart/form-data">
        {% csrf_token %}
        {{ chart.get_control_form }}
     </form>
-    <div id="chart_container_{{ chart.graph_key }}"><svg style=""></svg></div>
+    <div id="chart_container_{{ chart.graph_key }}" class="chrt_svg_container"><svg></svg></div>
     <br/>
+</div>
 </div>
 {% endfor %}
 </div>

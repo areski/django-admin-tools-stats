@@ -16,12 +16,6 @@ logger = logging.getLogger(__name__)
 class AdminChartsView(TemplateView):
     template_name = 'admin_tools_stats/admin_charts.js'
 
-    def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
-        context = super().get_context_data(*args, **kwargs)
-        context['chart_height'] = 300
-        context['chart_width'] = '100%'
-        return context
-
 
 interval_dateformat_map = {
     'years': ("%Y", "%Y"),

@@ -14,13 +14,28 @@
    .chrt_container svg {
         bottom: 0px !important;
    }
+   #content, .chrt_container {
+        flex-grow: 1;
+   }
+   body {
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+   }
+   #container, .chrt_flex {
+      display: flex !important;
+      flex-direction: column !important;
+   }
+   #container, .admin_charts, .chrt_flex, .chrt_container, .chrt_svg_container {
+      height: 100%;
+      position: relative;
+   }
    </style>
 {% endblock %}
 
 {% block content %}
    {% for chart in charts %}
-      <a href="javascript:$('.chrt_container').hide();$('#chart_{{ chart.graph_key }}').show();$('form.stateform:visible').each(loadAnchor)">{{ chart.graph_title }}</a>
-      <br/>
+   <a href="javascript:$('.chrt_container').hide();$('#chart_{{ chart.graph_key }}').show();$('form.stateform:visible').each(loadAnchor)"><button>{{ chart.graph_title }}</button></a>
    {% endfor %}
    {% include "./chart_containers.html" %}
 {% endblock %}

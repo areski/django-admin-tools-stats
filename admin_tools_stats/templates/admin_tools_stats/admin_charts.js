@@ -1,5 +1,6 @@
 
-var html_string = '<svg style="bottom: 0px"></svg>';
+var html_string = '<svg style="width:100%;height:400px"></svg>';
+var html_string_analytics = '<svg style="width:100%;height:100%"></svg>';
 var chart_scripts = {};
 
 function loadChart(data, graph_key){
@@ -37,8 +38,9 @@ function defer(method) {
 function loadAnchor(){
    var data = $(this).closest('form.stateform');
    var graph_key = data.children(".hidden_graph_key").first().val();
+   var is_analytics = $(this).parent().hasClass("chrt_flex");
    if($(this).hasClass('select_box_chart_type') || $(this).hasClass('stateform')){
-      $("#chart_container_" + graph_key).empty().append(html_string);
+      $("#chart_container_" + graph_key).empty().append(is_analytics ? html_string_analytics : html_string);
    };
    loadChart(data, graph_key);
 }
