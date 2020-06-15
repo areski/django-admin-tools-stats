@@ -10,6 +10,7 @@
 #
 
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
@@ -76,10 +77,17 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     Allows the administrator to view and modify certain attributes
     of a DashboardStats.
     """
-    list_display = ('id', 'graph_key', 'graph_title', 'model_name', 'distinct', 'type_operation_field_name',
+    list_display = ('id', 'graph_key', 'analytics_link', 'graph_title', 'model_name', 'distinct', 'type_operation_field_name',
                     'is_visible', 'created_date', 'date_field_name', 'operation_field_name', 'default_chart_type')
     list_filter = ['created_date']
     exclude = ('criteria',)
     inlines = [DashboardStatsCriteriaInline]
     ordering = ('id', )
     save_as = True
+
+    def analytics_link(self, obj):
+        return format_html(
+            "<a href='{url}?show={key}' target='_blank'>A</a>",
+            url=reverse('chart-analytics'),
+            key=obj.graph_key,
+        )

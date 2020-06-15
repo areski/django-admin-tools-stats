@@ -28,6 +28,7 @@ from django.db.models.fields import DateField
 from django.db.models.functions import Trunc
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
@@ -491,6 +492,7 @@ class DashboardStats(models.Model):
             selected_str = 'selected=selected' if chart_type_str == self.default_chart_type else ''
             temp += '<option class="chart-input" value="' + chart_type_str + '" ' + selected_str + '>' + chart_type_name + '</option>'
         temp += '</select>'
+        temp += f"&nbsp;<a href='{reverse('chart-analytics')}?show={self.graph_key}' target='_blank'>analytics</a>"
 
         return mark_safe(force_text(temp))
 
