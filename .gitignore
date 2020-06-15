@@ -47,3 +47,5 @@ dist/
 *~
 *.swp
 *.swo
+*.swn
+*.orig
