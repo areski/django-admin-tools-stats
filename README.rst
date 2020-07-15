@@ -170,6 +170,21 @@ You may also need to add some includes to your template admin base, see an examp
     demoproject/demoproject/templates/admin/base_site.html
 
 
+============
+Running demo
+============
+
+Run following commands::
+
+   pip install -r requirements
+   python manage.py migrate
+   python manage.py loaddata demoproject/fixtures/auth_user.json
+   python manage.py loaddata demoproject/fixtures/test_data.json
+   python manage.py bower install
+   python manage.py runserver
+
+And log in with username `admin` and password `admin` to the `localhost:8000/admin` site.
+
 ===========
 Development
 ===========
