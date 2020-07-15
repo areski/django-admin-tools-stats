@@ -28,7 +28,7 @@ install:
 
 matrix:
   allow_failures:
-    - env: DJANGO_VERSION="--pre Django>=3.1,<3.2"
+    - env: DJANGO_VERSION="--pre Django"
     - env: DJANGO_VERSION='https://github.com/django/django/archive/master.tar.gz'
 
 before_cache:
