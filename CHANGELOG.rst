@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.20.2 (2020-07-05)
+------------------
+* fix charts not showing on admin index page
+
+0.20.0 (2020-06-20)
+------------------
+* add analytics page with all charts
+
 0.19.0 (2020-03-05)
 ------------------
 * improvements to the admin interface
