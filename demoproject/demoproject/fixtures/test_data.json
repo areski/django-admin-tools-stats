@@ -1,68 +1,118 @@
 [
-   {
-      "pk":1,
-      "model":"admin_tools_stats.dashboardstatscriteria",
-      "fields":{
-         "criteria_fix_mapping":{
-            "is_active":"1"
-         },
-         "updated_date":"2011-09-01 09:06:12",
-         "criteria_name":"active",
-	 "dynamic_criteria_field_name":"is_active",
-         "criteria_dynamic_mapping": {
-           "": [null, "All"],
-           "false": [true, "Inactive"],
-           "true": [false, "Active"]
-         },
-         "created_date":"2011-09-01 09:01:40"
-      }
-   },
-   {
-      "pk":2,
-      "model":"admin_tools_stats.dashboardstats",
-      "fields":{
-         "updated_date":"2011-09-01 09:11:56",
-         "is_visible":true,
-         "graph_key":"user_logged_graph",
-	      "graph_title":"User logged in graph",
-         "date_field_name":"last_login",
-         "operation_field_name":"is_staff",
-         "type_operation_field_name":"Sum",
-         "model_name":"User",
-         "created_date":"2011-09-01 08:56:45",
-         "model_app_name":"auth"
-      }
-   },
-   {
-      "pk":2,
-      "model":"admin_tools_stats.criteriatostatsm2m",
-      "fields":{
-         "criteria": 1,
-         "stats": 2
-      }
-   },
-   {
-      "pk":1,
-      "model":"admin_tools_stats.dashboardstats",
-      "fields":{
-         "updated_date":"2011-09-01 09:11:56",
-         "is_visible":true,
-         "graph_key":"user_graph",
-	      "graph_title":"User graph",
-         "date_field_name":"date_joined",
-         "operation_field_name":"",
-         "type_operation_field_name":"",
-         "model_name":"User",
-         "created_date":"2011-09-01 08:56:45",
-         "model_app_name":"auth"
-      }
-   },
-   {
-      "pk":1,
-      "model":"admin_tools_stats.criteriatostatsm2m",
-      "fields":{
-         "criteria": 1,
-         "stats": 1
-      }
-   }
+{
+    "model": "admin_tools_stats.dashboardstatscriteria",
+    "pk": 1,
+    "fields": {
+        "criteria_name": "active",
+        "criteria_fix_mapping": {
+            "is_active": "1"
+        },
+        "dynamic_criteria_field_name": "is_active",
+        "criteria_dynamic_mapping": {
+            "": [
+                null,
+                "All"
+            ],
+            "true": [
+                false,
+                "Active"
+            ],
+            "false": [
+                true,
+                "Inactive"
+            ]
+        },
+        "created_date": "2011-09-01T14:01:40Z",
+        "updated_date": "2011-09-01T14:06:12Z"
+    }
+},
+{
+    "model": "admin_tools_stats.dashboardstatscriteria",
+    "pk": 2,
+    "fields": {
+        "criteria_name": "Is staff",
+        "criteria_fix_mapping": "",
+        "dynamic_criteria_field_name": "is_staff",
+        "criteria_dynamic_mapping": "",
+        "created_date": "2020-07-15T06:16:19.937Z",
+        "updated_date": "2020-07-15T06:16:19.937Z"
+    }
+},
+{
+    "model": "admin_tools_stats.dashboardstats",
+    "pk": 1,
+    "fields": {
+        "graph_key": "user_graph",
+        "graph_title": "User registration",
+        "model_app_name": "auth",
+        "model_name": "User",
+        "date_field_name": "date_joined",
+        "user_field_name": null,
+        "operation_field_name": null,
+        "distinct": false,
+        "type_operation_field_name": null,
+        "default_chart_type": "stackedAreaChart",
+        "default_time_period": 31,
+        "default_time_scale": "days",
+        "y_axis_format": null,
+        "is_visible": true,
+        "created_date": "2011-09-01T13:56:45Z",
+        "updated_date": "2020-07-15T06:20:27.195Z"
+    }
+},
+{
+    "model": "admin_tools_stats.dashboardstats",
+    "pk": 2,
+    "fields": {
+        "graph_key": "user_logged_graph",
+        "graph_title": "User last logged in",
+        "model_app_name": "auth",
+        "model_name": "User",
+        "date_field_name": "last_login",
+        "user_field_name": null,
+        "operation_field_name": null,
+        "distinct": false,
+        "type_operation_field_name": "Count",
+        "default_chart_type": "discreteBarChart",
+        "default_time_period": 31,
+        "default_time_scale": "days",
+        "y_axis_format": null,
+        "is_visible": true,
+        "created_date": "2011-09-01T13:56:45Z",
+        "updated_date": "2020-07-15T06:21:07.329Z"
+    }
+},
+{
+    "model": "admin_tools_stats.criteriatostatsm2m",
+    "pk": 1,
+    "fields": {
+        "criteria": 1,
+        "stats": 1,
+        "order": null,
+        "prefix": "",
+        "use_as": "chart_filter"
+    }
+},
+{
+    "model": "admin_tools_stats.criteriatostatsm2m",
+    "pk": 2,
+    "fields": {
+        "criteria": 1,
+        "stats": 2,
+        "order": null,
+        "prefix": "",
+        "use_as": "chart_filter"
+    }
+},
+{
+    "model": "admin_tools_stats.criteriatostatsm2m",
+    "pk": 4,
+    "fields": {
+        "criteria": 2,
+        "stats": 1,
+        "order": null,
+        "prefix": "",
+        "use_as": "multiple_series"
+    }
+}
 ]
