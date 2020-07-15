@@ -43,10 +43,33 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
 
 
 class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
-    fixtures = ['test_data', 'auth_user']
-
     def test_admin_dashboard_page(self):
         """Test function to check dashboardstatscriteria admin pages"""
+        stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            graph_title="User graph",
+            model_name="User",
+            model_app_name="auth",
+        )
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            graph_title="User logged in graph",
+            model_name="User",
+            model_app_name="auth",
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [False, "Inactive"],
+                "true": [True, "Active"],
+            },
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats)
         response = self.client.get('/admin/')
         self.assertContains(
             response,
@@ -60,7 +83,7 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
         )
         self.assertContains(
             response,
-            '<svg style="width:100%;height:300px;"></svg>',
+            '<svg style="width:600px;height:400px;"></svg>',
             html=True,
         )
         self.assertContains(
@@ -80,7 +103,7 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
             date_field_name="date_joined",
             model_name="User",
             model_app_name="auth",
-            graph_key="user_graph1",
+            graph_key="user_graph",
         )
         criteria = mommy.make(
             'DashboardStatsCriteria',
@@ -101,12 +124,30 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
         )
         self.assertContains(
             response,
-            '<option class="chart-input" value="%s" selected="selected">active</option>' % stats.id,
+            '<option class="chart-input" value="2" selected="selected">active</option>',
             html=True,
         )
 
     def test_admin_dashboard_page_post(self):
         """Test function to check dashboardstatscriteria admin pages"""
+        stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [False, "Inactive"],
+                "true": [True, "Active"],
+            },
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats)
         response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
         self.assertContains(
             response,
