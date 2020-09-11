@@ -9,6 +9,7 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 
+from django import forms
 from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
@@ -54,6 +55,7 @@ class DashboardStatsCriteriaInline(admin.TabularInline):
         'order',
         'prefix',
         'use_as',
+        'default_option',
         'criteria__dynamic_criteria_field_name',
         'criteria__criteria_dynamic_mapping_preview',
     )
@@ -71,6 +73,14 @@ class DashboardStatsCriteriaInline(admin.TabularInline):
         return obj.criteria.criteria_dynamic_mapping_preview()
 
 
+class DashboardStatsForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['default_multiseries_criteria'].queryset = CriteriaToStatsM2M.objects.filter(
+            stats=self.instance,
+        )
+
+
 @admin.register(DashboardStats)
 class DashboardStatsAdmin(admin.ModelAdmin):
     """
@@ -84,6 +94,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     inlines = [DashboardStatsCriteriaInline]
     ordering = ('id', )
     save_as = True
+    form = DashboardStatsForm
 
     def analytics_link(self, obj):
         return format_html(

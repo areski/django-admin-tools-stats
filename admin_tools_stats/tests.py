@@ -115,7 +115,9 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
                 "true": [True, "Active"],
             },
         )
-        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats, use_as='multiple_series')
+        cm2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats, use_as='multiple_series')
+        stats.default_multiseries_criteria = cm2m
+        stats.save()
         response = self.client.get('/admin/')
         self.assertContains(
             response,
