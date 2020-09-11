@@ -260,6 +260,14 @@ class DashboardStats(models.Model):
         default=None,
     )
     criteria = models.ManyToManyField(DashboardStatsCriteria, blank=True, through='CriteriaToStatsM2M')
+    default_multiseries_criteria = models.ForeignKey(
+        'CriteriaToStatsM2M',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        # limit_choices_to={'stats__id': Value('id')},  #TODO: solve this issue and enable: https://code.djangoproject.com/ticket/25306
+        related_name='default_choices_stats',
+    )
     is_visible = models.BooleanField(default=True, verbose_name=_('visible'))
     created_date = models.DateTimeField(auto_now_add=True, verbose_name=_('date'))
     updated_date = models.DateTimeField(auto_now=True)
@@ -461,7 +469,8 @@ class DashboardStats(models.Model):
                 for key, name in dy_map.items():
                     if isinstance(name, (list, tuple)):
                         name = name[1]
-                    temp += '<option value="%s">%s</option>' % (key, name)
+                        selected_str = 'selected=selected' if key == i.default_option else ''
+                    temp += '<option value="%s" %s>%s</option>' % (key, selected_str, name)
                 temp += '</select>'
 
         temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
@@ -470,10 +479,9 @@ class DashboardStats(models.Model):
         if multiple_series.exists():
             temp += 'Divide: <select class="chart-input select_box_multiple_series" name="select_box_multiple_series" >'
             temp += '<option class="chart-input" value="">-------</option>'
-            selected_str = 'selected=selected'
             for serie in multiple_series.order_by('order').all():
+                selected_str = 'selected=selected' if serie == serie.stats.default_multiseries_criteria else ''
                 temp += '<option class="chart-input" value="%s" %s>%s</option>' % (serie.id, selected_str, serie.criteria.criteria_name)
-                selected_str = ""
             temp += '</select>'
 
         temp += 'Scale: <select class="chart-input select_box_interval" name="select_box_interval" >'
@@ -540,6 +548,13 @@ class CriteriaToStatsM2M(models.Model):
         ),
         default='chart_filter',
     )
+    default_option = models.CharField(
+        max_length=255,
+        verbose_name=_('Default filter criteria option'),
+        help_text=_('Works only with Chart filter criteri'),
+        default="",
+        blank=True,
+    )
 
     def get_dynamic_criteria_field_name(self):
         if self.prefix:
@@ -583,6 +598,9 @@ class CriteriaToStatsM2M(models.Model):
                     ),
                 )
                 return choices
+
+    def __str__(self):
+        return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
 
     def get_dynamic_choices(self):
         choices = self._get_dynamic_choices(self)
