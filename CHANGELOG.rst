@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.21.0 (2020-09-11)
+0.21.1 (2020-09-11)
 -------------------
 * add default values for filter and multiple series
 
