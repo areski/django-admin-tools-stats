@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.21.0 (2020-09-11)
+-------------------
+* add default values for filter and multiple series
+
 0.20.2 (2020-07-05)
 ------------------
 * fix charts not showing on admin index page
