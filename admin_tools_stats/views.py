@@ -17,13 +17,27 @@ class AdminChartsView(TemplateView):
     template_name = 'admin_tools_stats/admin_charts.js'
 
 
-interval_dateformat_map = {
+interval_dateformat_map_bar_chart = {
     'years': ("%Y", "%Y"),
     'months': ("%b %Y", "%b"),
     'weeks': ("%a %d %b %Y", "%W"),
     'days': ("%a %d %b %Y", "%a"),
     'hours': ("%a %d %b %Y %H:%S", "%H"),
 }
+
+interval_dateformat_map = {
+    'years': ("%Y", "%Y"),
+    'months': ("%b %Y", "%b %Y"),
+    'weeks': ("%a %d %b %Y", "%W (%d %b %Y)"),
+    'days': ("%a %d %b %Y", "%a %d %b %Y"),
+    'hours': ("%a %d %b %Y %H:%S", "%H"),
+}
+
+
+def get_dateformat(interval, chart_type):
+    if chart_type == "discreteBarChart":
+        return interval_dateformat_map_bar_chart[interval]
+    return interval_dateformat_map[interval]
 
 
 @method_decorator(user_passes_test(lambda u: u.is_superuser), name='dispatch')
@@ -83,7 +97,7 @@ class ChartDataView(TemplateView):
         if context['chart_type'] == 'stackedAreaChart':
             context['extra']['use_interactive_guideline'] = True
 
-        tooltip_date_format, context['extra']['x_axis_format'] = interval_dateformat_map[interval]
+        tooltip_date_format, context['extra']['x_axis_format'] = get_dateformat(interval, context['chart_type'])
 
         extra_serie = {
             "tooltip": {"y_start": "", "y_end": ""},
