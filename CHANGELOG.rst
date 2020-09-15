@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.22.0 (2020-09-15)
+-------------------
+* fix hourly chart (sorting)
+* improve time labels on non-bar charts
+
 0.21.1 (2020-09-11)
 -------------------
 * add default values for filter and multiple series
