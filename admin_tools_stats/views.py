@@ -67,7 +67,7 @@ class ChartDataView(TemplateView):
             return context
         criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
         if criteria:
-            choices = criteria.get_dynamic_choices()
+            choices = criteria.get_dynamic_choices(time_since, time_until)
         else:
             choices = {}
 

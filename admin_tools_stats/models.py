@@ -568,7 +568,7 @@ class CriteriaToStatsM2M(models.Model):
 
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
     @cached(60 * 5)
-    def _get_dynamic_choices(self, slef):
+    def _get_dynamic_choices(self, slef, time_since=None, time_until=None):
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:
@@ -590,11 +590,25 @@ class CriteriaToStatsM2M(models.Model):
             else:
                 choices = OrderedDict()
                 fchoices = dict(field.choices or [])
+                date_filters = {}
+                current_tz = timezone.get_current_timezone()
+                if time_since is not None:
+                    date_filters[f'{self.stats.date_field_name}__gte'] = current_tz.localize(time_since)
+                if time_until is not None:
+                    end_time = current_tz.localize(time_until).replace(hour=23, minute=59)
+                    date_filters[f'{self.stats.date_field_name}__lte'] = end_time
                 choices.update(
                     (
                         (i, (i, fchoices[i] if i in fchoices else i))
                         for i in
-                        model.objects.values_list(field_name, flat=True).distinct().order_by(field_name)
+                        model.objects.filter(
+                            **date_filters,
+                        ).values_list(
+                            field_name,
+                            flat=True,
+                        ).distinct().order_by(
+                            field_name,
+                        )
                     ),
                 )
                 return choices
@@ -602,8 +616,8 @@ class CriteriaToStatsM2M(models.Model):
     def __str__(self):
         return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
 
-    def get_dynamic_choices(self):
-        choices = self._get_dynamic_choices(self)
+    def get_dynamic_choices(self, time_since=None, time_until=None):
+        choices = self._get_dynamic_choices(self, time_since, time_until)
         return choices
 
 
