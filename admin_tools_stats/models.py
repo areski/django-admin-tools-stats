@@ -593,10 +593,14 @@ class CriteriaToStatsM2M(models.Model):
                 date_filters = {}
                 current_tz = timezone.get_current_timezone()
                 if time_since is not None:
-                    date_filters[f'{self.stats.date_field_name}__gte'] = current_tz.localize(time_since)
+                    if time_since.tzinfo is None or time_since.tzinfo.utcoffset(time_since) is None:
+                        time_since = current_tz.localize(time_since)
+                    date_filters['%s__gte' % self.stats.date_field_name] = time_since
                 if time_until is not None:
-                    end_time = current_tz.localize(time_until).replace(hour=23, minute=59)
-                    date_filters[f'{self.stats.date_field_name}__lte'] = end_time
+                    if time_until.tzinfo is None or time_until.tzinfo.utcoffset(time_until) is None:
+                        time_until = current_tz.localize(time_until).replace(hour=23, minute=59)
+                    end_time = time_until
+                    date_filters['%s__lte' % self.stats.date_field_name] = end_time
                 choices.update(
                     (
                         (i, (i, fchoices[i] if i in fchoices else i))
