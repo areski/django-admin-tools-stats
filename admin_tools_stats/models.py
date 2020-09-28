@@ -317,6 +317,24 @@ class DashboardStats(models.Model):
         raise ValidationError(errors)
         return super(DashboardStats, self).clean(*args, **kwargs)
 
+    def get_operation(self, dkwargs=None):
+        operation = {
+            'AvgCountPerInstance': lambda field_name, distinct, dkwargs: ExpressionWrapper(
+                1.0 *
+                Count(field_name, distinct=distinct, filter=dkwargs) /
+                Count('id', distinct=True, filter=Q(**{field_name + "__isnull": False})),
+                output_field=models.FloatField()
+            ),
+            'Count': lambda field_name, distinct, dkwargs: Count(field_name, distinct=distinct, filter=dkwargs),
+            'Sum': lambda field_name, distinct, dkwargs: Sum(field_name, distinct=distinct, filter=dkwargs),
+            'Avg': lambda field_name, distinct, dkwargs: Avg(field_name, distinct=distinct, filter=dkwargs),
+            'StdDev': lambda field_name, distinct, dkwargs: StdDev(field_name, filter=dkwargs),
+            'Max': lambda field_name, distinct, dkwargs: Max(field_name, filter=dkwargs),
+            'Min': lambda field_name, distinct, dkwargs: Min(field_name, filter=dkwargs),
+            'Variance': lambda field_name, distinct, dkwargs: Variance(field_name, filter=dkwargs),
+        }
+        return operation[self.type_operation_field_name](self.operation_field_name, self.distinct, dkwargs)
+
     def get_time_series(self, dynamic_criteria, all_criteria, request, time_since, time_until, interval):
         """ Get the stats time series """
         model_name = apps.get_model(self.model_app_name, self.model_name)
@@ -346,15 +364,19 @@ class DashboardStats(models.Model):
                         single_value = True
 
                     for dynamic_value in dynamic_values:
-                        criteria_value = m2m.get_dynamic_choices(time_since, time_until)[dynamic_value]
+                        try:
+                            criteria_value = m2m.get_dynamic_choices(time_since, time_until)[dynamic_value]
+                        except KeyError:
+                            criteria_value = 0
                         if isinstance(criteria_value, (list, tuple)):
                             criteria_value = criteria_value[0]
                         else:
                             criteria_value = dynamic_value
+                        criteria_key_string = criteria_key + ("__in" if isinstance(criteria_value, list) else "")
                         if single_value:
-                            kwargs[criteria_key] = criteria_value
+                            kwargs[criteria_key_string] = criteria_value
                         else:
-                            dynamic_kwargs.append(Q(**{criteria_key: criteria_value}))
+                            dynamic_kwargs.append(Q(**{criteria_key_string: criteria_value}))
 
         aggregate_dict = {}
         i = 0
@@ -368,22 +390,7 @@ class DashboardStats(models.Model):
             if not self.operation_field_name:
                 self.operation_field_name = 'id'
 
-            operation = {
-                'AvgCountPerInstance': lambda field_name, distinct, dkwargs: ExpressionWrapper(
-                    1.0 *
-                    Count(field_name, distinct=distinct, filter=dkwargs) /
-                    Count('id', distinct=True, filter=Q(**{field_name + "__isnull": False})),
-                    output_field=models.FloatField()
-                ),
-                'Count': lambda field_name, distinct, dkwargs: Count(field_name, distinct=distinct, filter=dkwargs),
-                'Sum': lambda field_name, distinct, dkwargs: Sum(field_name, distinct=distinct, filter=dkwargs),
-                'Avg': lambda field_name, distinct, dkwargs: Avg(field_name, distinct=distinct, filter=dkwargs),
-                'StdDev': lambda field_name, distinct, dkwargs: StdDev(field_name, filter=dkwargs),
-                'Max': lambda field_name, distinct, dkwargs: Max(field_name, filter=dkwargs),
-                'Min': lambda field_name, distinct, dkwargs: Min(field_name, filter=dkwargs),
-                'Variance': lambda field_name, distinct, dkwargs: Variance(field_name, filter=dkwargs),
-            }
-            aggregate_dict['agg_%i' % i] = operation[self.type_operation_field_name](self.operation_field_name, self.distinct, dkwargs)
+            aggregate_dict['agg_%i' % i] = self.get_operation(dkwargs)
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
         time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
@@ -555,6 +562,16 @@ class CriteriaToStatsM2M(models.Model):
         default="",
         blank=True,
     )
+    choices_based_on_time_range = models.BooleanField(
+        verbose_name=_('Choices are dependend on chart time range'),
+        help_text=_('Choices are not cached if this is set to true'),
+        default=False,
+    )
+    count_limit = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        default=None,
+    )
 
     def get_dynamic_criteria_field_name(self):
         if self.prefix:
@@ -568,7 +585,7 @@ class CriteriaToStatsM2M(models.Model):
 
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
     @cached(60 * 5)
-    def _get_dynamic_choices(self, slef, time_since=None, time_until=None):
+    def _get_dynamic_choices(self, slef, time_since=None, time_until=None, count_limit=None):
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:
@@ -601,27 +618,43 @@ class CriteriaToStatsM2M(models.Model):
                         time_until = current_tz.localize(time_until).replace(hour=23, minute=59)
                     end_time = time_until
                     date_filters['%s__lte' % self.stats.date_field_name] = end_time
+                choices_queryset = model.objects.filter(
+                        **date_filters,
+                    ).values_list(
+                        field_name,
+                        flat=True,
+                    ).distinct()
+                if count_limit:
+                    choices_queryset = choices_queryset.annotate(
+                        f_count=self.stats.get_operation(),
+                    ).order_by(
+                        '-f_count',
+                    )
+                    other_choices_queryset = choices_queryset[count_limit:]
+                    choices_queryset = choices_queryset[:count_limit]
+                else:
+                    choices_queryset = choices_queryset.order_by(field_name)
                 choices.update(
                     (
                         (i, (i, fchoices[i] if i in fchoices else i))
-                        for i in
-                        model.objects.filter(
-                            **date_filters,
-                        ).values_list(
-                            field_name,
-                            flat=True,
-                        ).distinct().order_by(
-                            field_name,
-                        )
+                        for i in choices_queryset
                     ),
                 )
+                if count_limit:
+                    choices.update(
+                        [('other', ([i for i in other_choices_queryset], 'other'))]
+                    )
+                    choices.move_to_end('other', last=False)
                 return choices
 
     def __str__(self):
         return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
 
     def get_dynamic_choices(self, time_since=None, time_until=None):
-        choices = self._get_dynamic_choices(self, time_since, time_until)
+        if not self.choices_based_on_time_range:
+            time_since = None
+            time_until = None
+        choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit)
         return choices
 
 

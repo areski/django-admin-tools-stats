@@ -53,9 +53,11 @@ class DashboardStatsCriteriaInline(admin.TabularInline):
     fields = (
         'criteria',
         'order',
-        'prefix',
         'use_as',
         'default_option',
+        'choices_based_on_time_range',
+        'count_limit',
+        'prefix',
         'criteria__dynamic_criteria_field_name',
         'criteria__criteria_dynamic_mapping_preview',
     )
