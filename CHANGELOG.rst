@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.23.0 (2020-09-28)
+-------------------
+* choices can be set to be range dependant and limited by count
+
 0.22.0 (2020-09-15)
 -------------------
 * fix hourly chart (sorting)
