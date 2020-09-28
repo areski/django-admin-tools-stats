@@ -421,7 +421,7 @@ class DashboardStats(models.Model):
         all_criteria = self.criteriatostatsm2m_set.all()  # Outside of get_time_series just for performance reasons
         m2m = self.get_multi_series_criteria(configuration)
         if m2m and m2m.criteria.dynamic_criteria_field_name:
-            choices = m2m.get_dynamic_choices(time_since, time_until)
+            choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz)
 
             serie_map = {}
             names = []

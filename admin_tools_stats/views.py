@@ -4,6 +4,7 @@ from collections import OrderedDict
 from datetime import datetime
 
 from django.contrib.auth.decorators import user_passes_test
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
@@ -67,7 +68,10 @@ class ChartDataView(TemplateView):
             return context
         criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
         if criteria:
-            choices = criteria.get_dynamic_choices(time_since, time_until)
+            current_tz = timezone.get_current_timezone()
+            time_since_tz = current_tz.localize(time_since)
+            time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
+            choices = criteria.get_dynamic_choices(time_since_tz, time_until_tz)
         else:
             choices = {}
 
