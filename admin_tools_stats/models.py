@@ -318,6 +318,11 @@ class DashboardStats(models.Model):
         return super(DashboardStats, self).clean(*args, **kwargs)
 
     def get_operation(self, dkwargs=None):
+        if not self.type_operation_field_name:
+            self.type_operation_field_name = 'Count'
+        if not self.operation_field_name:
+            self.operation_field_name = 'id'
+
         operation = {
             'AvgCountPerInstance': lambda field_name, distinct, dkwargs: ExpressionWrapper(
                 1.0 *
@@ -385,11 +390,6 @@ class DashboardStats(models.Model):
 
         for dkwargs in dynamic_kwargs:
             i += 1
-            if not self.type_operation_field_name:
-                self.type_operation_field_name = 'Count'
-            if not self.operation_field_name:
-                self.operation_field_name = 'id'
-
             aggregate_dict['agg_%i' % i] = self.get_operation(dkwargs)
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
