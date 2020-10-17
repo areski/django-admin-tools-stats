@@ -35,7 +35,10 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
-import jsonfield.fields
+try:
+    from django.db.models import JSONField
+except ImportError:
+    from jsonfield.fields import JSONField
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +118,7 @@ class DashboardStatsCriteria(models.Model):
         verbose_name=_('criteria name'),
         help_text=_("it needs to be one word unique. Ex. status, yesno"),
     )
-    criteria_fix_mapping = jsonfield.fields.JSONField(
+    criteria_fix_mapping = JSONField(
         null=True, blank=True,
         verbose_name=_("fixed criteria / value"),
         help_text=_("a JSON dictionary of key-value pairs that will be used for the criteria"),
@@ -125,7 +128,7 @@ class DashboardStatsCriteria(models.Model):
         verbose_name=_("dynamic criteria field name"),
         help_text=_("ex. for call records - disposition"),
     )
-    criteria_dynamic_mapping = jsonfield.fields.JSONField(
+    criteria_dynamic_mapping = JSONField(
         null=True, blank=True,
         verbose_name=_("dynamic criteria / value"),
         help_text=_(
