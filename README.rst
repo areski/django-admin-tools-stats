@@ -37,7 +37,9 @@ This is application is fork of `django-admin-tools-stats <https://github.com/are
 Requirements
 ============
 
-Django>=2.0, Python>3.6
+* Django>=2.0
+* Python>3.6
+* PostgreSQL database (not tested on other databases, PRs welcome)
 
 ============
 Installation
