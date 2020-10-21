@@ -31,7 +31,9 @@ The charts are based on models and criterias defined through admin interface and
 
 This is application is fork of `django-admin-tools-stats <https://github.com/areski/django-admin-tools-stats/>`_ which has been reworked to display all charts through Ajax and made work with plain ``django-admin``. The ``django-admin-tools`` are supported but not needed.
 
-.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/develop/docs/source/_static/admin_dashboard.png
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/develop/docs/source/_static/stacked_area_chart.png
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/develop/docs/source/_static/bar_chart.png
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/develop/docs/source/_static/aoe_chart.png
 
 ============
 Requirements
