@@ -29,7 +29,7 @@ interval_dateformat_map_bar_chart = {
 interval_dateformat_map = {
     'years': ("%Y", "%Y"),
     'months': ("%b %Y", "%b %Y"),
-    'weeks': ("%a %d %b %Y", "%W (%d %b %Y)"),
+    'weeks': ("%W (%a %d %b %Y)", "%W (%d %b %Y)"),
     'days': ("%a %d %b %Y", "%a %d %b %Y"),
     'hours': ("%a %d %b %Y %H:%S", "%H"),
 }
