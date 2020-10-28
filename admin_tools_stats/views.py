@@ -88,7 +88,7 @@ class ChartDataView(TemplateView):
                 if y_key not in ydata_serie:
                     ydata_serie[y_key] = []
                     names['name%i' % serie_i_map[key]] = str(choices[key][1] if key in choices else key)
-                ydata_serie[y_key].append(value)
+                ydata_serie[y_key].append(value if value else 0)
 
         context['extra'] = {
             'x_is_date': True,
