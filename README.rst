@@ -39,16 +39,16 @@ This is application is fork of `django-admin-tools-stats <https://github.com/are
 Requirements
 ============
 
-* Django>=2.0
-* Python>3.6
+* ``Django>=2.0``
+* ``Python>3.6``
 * PostgreSQL database (not tested on other databases, PRs welcome)
-* simplejson for charts based on DecimalField values
+* ``simplejson`` for charts based on ``DecimalField`` values
 
 ============
 Installation
 ============
 
-Install, upgrade and uninstall django-admin-charts with these commands::
+Install django-admin-charts with these commands::
 
     $ pip install django-admin-charts
 
@@ -65,8 +65,8 @@ Add ``admin_tools_stats`` (the Django admin charts application) & ``django_nvd3`
         ...
         'django.contrib.admin',
     )
-
-Install the ``nvd3`` and ``d3`` javascript libraries. For installation with ``django-bower`` see section `Installation of javascript libraries with django-bower`_.
+    
+Install the ``nvd3==1.7.1`` and ``d3==3.3.13`` javascript libraries. For installation with ``django-bower`` see section `Installation of javascript libraries with django-bower`_.
 Set library paths if they differ from the ``django-bower`` defaults::
 
    ADMIN_CHARTS_NVD3_JS_PATH = 'bow/nvd3/build/nv.d3.js'
