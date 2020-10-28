@@ -42,6 +42,7 @@ Requirements
 * Django>=2.0
 * Python>3.6
 * PostgreSQL database (not tested on other databases, PRs welcome)
+* simplejson for charts based on DecimalField values
 
 ============
 Installation
