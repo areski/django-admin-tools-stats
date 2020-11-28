@@ -7,6 +7,7 @@
 alert('{{ graph_title }} error: \n{{ error|escapejs }}');
 {% elif values %}
 function loadChartScript(){
+   d3.selectAll('.nvtooltip').remove();
    {% load_chart chart_type values chart_container extra %}
 };
 loadChartScript();
