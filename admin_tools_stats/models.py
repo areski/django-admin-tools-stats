@@ -217,6 +217,12 @@ class DashboardStats(models.Model):
         null=True, blank=True,
         help_text=_("ex. owner, invitation__owner"),
     )
+    show_to_users = models.BooleanField(
+        verbose_name=_("show to ordinary users"),
+        null=False, blank=False,
+        default=False,
+        help_text=_("Be carefull and test if it still doesn't expose sensitive data"),
+    )
     operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Operate field name"),
         null=True, blank=True,
