@@ -387,7 +387,7 @@ class DashboardStats(models.Model):
 
                     for dynamic_value in dynamic_values:
                         try:
-                            criteria_value = m2m.get_dynamic_choices(time_since, time_until)[dynamic_value]
+                            criteria_value = m2m.get_dynamic_choices(time_since, time_until, request.user)[dynamic_value]
                         except KeyError:
                             criteria_value = 0
                         if isinstance(criteria_value, (list, tuple)):
@@ -439,7 +439,7 @@ class DashboardStats(models.Model):
         all_criteria = self.criteriatostatsm2m_set.all()  # Outside of get_time_series just for performance reasons
         m2m = self.get_multi_series_criteria(configuration)
         if m2m and m2m.criteria.dynamic_criteria_field_name:
-            choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz)
+            choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz, request.user)
 
             serie_map = {}
             names = []
@@ -483,11 +483,11 @@ class DashboardStats(models.Model):
                     series[time][key] = 0
         return series
 
-    def get_control_form(self):
+    def get_control_form(self, user=None):
         """ Get content of the ajax control form """
         temp = ''
         for i in self.criteriatostatsm2m_set.filter(use_as='chart_filter').order_by('order'):
-            dy_map = i.get_dynamic_choices()
+            dy_map = i.get_dynamic_choices(user=user)
             if dy_map:
                 temp += i.criteria.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
                 temp += '<option value="">-------</option>'
@@ -504,7 +504,7 @@ class DashboardStats(models.Model):
         if multiple_series.exists():
             temp += 'Divide: <select class="chart-input select_box_multiple_series" name="select_box_multiple_series" >'
             temp += '<option class="chart-input" value="">-------</option>'
-            for serie in multiple_series.order_by('order').all():
+            for serie in multiple_series.select_related('stats__default_multiseries_criteria', 'criteria').order_by('order').all():
                 selected_str = 'selected=selected' if serie == serie.stats.default_multiseries_criteria else ''
                 temp += '<option class="chart-input" value="%s" %s>%s</option>' % (serie.id, selected_str, serie.criteria.criteria_name)
             temp += '</select>'
@@ -603,7 +603,7 @@ class CriteriaToStatsM2M(models.Model):
 
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
     @cached(60 * 5)
-    def _get_dynamic_choices(self, slef, time_since=None, time_until=None, count_limit=None):
+    def _get_dynamic_choices(self, slef, time_since=None, time_until=None, count_limit=None, user=None):
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:
@@ -638,7 +638,10 @@ class CriteriaToStatsM2M(models.Model):
                     date_filters['%s__lte' % self.stats.date_field_name] = end_time
                 choices_queryset = model.objects.filter(
                         **date_filters,
-                    ).values_list(
+                    )
+                if user and not user.is_superuser:
+                    choices_queryset = choices_queryset.filter(**{self.stats.user_field_name: user})
+                choices_queryset = choices_queryset.values_list(
                         field_name,
                         flat=True,
                     ).distinct()
@@ -668,11 +671,11 @@ class CriteriaToStatsM2M(models.Model):
     def __str__(self):
         return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
 
-    def get_dynamic_choices(self, time_since=None, time_until=None):
+    def get_dynamic_choices(self, time_since=None, time_until=None, user=None):
         if not self.choices_based_on_time_range:
             time_since = None
             time_until = None
-        choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit)
+        choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit, user)
         return choices
 
 
