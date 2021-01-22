@@ -3,9 +3,7 @@ import time
 from collections import OrderedDict
 from datetime import datetime
 
-from django.contrib.auth.decorators import user_passes_test
 from django.utils import timezone
-from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
 from .models import DashboardStats
@@ -51,6 +49,10 @@ class ChartDataView(TemplateView):
     template_name = 'admin_tools_stats/chart_data.html'
 
     def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
+        dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
+        if not(self.request.user.is_superuser or dashboard_stats.show_to_users):
+            self.handle_no_permission()
+
         context = super().get_context_data(*args, **kwargs)
         interval = self.request.GET.get('select_box_interval', interval)
         context['chart_type'] = self.request.GET.get('select_box_chart_type', interval)
@@ -59,8 +61,6 @@ class ChartDataView(TemplateView):
             time_until = datetime.strptime(self.request.GET.get('time_until', None), '%Y-%m-%d')
         except ValueError:
             return context
-
-        dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
 
         try:
             series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, self.request)
@@ -127,5 +127,8 @@ class AnalyticsView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
-        context_data['charts'] = DashboardStats.objects.all()
+        query = DashboardStats.objects.all()
+        if not self.request.user.is_superuser:
+            query = query.filter(show_to_users=True)
+        context_data['charts'] = query
         return context_data
