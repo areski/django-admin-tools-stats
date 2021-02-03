@@ -8,29 +8,25 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
-import logging
 import datetime
+import logging
 from collections import OrderedDict
-from datetime import timedelta
 
 from cache_utils.decorators import cached
-
-from dateutil.relativedelta import relativedelta, MO
-from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY, HOURLY
-
+from dateutil.relativedelta import MO, relativedelta
+from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
 from django.db.models import ExpressionWrapper, Q
-from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
+from django.db.models.aggregates import (Avg, Count, Max, Min, StdDev, Sum,
+                                         Variance)
 from django.db.models.fields import DateField
 from django.db.models.functions import Trunc
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.urls import reverse
 from django.utils import timezone
-from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
@@ -483,51 +479,13 @@ class DashboardStats(models.Model):
                     series[time][key] = 0
         return series
 
+    def get_control_form_raw(self, user=None):
+        from .forms import ChartSettingsForm
+        return ChartSettingsForm(self, user, auto_id=False)
+
     def get_control_form(self, user=None):
         """ Get content of the ajax control form """
-        temp = ''
-        for i in self.criteriatostatsm2m_set.filter(use_as='chart_filter').order_by('order'):
-            dy_map = i.get_dynamic_choices(user=user)
-            if dy_map:
-                temp += i.criteria.criteria_name + ': <select class="chart-input dynamic_criteria_select_box" name="select_box_dynamic_%i" >' % i.id
-                temp += '<option value="">-------</option>'
-                for key, name in dy_map.items():
-                    if isinstance(name, (list, tuple)):
-                        name = name[1]
-                    selected_str = 'selected=selected' if key == i.default_option else ''
-                    temp += '<option value="%s" %s>%s</option>' % (key, selected_str, name)
-                temp += '</select>'
-
-        temp += '<input type="hidden" class="hidden_graph_key" name="graph_key" value="%s">' % self.graph_key
-
-        multiple_series = self.criteriatostatsm2m_set.filter(use_as='multiple_series')
-        if multiple_series.exists():
-            temp += 'Divide: <select class="chart-input select_box_multiple_series" name="select_box_multiple_series" >'
-            temp += '<option class="chart-input" value="">-------</option>'
-            for serie in multiple_series.select_related('stats__default_multiseries_criteria', 'criteria').order_by('order').all():
-                selected_str = 'selected=selected' if serie == serie.stats.default_multiseries_criteria else ''
-                temp += '<option class="chart-input" value="%s" %s>%s</option>' % (serie.id, selected_str, serie.criteria.criteria_name)
-            temp += '</select>'
-
-        temp += 'Scale: <select class="chart-input select_box_interval" name="select_box_interval" >'
-        for interval, interval_name in time_scales:
-            selected_str = 'selected=selected' if interval == self.default_time_scale else ''
-            temp += '<option class="chart-input" value="' + interval + '" ' + selected_str + '>' + interval_name + '</option>'
-        temp += '</select>'
-
-        temp += 'Since: <input class="chart-input select_box_date_since" type="date" name="time_since" value="%s">' % \
-            (now() - timedelta(days=self.default_time_period)).strftime('%Y-%m-%d')
-        temp += 'Until: <input class="chart-input select_box_date_since" type="date" name="time_until" value="%s">' % \
-            now().strftime('%Y-%m-%d')
-
-        temp += 'Chart: <select class="chart-input select_box_chart_type" name="select_box_chart_type" >'
-        for chart_type_str, chart_type_name in chart_types:
-            selected_str = 'selected=selected' if chart_type_str == self.default_chart_type else ''
-            temp += '<option class="chart-input" value="' + chart_type_str + '" ' + selected_str + '>' + chart_type_name + '</option>'
-        temp += '</select>'
-        temp += f"&nbsp;<a href='{reverse('chart-analytics')}?show={self.graph_key}' target='_blank'>analytics</a>"
-
-        return mark_safe(force_text(temp))
+        return self.get_control_form_raw(user).as_p()
 
     def __str__(self):
         return u"%s" % self.graph_key
