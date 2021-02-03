@@ -46,14 +46,14 @@ class ChartSettingsForm(forms.Form):
             widget=forms.TextInput(attrs={'type': 'date', 'class': 'chart-input select_box_date_since'}),
         )
         self.fields['time_until'] = forms.DateField(
-            label='Since',
+            label='Until',
             initial=now().strftime('%Y-%m-%d'),
             widget=forms.TextInput(attrs={'type': 'date', 'class': 'chart-input select_box_date_until'}),
         )
 
         self.fields['select_box_chart_type'] = forms.ChoiceField(
             choices=chart_types,
-            label="Scale",
+            label="Chart",
             initial=stats.default_chart_type,
         )
         self.fields['select_box_chart_type'].widget.attrs['class'] = "chart-input select_box_chart_type"
