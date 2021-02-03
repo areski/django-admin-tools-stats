@@ -3,6 +3,7 @@ import time
 from collections import OrderedDict
 from datetime import datetime
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils import timezone
 from django.views.generic import TemplateView
 
@@ -122,7 +123,7 @@ class ChartDataView(TemplateView):
         return context
 
 
-class AnalyticsView(TemplateView):
+class AnalyticsView(LoginRequiredMixin, TemplateView):
     template_name = 'admin_tools_stats/analytics.html'
 
     def get_context_data(self, *args, **kwargs):
