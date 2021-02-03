@@ -31,4 +31,4 @@ def set_d3_js_path(val=None):
 
 @register.simple_tag
 def get_control_form(chart, user):
-    return chart.get_control_form(user=user)
+    return chart.get_control_form_raw(user=user)
