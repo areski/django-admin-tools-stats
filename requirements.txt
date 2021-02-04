@@ -4,3 +4,4 @@ djcacheutils>=3.0.0
 django-nvd3>=0.5.0
 django-bower
 python-dateutil
+django-multiselectfield

@@ -30,6 +30,7 @@ from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
+from multiselectfield import MultiSelectField
 
 try:
     if getattr(settings, 'ADMIN_CHARTS_USE_JSONFIELD', True):
@@ -246,6 +247,14 @@ class DashboardStats(models.Model):
         choices=chart_types,
         default='discreteBarChart',
     )
+    allowed_chart_types = MultiSelectField(
+        max_length=1000,
+        verbose_name=_("Allowed chart types"),
+        null=True,
+        blank=True,
+        choices=chart_types,
+        default=list(zip(*chart_types))[0],
+    )
     default_time_period = models.PositiveIntegerField(
         verbose_name=_("Default period"),
         help_text=_("Number of days"),
@@ -260,6 +269,12 @@ class DashboardStats(models.Model):
         default='days',
         choices=time_scales,
         max_length=90,
+    )
+    allowed_time_scales = MultiSelectField(
+        max_length=1000,
+        verbose_name=_("Allowed time scales"),
+        choices=time_scales,
+        default=list(zip(*time_scales))[0],
     )
     y_axis_format = models.CharField(
         max_length=90,
@@ -290,6 +305,12 @@ class DashboardStats(models.Model):
         db_table = u'dashboard_stats'
         verbose_name = _("dashboard stats")
         verbose_name_plural = _("dashboard stats")
+
+    def allowed_time_scales_choices(self):
+        return (ts for ts in time_scales if ts[0] in self.allowed_time_scales)
+
+    def allowed_chart_types_choices(self):
+        return (cht for cht in chart_types if cht[0] in self.allowed_chart_types)
 
     def get_model(self):
         return apps.get_model(self.model_app_name, self.model_name)
