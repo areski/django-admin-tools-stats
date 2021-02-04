@@ -128,7 +128,7 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
-        query = DashboardStats.objects.all()
+        query = DashboardStats.objects.order_by('graph_title').all()
         if not self.request.user.is_superuser:
             query = query.filter(show_to_users=True)
         context_data['charts'] = query
