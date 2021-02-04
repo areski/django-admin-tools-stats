@@ -124,7 +124,10 @@ class ChartDataView(TemplateView):
 
 
 class AnalyticsView(LoginRequiredMixin, TemplateView):
-    template_name = 'admin_tools_stats/analytics.html'
+    def get_template_names(self):
+        if self.request.user.is_superuser:
+            return 'admin_tools_stats/analytics.html'
+        return 'admin_tools_stats/analytics_user.html'
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)

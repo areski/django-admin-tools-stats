@@ -4,17 +4,8 @@
 <div id="chart_{{ chart.graph_key }}" class="chrt_container" style="{% if not request.GET.show == chart.graph_key and disabled %}display:none{% endif %}">
 <div class="chrt_flex">
     <h3>{{ chart.graph_title }}</h3>
-    <form class="stateform" action="." method="POST" enctype="multipart/form-data">
-       {% csrf_token %}
-       {% get_control_form chart request.user as form %}
-       {% for w in form %}
-          {% if not w.is_hidden %}
-          {{ w.label }}:
-          {% endif %}
-          {{ w }}
-       {% endfor %}
-       <a href='{% url 'chart-analytics' %}?show={{ chart.graph_key }}' target='_blank'>analytics</a>
-    </form>
+    {% get_control_form chart request.user as form %}
+    {% include "./chart_form.html" %}
     <div id="chart_container_{{ chart.graph_key }}" class="chrt_svg_container"><svg></svg></div>
     <br/>
 </div>

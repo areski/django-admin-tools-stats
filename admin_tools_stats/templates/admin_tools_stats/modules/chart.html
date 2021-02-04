@@ -1,4 +1,5 @@
 {% extends "admin_tools/dashboard/module.html" %}
+{% load admin_chart_tags %}
 {% load nvd3_tags %}
 
 {% block module_content %}
@@ -7,10 +8,8 @@
     {% endif %}
 
     {% if module.form_field %}
-        <form class="stateform" action="." method="POST" enctype="multipart/form-data">{% csrf_token %}
-            {{ module.form_field }}
-        </form>
-        <br/>
+       {% get_control_form module.dashboard_stats request.user as form %}
+       {% include "../chart_form.html" %}
     {% endif %}
 
     {% include_container module.chart_container %}

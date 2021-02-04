@@ -1,0 +1,10 @@
+<form class="stateform" action="." method="POST" enctype="multipart/form-data">
+   {% csrf_token %}
+   {% for w in form %}
+      {% if not w.is_hidden %}
+      {{ w.label }}:
+      {% endif %}
+      {{ w }}
+   {% endfor %}
+   <a href='{% url 'chart-analytics' %}?show={{ chart.graph_key }}' target='_blank'>analytics</a>
+</form>
