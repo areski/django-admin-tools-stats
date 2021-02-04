@@ -3,8 +3,6 @@ from datetime import timedelta
 from django import forms
 from django.utils.timezone import now
 
-from .models import chart_types, time_scales
-
 
 class ChartSettingsForm(forms.Form):
     def __init__(self, stats, user=None, *args, **kwargs):
@@ -32,13 +30,12 @@ class ChartSettingsForm(forms.Form):
             )
             self.fields['select_box_multiple_series'].widget.attrs['class'] = "chart-input select_box_multiple_series"
 
-        for interval, interval_name in time_scales:
-            self.fields['select_box_interval'] = forms.ChoiceField(
-                choices=time_scales,
-                label="Scale",
-                initial=stats.default_time_scale,
-            )
-            self.fields['select_box_interval'].widget.attrs['class'] = "chart-input"
+        self.fields['select_box_interval'] = forms.ChoiceField(
+            choices=stats.allowed_time_scales_choices(),
+            label="Scale",
+            initial=stats.default_time_scale,
+        )
+        self.fields['select_box_interval'].widget.attrs['class'] = "chart-input"
 
         self.fields['time_since'] = forms.DateField(
             label='Since',
@@ -52,7 +49,7 @@ class ChartSettingsForm(forms.Form):
         )
 
         self.fields['select_box_chart_type'] = forms.ChoiceField(
-            choices=chart_types,
+            choices=stats.allowed_chart_types_choices(),
             label="Chart",
             initial=stats.default_chart_type,
         )
