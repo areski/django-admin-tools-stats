@@ -1,6 +1,7 @@
 # Django settings for demoproject project.
 
 import os
+import sys
 
 DEBUG = True
 
@@ -16,17 +17,44 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': 'travis_ci',                      # Or path to database file if using sqlite3.
-        # The following settings are not used with sqlite3:
-        'USER': 'postgres',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',                      # Set to empty string for default.
+if os.environ.get('DB_ENGINE') == 'mysql':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'travis_ci',
+            'USER': os.environ.get('MYSQL_USER', 'root'),
+            'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'password'),
+            'HOST': '127.0.0.1',
+            'PORT': 3306,
+            'TEST': {
+                'CHARSET': 'utf8',
+                'COLLATION': 'utf8_general_ci',
+            }
+        }
     }
-}
+elif os.environ.get('DB_ENGINE') == 'postgres':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'travis_ci',
+            'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+            'HOST': '',
+            'PORT': '',
+        }
+    }
+else:
+    if 'test' in sys.argv:
+        database_name = ''
+    else:
+        database_name = os.path.join(os.path.dirname(__file__), 'database.db')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': database_name,
+        }
+    }
+
 
 # Hosts/domain names that are valid for this site; required if DEBUG is False
 # See https://docs.djangoproject.com/en/1.5/ref/settings/#allowed-hosts
