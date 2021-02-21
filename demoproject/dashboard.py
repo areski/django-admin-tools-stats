@@ -12,7 +12,6 @@ And to activate the app index dashboard::
 
 from admin_tools.dashboard import AppIndexDashboard, Dashboard, modules
 from admin_tools.utils import get_admin_site_name
-
 from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 

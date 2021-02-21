@@ -12,7 +12,6 @@
 import warnings
 
 from admin_tools.dashboard import modules
-
 from django.contrib import messages
 
 from .models import DashboardStats

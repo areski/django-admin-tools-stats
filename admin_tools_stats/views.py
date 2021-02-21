@@ -9,7 +9,6 @@ from django.views.generic import TemplateView
 
 from .models import DashboardStats
 
-
 logger = logging.getLogger(__name__)
 
 
