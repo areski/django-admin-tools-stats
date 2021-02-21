@@ -209,7 +209,7 @@ try:
 except ImportError:
     pass
 else:
-    INSTALLED_APPS = INSTALLED_APPS + ('django_extensions',)
+    INSTALLED_APPS = INSTALLED_APPS + ['django_extensions', ]
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
