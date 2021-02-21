@@ -382,13 +382,13 @@ class DashboardStats(models.Model):
         }
         return operation[self.type_operation_field_name](self.operation_field_name, self.distinct, dkwargs)
 
-    def get_time_series(self, dynamic_criteria, all_criteria, request, time_since, time_until, interval):
+    def get_time_series(self, dynamic_criteria, all_criteria, user, time_since, time_until, interval):
         """ Get the stats time series """
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
         dynamic_kwargs = []
-        if request and not request.user.is_superuser and self.user_field_name:
-            kwargs[self.user_field_name] = request.user
+        if user.is_superuser and self.user_field_name:
+            kwargs[self.user_field_name] = user
         for m2m in all_criteria:
             criteria = m2m.criteria
             # fixed mapping value passed info kwargs
@@ -412,7 +412,7 @@ class DashboardStats(models.Model):
 
                     for dynamic_value in dynamic_values:
                         try:
-                            criteria_value = m2m.get_dynamic_choices(time_since, time_until, request.user)[dynamic_value]
+                            criteria_value = m2m.get_dynamic_choices(time_since, time_until, user)[dynamic_value]
                         except KeyError:
                             criteria_value = 0
                         if isinstance(criteria_value, (list, tuple)):
@@ -454,7 +454,7 @@ class DashboardStats(models.Model):
             criteria = None
         return criteria
 
-    def get_multi_time_series(self, configuration, time_since, time_until, interval, request=None):
+    def get_multi_time_series(self, configuration, time_since, time_until, interval, user):
         current_tz = timezone.get_current_timezone()
         time_since_tz = current_tz.localize(time_since)
         time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
@@ -464,7 +464,7 @@ class DashboardStats(models.Model):
         all_criteria = self.criteriatostatsm2m_set.all()  # Outside of get_time_series just for performance reasons
         m2m = self.get_multi_series_criteria(configuration)
         if m2m and m2m.criteria.dynamic_criteria_field_name:
-            choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz, request.user)
+            choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz, user)
 
             serie_map = {}
             names = []
@@ -476,7 +476,7 @@ class DashboardStats(models.Model):
                     names.append(name)
                     values.append(key)
             configuration['select_box_dynamic_' + str(m2m.id)] = values
-            serie_map = self.get_time_series(configuration, all_criteria, request, time_since_tz, time_until_tz, interval)
+            serie_map = self.get_time_series(configuration, all_criteria, user, time_since_tz, time_until_tz, interval)
             for tv in serie_map:
                 time = tv[0]
                 if time not in series:
@@ -486,7 +486,7 @@ class DashboardStats(models.Model):
                     i += 1
                     series[time][name] = tv[i]
         else:
-            serie = self.get_time_series(configuration, all_criteria, request, time_since_tz, time_until_tz, interval)
+            serie = self.get_time_series(configuration, all_criteria, user, time_since_tz, time_until_tz, interval)
             for time, value in serie:
                 series[time] = {'': value}
             names = {'': ''}
@@ -627,6 +627,8 @@ class CriteriaToStatsM2M(models.Model):
                         **date_filters,
                     )
                 if user and not user.is_superuser:
+                    if not self.stats.user_field_name:
+                        raise Exception("User field must be defined to enable charts for non-superusers")
                     choices_queryset = choices_queryset.filter(**{self.stats.user_field_name: user})
                 choices_queryset = choices_queryset.values_list(
                         field_name,
