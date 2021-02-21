@@ -56,6 +56,7 @@ before_cache:
 script:
     - flake8
     - django-admin --version
+    - mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
     - python -Wall $VIRTUAL_ENV/bin/coverage run setup.py test
 
 after_success:
