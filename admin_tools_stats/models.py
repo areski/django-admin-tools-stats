@@ -400,7 +400,8 @@ class DashboardStats(models.Model):
         qs = model_name.objects
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
-        qs = qs.annotate(d=Trunc(self.date_field_name, interval))
+        kind = interval[:-1]
+        qs = qs.annotate(d=Trunc(self.date_field_name, kind))
         qs = qs.values_list('d')
         qs = qs.order_by('d')
         qs = qs.annotate(**aggregate_dict)
