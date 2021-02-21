@@ -3,6 +3,11 @@
 from django.db import migrations, models
 import multiselectfield.db.fields
 
+try:
+    from django.db.models import JSONField
+except ImportError:
+    from jsonfield.fields import JSONField
+
 
 class Migration(migrations.Migration):
 
@@ -24,11 +29,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='dashboardstatscriteria',
             name='criteria_dynamic_mapping',
-            field=models.JSONField(blank=True, help_text='a JSON dictionary with records in two following possible formats:<br/>"key_value": "name"<br/>"key": [value, "name"]<br/>use blank key for no filter<br/>Example:<br/><pre>{<br/>  "": [null, "All"],<br/>  "True": [true, "True"],<br/>  "False": [false, "False"]<br/>}</pre><br/>Left blank to exploit all choices of CharField with choices', null=True, verbose_name='dynamic criteria / value'),
+            field=JSONField(blank=True, help_text='a JSON dictionary with records in two following possible formats:<br/>"key_value": "name"<br/>"key": [value, "name"]<br/>use blank key for no filter<br/>Example:<br/><pre>{<br/>  "": [null, "All"],<br/>  "True": [true, "True"],<br/>  "False": [false, "False"]<br/>}</pre><br/>Left blank to exploit all choices of CharField with choices', null=True, verbose_name='dynamic criteria / value'),
         ),
         migrations.AlterField(
             model_name='dashboardstatscriteria',
             name='criteria_fix_mapping',
-            field=models.JSONField(blank=True, help_text='a JSON dictionary of key-value pairs that will be used for the criteria', null=True, verbose_name='fixed criteria / value'),
+            field=JSONField(blank=True, help_text='a JSON dictionary of key-value pairs that will be used for the criteria', null=True, verbose_name='fixed criteria / value'),
         ),
     ]

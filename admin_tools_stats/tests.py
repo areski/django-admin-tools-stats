@@ -89,12 +89,12 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
         )
         self.assertContains(
             response,
-            '<option value="true">Active</option>',
+            '<option value="True">Active</option>',
             html=True,
         )
         self.assertContains(
             response,
-            '<option value="false">Inactive</option>',
+            '<option value="False">Inactive</option>',
             html=True,
         )
 
@@ -122,12 +122,10 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
         response = self.client.get('/admin/')
         self.assertContains(
             response,
-            '<option class="chart-input" value="">-------</option>',
-            html=True,
-        )
-        self.assertContains(
-            response,
-            '<option class="chart-input" value="2" selected="selected">active</option>',
+            '<select name="select_box_multiple_series" class="chart-input select_box_multiple_series" required>'
+            '<option value="">-------</option>'
+            '<option value="2" selected>active</option>'
+            '</select>',
             html=True,
         )
 
@@ -159,7 +157,7 @@ class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
         )
         self.assertContains(
             response,
-            '<option value="true">Active</option>',
+            '<option value="True">Active</option>',
             html=True,
         )
 
@@ -207,12 +205,12 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10))
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0): {'': 0},
             datetime.datetime(2010, 10, 9, 0, 0): {'': 0},
@@ -226,12 +224,12 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_hours(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make('User', date_joined=datetime.datetime(2010, 10, 8, 23, 13))
+        user = mommy.make('User', date_joined=datetime.datetime(2010, 10, 8, 23, 13))
         time_since = datetime.datetime(2010, 10, 8, 22)
         time_until = datetime.datetime(2010, 10, 8, 23)
 
         interval = "hours"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 8, 22, 0): {'': 0},
             datetime.datetime(2010, 10, 8, 23, 0): {'': 1},
@@ -242,12 +240,12 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_weeks(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 30))
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 11, 8)
 
         interval = "weeks"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 4, 0, 0): {'': 0},
             datetime.datetime(2010, 10, 11, 0, 0): {'': 0},
@@ -262,12 +260,12 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_months(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 30))
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 11, 30)
 
         interval = "months"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 1, 0, 0): {'': 1},
             datetime.datetime(2010, 11, 1, 0, 0): {'': 0},
@@ -278,12 +276,12 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_years(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 30))
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2011, 10, 8)
 
         interval = "years"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 1, 1, 0, 0): {'': 1},
             datetime.datetime(2011, 1, 1, 0, 0): {'': 0},
@@ -294,13 +292,13 @@ class ModelTests(TestCase):
     def test_get_multi_series_datetime_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
         current_tz = timezone.get_current_timezone()
-        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=current_tz))
+        user = mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=current_tz))
         mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
         time_since = datetime.datetime(2010, 10, 9, 0, 0)
         time_until = datetime.datetime(2010, 10, 11, 0, 0)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             current_tz.localize(datetime.datetime(2010, 10, 9, 0, 0)): {'': 0},
             current_tz.localize(datetime.datetime(2010, 10, 10, 0, 0)): {'': 2},
@@ -321,7 +319,8 @@ class ModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 11)
 
         interval = "days"
-        serie = self.kid_stats.get_multi_time_series({}, time_since, time_until, interval)
+        user = mommy.make('User')
+        serie = self.kid_stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.date(2010, 10, 9): {'': 0},
             datetime.date(2010, 10, 10): {'': 1},
@@ -333,12 +332,12 @@ class ModelTests(TestCase):
     def test_get_multi_series_change_dst(self):
         """Test function to check DashboardStats.get_multi_time_series() on edge of daylight saving time change """
         current_tz = timezone.get_current_timezone()
-        mommy.make('User', date_joined=datetime.datetime(2019, 10, 28, tzinfo=current_tz))
+        user = mommy.make('User', date_joined=datetime.datetime(2019, 10, 28, tzinfo=current_tz))
         time_since = datetime.datetime(2019, 10, 27, 0, 0)
         time_until = datetime.datetime(2019, 10, 29, 0, 0)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             current_tz.localize(datetime.datetime(2019, 10, 27, 0, 0)): {'': 0},
             current_tz.localize(datetime.datetime(2019, 10, 28, 0, 0)): {'': 1},
@@ -359,14 +358,14 @@ class ModelTests(TestCase):
             distinct=True,
             operation_field_name='first_name',
         )
-        mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Foo")
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Foo")
         mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Foo")
         mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Bar")
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
         interval = "days"
-        serie = stats.get_multi_time_series({}, time_since, time_until, interval)
+        serie = stats.get_multi_time_series({}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0): {'': 0},
             datetime.datetime(2010, 10, 9, 0, 0): {'': 0},
@@ -405,7 +404,8 @@ class ModelTests(TestCase):
             time_until = datetime.datetime(2010, 10, 10)
 
             interval = "days"
-            serie = stats.get_multi_time_series({}, time_since, time_until, interval)
+            user = mommy.make('User')
+            serie = stats.get_multi_time_series({}, time_since, time_until, interval, user)
             self.assertEqual(serie[datetime.date(2010, 10, 10)][''], result, "Bad value for function %s" % func)
 
     @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
@@ -423,13 +423,13 @@ class ModelTests(TestCase):
             },
         )
         m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series')
-        mommy.make('User', date_joined=datetime.date(2010, 10, 12), is_active=True)
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 12), is_active=True)
         mommy.make('User', date_joined=datetime.date(2010, 10, 13), is_active=False)
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((('Active', 0), ('Inactive', 0))),
             datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((('Active', 0), ('Inactive', 0))),
@@ -456,13 +456,13 @@ class ModelTests(TestCase):
             },
         )
         m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series')
-        mommy.make('User', date_joined=datetime.date(2010, 10, 12), is_active=True)
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 12), is_active=True)
         mommy.make('User', date_joined=datetime.date(2010, 10, 13), is_active=False)
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((('Active', 0), ('Inactive', 0))),
             datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((('Active', 0), ('Inactive', 0))),
@@ -485,13 +485,13 @@ class ModelTests(TestCase):
             dynamic_criteria_field_name="is_active",
         )
         m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series')
-        mommy.make('User', date_joined=datetime.date(2010, 10, 12), is_active=True)
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 12), is_active=True)
         mommy.make('User', date_joined=datetime.date(2010, 10, 13), is_active=False)
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((('True', 0), ('False', 0))),
             datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((('True', 0), ('False', 0))),
@@ -521,7 +521,8 @@ class ModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 14)
 
         interval = "days"
-        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval)
+        user = mommy.make('User', is_superuser=True)
+        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
             datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
@@ -556,8 +557,9 @@ class ModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 14)
 
         interval = "days"
+        user = mommy.make('User', is_superuser=True)
         arguments = {'select_box_multiple_series': m2m.id, 'select_box_dynamic_%s' % m2m_active.id: 'True'}
-        serie = self.stats.get_multi_time_series(arguments, time_since, time_until, interval)
+        serie = self.stats.get_multi_time_series(arguments, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
             datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
@@ -593,7 +595,8 @@ class ModelTests(TestCase):
 
         interval = "days"
         arguments = {'select_box_multiple_series': m2m.id}
-        serie = self.stats.get_multi_time_series(arguments, time_since, time_until, interval)
+        user = mommy.make('User', is_superuser=True)
+        serie = self.stats.get_multi_time_series(arguments, time_since, time_until, interval, user)
         testing_data = {
             datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
             datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
@@ -602,6 +605,28 @@ class ModelTests(TestCase):
             datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((('Bar', 0), ('Foo', 0))),
         }
         self.assertDictEqual(serie, testing_data)
+
+    def test_no_user_field_name(self):
+        """
+        Test that non-superuser without user_field_name can't see charts
+        """
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="name",
+            dynamic_criteria_field_name="last_name",
+        )
+        mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            criteria_fix_mapping={"is_active": True},
+        )
+        m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series')
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 12), last_name="Foo", is_active=True)
+        time_since = datetime.datetime(2010, 10, 10)
+        time_until = datetime.datetime(2010, 10, 14)
+        arguments = {'select_box_multiple_series': m2m.id}
+        with self.assertRaises(Exception):
+            self.stats.get_multi_time_series(arguments, time_since, time_until, "days", user)
 
 
 class ViewsTests(BaseAuthenticatedClient):
