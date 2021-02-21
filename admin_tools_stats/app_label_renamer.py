@@ -15,6 +15,7 @@ from django.urls import resolve
 
 # TODO: Follow evolution of https://code.djangoproject.com/ticket/3591
 
+
 # Source link : http://django-notes.blogspot.in/2011/07/django-app-name-breadcrumbs-l10n.html
 class AppLabelRenamer(object):
     """
