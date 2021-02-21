@@ -12,7 +12,6 @@ from django.contrib import admin
 from django.db.models.base import ModelBase
 from django.urls import resolve
 
-
 # TODO: Follow evolution of https://code.djangoproject.com/ticket/3591
 
 
