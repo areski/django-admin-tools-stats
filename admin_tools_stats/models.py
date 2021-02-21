@@ -239,6 +239,11 @@ class DashboardStats(models.Model):
         null=True, blank=True, choices=operation,
         help_text=_("choose the type operation what you want to aggregate, ex. Sum"),
     )
+    allowed_type_operation_field_name = MultiSelectField(
+        max_length=1000, verbose_name=_("Choose Type operation"),
+        null=True, blank=True, choices=operation,
+        help_text=_("choose the type operation what you want to aggregate, ex. Sum"),
+    )
     default_chart_type = models.CharField(
         max_length=90,
         verbose_name=_("Default chart type"),
@@ -305,6 +310,9 @@ class DashboardStats(models.Model):
         db_table = u'dashboard_stats'
         verbose_name = _("dashboard stats")
         verbose_name_plural = _("dashboard stats")
+
+    def allowed_type_operation_field_name_choices(self):
+        return (op for op in operation if op[0] in self.allowed_type_operation_field_name)
 
     def allowed_time_scales_choices(self):
         return (ts for ts in time_scales if ts[0] in self.allowed_time_scales)
