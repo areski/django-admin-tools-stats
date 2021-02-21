@@ -295,6 +295,7 @@ class ModelTests(TestCase):
         """Test function to check DashboardStats.get_multi_time_series()"""
         current_tz = timezone.get_current_timezone()
         mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=current_tz))
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
         time_since = datetime.datetime(2010, 10, 9, 0, 0)
         time_until = datetime.datetime(2010, 10, 11, 0, 0)
 
@@ -302,7 +303,7 @@ class ModelTests(TestCase):
         serie = self.stats.get_multi_time_series({}, time_since, time_until, interval)
         testing_data = {
             current_tz.localize(datetime.datetime(2010, 10, 9, 0, 0)): {'': 0},
-            current_tz.localize(datetime.datetime(2010, 10, 10, 0, 0)): {'': 1},
+            current_tz.localize(datetime.datetime(2010, 10, 10, 0, 0)): {'': 2},
             current_tz.localize(datetime.datetime(2010, 10, 11, 0, 0)): {'': 0},
         }
         self.assertDictEqual(serie, testing_data)

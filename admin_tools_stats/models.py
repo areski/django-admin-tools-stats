@@ -440,7 +440,7 @@ class DashboardStats(models.Model):
             for tv in serie_map:
                 time = tv[0]
                 if time not in series:
-                    series[time] = OrderedDict()
+                    series[time] = {}
                 i = 0
                 for name in names:
                     i += 1
@@ -462,7 +462,7 @@ class DashboardStats(models.Model):
                 time = current_tz.localize(time)
 
             if time not in series:
-                series[time] = OrderedDict()
+                series[time] = {}
             for key in names:
                 if key not in series[time]:
                     series[time][key] = 0
