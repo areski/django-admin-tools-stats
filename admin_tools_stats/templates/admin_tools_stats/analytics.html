@@ -10,9 +10,18 @@
    <script>
       $( document ).ready(function() {
        $(".change_chart_button").click(function(){
-          $('.chrt_container').hide();
-          $('#chart_' + $(this).data("chart-key")).show();
-          $('form.stateform:visible').each(loadAnchor);
+          $('body').addClass("loading");
+          $('.admin_charts').hide();
+          var chart_key = $(this).data("chart-key")
+          $("#chart_element_" + chart_key + ".notloaded").load("/admin_tools_stats/analytics/chart/" + chart_key, function(){
+             $(this).removeClass('notloaded')
+             $(this).addClass('loaded')
+             $(this).find('form.stateform:visible').each(loadAnchor);
+          });
+          $("#chart_element_" + chart_key).each(function(){
+             $('#chart_element_' + $(this).data("chart-key")).show();
+             $('body').removeClass("loading");
+          });
           return false;
        });
       });
@@ -41,6 +50,32 @@
       height: 100%;
       position: relative;
    }
+
+   .modal {
+    display:    none;
+    position:   fixed;
+    z-index:    1000;
+    top:        0;
+    left:       0;
+    height:     100%;
+    width:      100%;
+    background: rgba( 255, 255, 255, .8 )
+                url('http://i.stack.imgur.com/FhHRx.gif')
+                50% 50%
+                no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+       the scrollbar off with overflow:hidden */
+    body.loading .modal {
+        overflow: hidden;
+    }
+
+    /* Anytime the body has the loading class, our
+       modal element will be visible */
+    body.loading .modal {
+        display: block;
+    }
    </style>
 {% endblock %}
 
@@ -48,7 +83,9 @@
    {% for chart in charts %}
    <a class="change_chart_button" href="?show={{ chart.graph_key }}" data-chart-key="{{ chart.graph_key }}"><button>{{ chart.graph_title }}</button></a>
    {% endfor %}
-   {% block include_container %}
-   {% include "./chart_containers.html" with disabled=True %}
-   {% endblock %}
+   {% for chart in charts %}
+   <div class="admin_charts notloaded" id="chart_element_{{ chart.graph_key }}" data-chart-key="{{ chart.graph_key }}">
+   </div>
+   {% endfor %}
+   <div class="modal">
 {% endblock %}

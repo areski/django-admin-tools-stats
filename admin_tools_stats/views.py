@@ -123,7 +123,15 @@ class ChartDataView(TemplateView):
         return context
 
 
-class AnalyticsView(LoginRequiredMixin, TemplateView):
+class ChartsMixin:
+    def get_charts_query(self):
+        query = DashboardStats.objects.order_by('graph_title').all()
+        if not self.request.user.is_superuser:
+            query = query.filter(show_to_users=True)
+        return query
+
+
+class AnalyticsView(LoginRequiredMixin, ChartsMixin, TemplateView):
     def get_template_names(self):
         if self.request.user.is_superuser:
             return 'admin_tools_stats/analytics.html'
@@ -131,8 +139,14 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
-        query = DashboardStats.objects.order_by('graph_title').all()
-        if not self.request.user.is_superuser:
-            query = query.filter(show_to_users=True)
-        context_data['charts'] = query
+        context_data['charts'] = self.get_charts_query()
+        return context_data
+
+
+class AnalyticsChartView(LoginRequiredMixin, ChartsMixin, TemplateView):
+    template_name = 'admin_tools_stats/analytics_chart.html'
+
+    def get_context_data(self, *args, graph_key=None, **kwargs):
+        context_data = super().get_context_data(*args, **kwargs)
+        context_data['chart'] = self.get_charts_query().get(graph_key=graph_key)
         return context_data
