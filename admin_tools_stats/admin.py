@@ -17,7 +17,7 @@ from django.utils.translation import gettext_lazy as _
 
 from admin_tools_stats.app_label_renamer import AppLabelRenamer
 from admin_tools_stats.models import (CriteriaToStatsM2M, DashboardStats,
-                                      DashboardStatsCriteria, chart_types)
+                                      DashboardStatsCriteria)
 
 AppLabelRenamer(native_app_label=u'admin_tools_stats', app_label=_('Admin Tools Stats')).main()
 

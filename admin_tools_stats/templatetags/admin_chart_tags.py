@@ -29,6 +29,7 @@ def set_nvd3_js_path(val=None):
 def set_d3_js_path(val=None):
     return getattr(settings, 'ADMIN_CHARTS_D3_JS_PATH', None)
 
+
 @register.simple_tag
 def get_control_form(chart, user):
     return chart.get_control_form_raw(user=user)

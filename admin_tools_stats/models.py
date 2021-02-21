@@ -28,7 +28,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.safestring import mark_safe
-from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from multiselectfield import MultiSelectField
 
