@@ -8,6 +8,7 @@ function loadChart(data, graph_key){
       return function(data, textStatus, jqXHR) {
             console.log("call " + data_str);
             chart_scripts[data_str] = loadChartScript;
+            $('body').removeClass("loading");
       };
    };
 
@@ -36,6 +37,7 @@ function defer(method) {
 }
 
 function loadAnchor(){
+   $('body').addClass("loading");
    var data = $(this).closest('form.stateform');
    var graph_key = data.find(".hidden_graph_key").first().val();
    var is_analytics = $(this).parent().hasClass("chrt_flex");
