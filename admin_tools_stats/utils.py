@@ -77,7 +77,7 @@ def assertContainsAny(
         text_repr, real_count, msg_prefix = self._assert_contains(response, text, status_code, msg_prefix, html)
         total_count += real_count
 
-    self.assertTrue(total_count != 0, "None of the text options were found in the response")
+    self.assertTrue(total_count != 0, f"None of the {texts} were found in the response: {response}")
 
 
 class Choice(object):
