@@ -10,13 +10,14 @@
 #
 import datetime
 from collections import OrderedDict
+from unittest import skipIf
 
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
-
 from model_mommy import mommy
 
 from admin_tools_stats.models import DashboardStatsCriteria
@@ -202,6 +203,7 @@ class ModelTests(TestCase):
         with self.assertRaisesRegexp(ValidationError, "date_field_name.*Cannot resolve keyword 'asdf' into field. Choices are:"):
             stats.clean()
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
@@ -220,6 +222,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_hours(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
@@ -235,6 +238,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_weeks(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
@@ -254,6 +258,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_months(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
@@ -269,6 +274,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_years(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
@@ -334,6 +340,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_distinct_count(self):
         """Test function to check DashboardStats.get_multi_time_series() with distinct count."""
@@ -363,6 +370,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_distinct_functions(self):
         """Test function to check DashboardStats.get_multi_time_series() with various functions."""
@@ -393,6 +401,7 @@ class ModelTests(TestCase):
             serie = stats.get_multi_time_series({}, time_since, time_until, interval)
             self.assertEqual(serie[datetime.date(2010, 10, 10)][''], result, "Bad value for function %s" % func)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_dynamic_field_name(self):
         """Test function to check DashboardStats.get_multi_time_series() with dynamic criteria mapping"""
@@ -423,6 +432,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_dynamic_field_name_old_format(self):
         """
@@ -455,6 +465,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_criteria_without_dynamic_mapping(self):
         """
@@ -483,6 +494,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_criteria_without_dynamic_mapping_choices(self):
         """
@@ -512,6 +524,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_criteria_combine(self):
         """
@@ -547,6 +560,7 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_fixed_criteria(self):
         """
