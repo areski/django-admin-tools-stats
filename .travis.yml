@@ -40,7 +40,7 @@ cache:
 install:
   - pip install coverage pyaml django_coverage_plugin
   - pip install -q $DJANGO_VERSION
-  - pip install -q coveralls flake8
+  - pip install -q coveralls flake8 isort
   - pip install -r demoproject/requirements.txt
   - pip install -r requirements.txt
 
@@ -55,6 +55,7 @@ before_cache:
 
 script:
     - flake8
+    - isort --check-only --diff admin_tools_stats demoproject
     - django-admin --version
     - mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u root mysql
     - python -Wall $VIRTUAL_ENV/bin/coverage run setup.py test
