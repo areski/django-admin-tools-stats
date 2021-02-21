@@ -306,12 +306,17 @@ class ModelTests(TestCase):
             current_tz.localize(datetime.datetime(2010, 10, 10, 0, 0)): {'': 2},
             current_tz.localize(datetime.datetime(2010, 10, 11, 0, 0)): {'': 0},
         }
+        from pprint import pprint
+        pprint(serie)
+        pprint("-------------------------------")
+        pprint(testing_data)
         self.assertDictEqual(serie, testing_data)
 
     @override_settings(USE_TZ=True, TIME_ZONE='CET')
     def test_get_multi_series_date_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
         mommy.make('TestKid', birthday=datetime.date(2010, 10, 10))
+        mommy.make('TestKid', birthday=None)
         time_since = datetime.datetime(2010, 10, 9)
         time_until = datetime.datetime(2010, 10, 11)
 
@@ -395,6 +400,7 @@ class ModelTests(TestCase):
             mommy.make('TestKid', birthday=datetime.date(2010, 10, 10), age=12)
             mommy.make('TestKid', birthday=datetime.date(2010, 10, 10), age=1)
             mommy.make('TestKid', birthday=datetime.date(2010, 10, 10), age=2)
+            mommy.make('TestKid', birthday=None)
             time_since = datetime.datetime(2010, 10, 9)
             time_until = datetime.datetime(2010, 10, 10)
 

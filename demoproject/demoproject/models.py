@@ -10,5 +10,5 @@ class TestKid(models.Model):
     age = models.IntegerField()
     bio = models.TextField()
     wanted_games_qtd = models.BigIntegerField()
-    birthday = models.DateField()
-    appointment = models.DateTimeField()
+    birthday = models.DateField(null=True)
+    appointment = models.DateTimeField(null=True)
