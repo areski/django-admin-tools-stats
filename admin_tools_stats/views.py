@@ -54,8 +54,9 @@ class ChartDataView(TemplateView):
             self.handle_no_permission()
 
         context = super().get_context_data(*args, **kwargs)
-        interval = self.request.GET.get('select_box_interval', interval)
-        context['chart_type'] = self.request.GET.get('select_box_chart_type', interval)
+        interval = self.request.GET.get('select_box_interval', interval) or dashboard_stats.default_time_scale
+        operation = self.request.GET.get('select_box_operation') or dashboard_stats.type_operation_field_name
+        context['chart_type'] = self.request.GET.get('select_box_chart_type') or dashboard_stats.default_chart_type
         try:
             time_since = datetime.strptime(self.request.GET.get('time_since', None), '%Y-%m-%d')
             time_until = datetime.strptime(self.request.GET.get('time_until', None), '%Y-%m-%d')
@@ -63,7 +64,7 @@ class ChartDataView(TemplateView):
             return context
 
         try:
-            series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, self.request.user)
+            series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, operation, self.request.user)
         except Exception as e:
             if 'debug' in self.request.GET:
                 raise e
