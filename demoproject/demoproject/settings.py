@@ -32,18 +32,7 @@ if os.environ.get('DB_ENGINE') == 'mysql':
             }
         }
     }
-elif os.environ.get('DB_ENGINE') == 'postgres':
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'travis_ci',
-            'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
-            'HOST': '',
-            'PORT': '',
-        }
-    }
-else:
+elif os.environ.get('DB_ENGINE') == 'sqlite':
     if 'test' in sys.argv:
         database_name = ''
     else:
@@ -52,6 +41,17 @@ else:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': database_name,
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'travis_ci',
+            'USER': os.environ.get('POSTGRES_USER', 'postgres'),
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
+            'HOST': '',
+            'PORT': '',
         }
     }
 
