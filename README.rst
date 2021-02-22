@@ -216,6 +216,14 @@ Source code: http://github.com/PetrDlouhy/django-admin-charts
 Bug tracker: https://github.com/PetrDlouhy/django-admin-charts/issues
 
 
+Debugging charts
+----------------
+
+For chart data view (/admin_tools_stats/chart_data/payments/) the URL query
+parameter `&debug=True` can be added, in order to get Django debug page or
+Django debug toolbar.
+
+
 Documentation
 -------------
 
