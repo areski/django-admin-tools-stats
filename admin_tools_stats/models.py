@@ -70,14 +70,16 @@ time_scales = (
     ('days', 'Days'),
     ('weeks', 'Weeks'),
     ('months', 'Months'),
+    ('quarters', 'Quarters'),
     ('years', 'Years'),
 )
-freqs = {
-    'years': YEARLY,
-    'months': MONTHLY,
-    'weeks': WEEKLY,
-    'days': DAILY,
-    'hours': HOURLY
+rrule_freqs = {
+    'years': {'freq': YEARLY},
+    'quarters': {'freq': MONTHLY, 'interval': 3},
+    'months': {'freq': MONTHLY},
+    'weeks': {'freq': WEEKLY},
+    'days': {'freq': DAILY},
+    'hours': {'freq': HOURLY},
 }
 
 
@@ -94,6 +96,9 @@ def truncate(dt, interval):
         return day - relativedelta(weekday=MO(-1))
     elif interval == 'months':
         return datetime.datetime(dt.year, dt.month, 1, tzinfo=dt.tzinfo)
+    elif interval == 'quarters':
+        qmonth = dt.month - (dt.month - 1) % 3
+        return datetime.datetime(dt.year, qmonth, 1, tzinfo=dt.tzinfo)
     elif interval == 'years':
         return datetime.datetime(dt.year, 1, 1, tzinfo=dt.tzinfo)
 
@@ -455,7 +460,7 @@ class DashboardStats(models.Model):
         # fill with zeros where the records are missing
         start = truncate(time_since, interval)
 
-        dates = list(rrule(freq=freqs[interval], dtstart=start, until=time_until))
+        dates = list(rrule(**rrule_freqs[interval], dtstart=start, until=time_until))
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()

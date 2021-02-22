@@ -20,6 +20,7 @@ class AdminChartsView(TemplateView):
 
 interval_dateformat_map_bar_chart = {
     'years': ("%Y", "%Y"),
+    'quarters': ("%b %Y", "%b"),
     'months': ("%b %Y", "%b"),
     'weeks': ("%a %d %b %Y", "%W"),
     'days': ("%a %d %b %Y", "%a"),
@@ -28,6 +29,7 @@ interval_dateformat_map_bar_chart = {
 
 interval_dateformat_map = {
     'years': ("%Y", "%Y"),
+    'quarters': ("%b %Y", "%b %Y"),
     'months': ("%b %Y", "%b %Y"),
     'weeks': ("%W (%d %b %Y)", "%W"),
     'days': ("%a %d %b %Y", "%d %b %Y"),
