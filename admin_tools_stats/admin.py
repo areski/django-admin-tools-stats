@@ -90,6 +90,23 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     Allows the administrator to view and modify certain attributes
     of a DashboardStats.
     """
+    fieldsets = (
+        (None, {
+            'fields': (
+                'graph_key',
+                'graph_title',
+                ('model_app_name', 'model_name', 'date_field_name'),
+                ('operation_field_name', 'distinct'),
+                ('user_field_name', 'show_to_users'),
+                ('allowed_type_operation_field_name', 'type_operation_field_name'),
+                ('allowed_chart_types', 'default_chart_type'),
+                ('allowed_time_scales', 'default_time_scale', 'default_time_period'),
+                'y_axis_format',
+                'default_multiseries_criteria',
+                'is_visible',
+            )
+        }),
+    )
     list_display = (
         'id',
         'graph_key',
