@@ -358,13 +358,13 @@ class DashboardStats(models.Model):
         raise ValidationError(errors)
         return super(DashboardStats, self).clean(*args, **kwargs)
 
-    def get_operation(self, dkwargs=None):
-        if not self.type_operation_field_name:
-            self.type_operation_field_name = 'Count'
+    def get_operation(self, operation_choice, dkwargs=None):
+        if not operation_choice:
+            operation_choice = self.type_operation_field_name or 'Count'
         if not self.operation_field_name:
             self.operation_field_name = 'id'
 
-        operation = {
+        operations = {
             'AvgCountPerInstance': lambda field_name, distinct, dkwargs: ExpressionWrapper(
                 1.0 *
                 Count(field_name, distinct=distinct, filter=dkwargs) /
@@ -379,9 +379,9 @@ class DashboardStats(models.Model):
             'Min': lambda field_name, distinct, dkwargs: Min(field_name, filter=dkwargs),
             'Variance': lambda field_name, distinct, dkwargs: Variance(field_name, filter=dkwargs),
         }
-        return operation[self.type_operation_field_name](self.operation_field_name, self.distinct, dkwargs)
+        return operations[operation_choice](self.operation_field_name, self.distinct, dkwargs)
 
-    def get_time_series(self, dynamic_criteria, all_criteria, user, time_since, time_until, interval):
+    def get_time_series(self, dynamic_criteria, all_criteria, user, time_since, time_until, operation_choice, interval):
         """ Get the stats time series """
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
@@ -411,7 +411,7 @@ class DashboardStats(models.Model):
 
                     for dynamic_value in dynamic_values:
                         try:
-                            criteria_value = m2m.get_dynamic_choices(time_since, time_until, user)[dynamic_value]
+                            criteria_value = m2m.get_dynamic_choices(time_since, time_until, operation_choice, user)[dynamic_value]
                         except KeyError:
                             criteria_value = 0
                         if isinstance(criteria_value, (list, tuple)):
@@ -431,7 +431,7 @@ class DashboardStats(models.Model):
 
         for dkwargs in dynamic_kwargs:
             i += 1
-            aggregate_dict['agg_%i' % i] = self.get_operation(dkwargs)
+            aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, dkwargs)
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
         time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
@@ -453,7 +453,7 @@ class DashboardStats(models.Model):
             criteria = None
         return criteria
 
-    def get_multi_time_series(self, configuration, time_since, time_until, interval, user):
+    def get_multi_time_series(self, configuration, time_since, time_until, interval, operation_choice, user):
         current_tz = timezone.get_current_timezone()
         time_since_tz = current_tz.localize(time_since)
         time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
@@ -475,7 +475,7 @@ class DashboardStats(models.Model):
                     names.append(name)
                     values.append(key)
             configuration['select_box_dynamic_' + str(m2m.id)] = values
-            serie_map = self.get_time_series(configuration, all_criteria, user, time_since_tz, time_until_tz, interval)
+            serie_map = self.get_time_series(configuration, all_criteria, user, time_since_tz, time_until_tz, operation_choice, interval)
             for tv in serie_map:
                 time = tv[0]
                 if time not in series:
@@ -485,7 +485,7 @@ class DashboardStats(models.Model):
                     i += 1
                     series[time][name] = tv[i]
         else:
-            serie = self.get_time_series(configuration, all_criteria, user, time_since_tz, time_until_tz, interval)
+            serie = self.get_time_series(configuration, all_criteria, user, time_since_tz, time_until_tz, operation_choice, interval)
             for time, value in serie:
                 series[time] = {'': value}
             names = {'': ''}
@@ -589,7 +589,7 @@ class CriteriaToStatsM2M(models.Model):
 
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
     @cached(60 * 5)
-    def _get_dynamic_choices(self, slef, time_since=None, time_until=None, count_limit=None, user=None):
+    def _get_dynamic_choices(self, slef, time_since=None, time_until=None, count_limit=None, operation_choice=None, user=None):
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:
@@ -635,7 +635,7 @@ class CriteriaToStatsM2M(models.Model):
                     ).distinct()
                 if count_limit:
                     choices_queryset = choices_queryset.annotate(
-                        f_count=self.stats.get_operation(),
+                        f_count=self.stats.get_operation(operation_choice),
                     ).order_by(
                         '-f_count',
                     )
@@ -659,11 +659,11 @@ class CriteriaToStatsM2M(models.Model):
     def __str__(self):
         return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
 
-    def get_dynamic_choices(self, time_since=None, time_until=None, user=None):
+    def get_dynamic_choices(self, time_since=None, time_until=None, operation_choice=None, user=None):
         if not self.choices_based_on_time_range:
             time_since = None
             time_until = None
-        choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit, user)
+        choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit, operation_choice, user)
         return choices
 
 
