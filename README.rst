@@ -41,7 +41,7 @@ Requirements
 
 * ``Django>=2.0``
 * ``Python>3.6``
-* PostgreSQL database (not tested on other databases, PRs welcome)
+* PostgreSQL (MySQL is experimental, other databases probably not working but PRs are welcome)
 * ``simplejson`` for charts based on ``DecimalField`` values
 
 ============
