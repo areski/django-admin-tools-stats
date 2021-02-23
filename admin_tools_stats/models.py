@@ -36,7 +36,10 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 
 try:
-    from django.db.models import JSONField
+    if getattr(settings, 'ADMIN_CHARTS_USE_JSONFIELD', True):
+        from django.db.models import JSONField
+    else:
+        from jsonfield.fields import JSONField
 except ImportError:
     from jsonfield.fields import JSONField
 

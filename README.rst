@@ -175,6 +175,16 @@ You may also need to add some includes to your template admin base, see an examp
     demoproject/demoproject/templates/admin/base_site.html
 
 
+Usage on DB that doesn't support JSONFields
+-------------------------------------------
+
+You can add following line to your settings in order to use JSONField from `django-jsonfield` instead of native Django JSONField::
+
+   ADMIN_CHARTS_USE_JSONFIELD = False
+
+This can become handy, when deploying on MySQL<5.7 (Like AWS RDS Aurora)
+
+
 ============
 Running demo
 ============

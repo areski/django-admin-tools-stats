@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.23.1 (2021-02-23)
+-------------------
+* add ADMIN_CHARTS_USE_JSONFIELD setting
+
 0.23.0 (2021-02-23)
 -------------------
 * fixes for MySQL
