@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.23.0 (2021-02-23)
+-------------------
+* fixes for MySQL
+* add quarter time scale option
+* use native Django JSONField if awailable
+* tuning of time formats and small fixes
+
 0.23.0 (2020-09-28)
 -------------------
 * choices can be set to be range dependant and limited by count
