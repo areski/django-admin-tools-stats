@@ -38,6 +38,15 @@ class ChartSettingsForm(forms.Form):
             )
             self.fields['select_box_operation'].widget.attrs['class'] = "chart-input"
 
+        operations_list = stats.get_operations_list()
+        if operations_list and len(operations_list) > 1:
+            self.fields['select_box_operation_field'] = forms.ChoiceField(
+                choices=[('', '-------')] + [(o, o) for o in operations_list],
+                label="Operation field",
+                initial=operations_list[0],
+            )
+            self.fields['select_box_operation_field'].widget.attrs['class'] = "chart-input"
+
         if len(stats.allowed_time_scales) > 1:
             self.fields['select_box_interval'] = forms.ChoiceField(
                 choices=stats.allowed_time_scales_choices(),
