@@ -129,7 +129,6 @@ class DashboardStatsAdmin(admin.ModelAdmin):
     ]
     exclude = ('criteria',)
     inlines = [DashboardStatsCriteriaInline]
-    ordering = ('id', )
     save_as = True
     form = DashboardStatsForm
 
