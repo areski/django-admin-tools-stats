@@ -41,8 +41,8 @@ class ChartSettingsForm(forms.Form):
         operations_list = stats.get_operations_list()
         if operations_list and len(operations_list) > 1:
             self.fields['select_box_operation_field'] = forms.ChoiceField(
-                choices=[('', '-------')] + [(o, o) for o in operations_list],
-                label="Operation field",
+                choices=[('', '(divide all)')] + [(o, o) for o in operations_list],
+                label="Field",
                 initial=operations_list[0],
             )
             self.fields['select_box_operation_field'].widget.attrs['class'] = "chart-input"

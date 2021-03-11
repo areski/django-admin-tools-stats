@@ -439,12 +439,15 @@ class DashboardStats(models.Model):
         if not dynamic_kwargs:
             dynamic_kwargs = [None]
 
-        for dkwargs in dynamic_kwargs:
-            i += 1
-            aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, operation_field_choice, dkwargs)
-        # for operation in self.get_operations_list():
-        #     i += 1
-        #     aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, operation)
+        operations = self.get_operations_list()
+        if len(operations) > 1 and dynamic_criteria['select_box_operation_field'] == '':
+            for operation in operations:
+                i += 1
+                aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, operation)
+        else:
+            for dkwargs in dynamic_kwargs:
+                i += 1
+                aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, operation_field_choice, dkwargs)
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
         time_range = {'%s__range' % self.date_field_name: (time_since, time_until)}
@@ -478,6 +481,7 @@ class DashboardStats(models.Model):
 
         values = []
         names = []
+        operations = self.get_operations_list()
         if m2m and m2m.criteria.dynamic_criteria_field_name:
             choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz, operation_choice, operation_field_choice, user)
             for key, name in choices.items():
@@ -487,9 +491,10 @@ class DashboardStats(models.Model):
                     names.append(name)
                     values.append(key)
             configuration['select_box_dynamic_' + str(m2m.id)] = values
+        elif len(operations) > 1 and configuration['select_box_operation_field'] == '':
+            names = operations
         else:
             names = ['']
-            choices = {'': ''}
 
         serie_map = {}
         serie_map = self.get_time_series(
