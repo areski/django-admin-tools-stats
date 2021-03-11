@@ -377,7 +377,8 @@ class DashboardStats(models.Model):
         if not operation_choice:
             operation_choice = self.type_operation_field_name or 'Count'
         if not operation_field_choice:
-            operation_field_choice = self.get_operations_list()[0]
+            operations = self.get_operations_list()
+            operation_field_choice = operations[0] if operations else None
         if not operation_field_choice:
             self.operation_field_name = 'id'
 
@@ -449,7 +450,7 @@ class DashboardStats(models.Model):
             dynamic_kwargs = [None]
 
         operations = self.get_operations_list()
-        if len(operations) > 1 and dynamic_criteria['select_box_operation_field'] == '':
+        if operations and len(operations) > 1 and dynamic_criteria['select_box_operation_field'] == '':
             for operation in operations:
                 i += 1
                 aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, operation)
