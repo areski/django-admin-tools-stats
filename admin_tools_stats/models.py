@@ -198,20 +198,23 @@ class DashboardStats(models.Model):
     )
     model_app_name = models.CharField(
         max_length=90, verbose_name=_('app name'),
-        help_text=_("ex. auth / dialer_cdr"),
+        help_text=_("ex. <i>auth</i>, <i>dialer_cdr</i>"),
     )
     model_name = models.CharField(
         max_length=90, verbose_name=_('model name'),
-        help_text=_("ex. User"),
+        help_text=_("ex. <i>User</i>"),
     )
     date_field_name = models.CharField(
         max_length=90, verbose_name=_("date field name"),
-        help_text=_("ex. date_joined, invitation__invitation_date"),
+        help_text=_("ex. <i>date_joined</i>, <i>invitation__invitation_date</i>"),
     )
     user_field_name = models.CharField(
         max_length=90, verbose_name=_("user field name"),
         null=True, blank=True,
-        help_text=_("ex. owner, invitation__owner"),
+        help_text=_(
+            "User field that will limit chart data only for currently logged user (if not superuser)<br/>"
+            "ex. owner, <i>invitation__owner</i>",
+        ),
     )
     show_to_users = models.BooleanField(
         verbose_name=_("show to ordinary users"),
@@ -222,26 +225,30 @@ class DashboardStats(models.Model):
     operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Operate field name"),
         null=True, blank=True,
-        help_text=_("The field you want to aggregate, ex. amount, salaries__total_income"),
+        help_text=_(
+            "The field you want to aggregate, ex. <i>amount</i>, <i>salaries__total_income</i>.<br/>"
+            "Can contain multiple fields divided by comma.",
+        ),
     )
     distinct = models.BooleanField(
         default=False,
         null=False,
         blank=True,
         help_text=_(
-            "Note: Distinct is supported only for Count, Sum, Avg and 'Avgerage count per active model instance'.<br/>"
-            "Django>=3.0 is needed for distinct Sum and Avg."
+            "Note: Distinct is supported only for <i>Count</i>, <i>Sum</i>, "
+            "<i>Avg</i> and <i>'Avgerage count per active model instance'</i>.<br/>"
+            "Django>=3.0 is needed for distinct <i>Sum</i> and <i>Avg</i>."
         ),
     )
     type_operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Choose Type operation"),
         null=True, blank=True, choices=operation,
-        help_text=_("choose the type operation what you want to aggregate, ex. Sum"),
+        help_text=_("Choose the type operation what you want to aggregate."),
     )
     allowed_type_operation_field_name = MultiSelectField(
         max_length=1000, verbose_name=_("Choose Type operation"),
         null=True, blank=True, choices=operation,
-        help_text=_("choose the type operation what you want to aggregate, ex. Sum"),
+        help_text=_("More than one selected field will display chooser on the chart."),
     )
     default_chart_type = models.CharField(
         max_length=90,
@@ -258,6 +265,7 @@ class DashboardStats(models.Model):
         blank=True,
         choices=chart_types,
         default=list(zip(*chart_types))[0],
+        help_text=_("More than one selected field will display chooser on the chart."),
     )
     default_time_period = models.PositiveIntegerField(
         verbose_name=_("Default period"),
@@ -279,6 +287,7 @@ class DashboardStats(models.Model):
         verbose_name=_("Allowed time scales"),
         choices=time_scales,
         default=list(zip(*time_scales))[0],
+        help_text=_("More than one selected field will display chooser on the chart."),
     )
     y_axis_format = models.CharField(
         max_length=90,
