@@ -4,17 +4,18 @@ var html_string_analytics = '<svg style="width:100%;height:100%"></svg>';
 var chart_scripts = {};
 
 function loadChart(data, graph_key){
-   var storeToChartScripts = function(data_str) {
+   function storeToChartScripts(data_str) {
+      $('body').removeClass("loading");
       return function(data, textStatus, jqXHR) {
             console.log("call " + data_str);
             chart_scripts[data_str] = loadChartScript;
-            $('body').removeClass("loading");
       };
    };
 
    data_str = data.serialize();
 
    if(data_str in chart_scripts){
+      $('body').removeClass("loading");
       console.log("run " + data_str);
       chart_scripts[data_str]();
    } else {
@@ -23,7 +24,11 @@ function loadChart(data, graph_key){
          dataType: "script",
          'url': url,
          'data': data.serialize(),
-         success: storeToChartScripts(data_str)
+         success: storeToChartScripts(data_str),
+         error: function(){
+             alert("Error during chart loading.");
+             $('body').removeClass("loading");
+         }
       });
    };
 }
