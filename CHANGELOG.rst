@@ -1,11 +1,17 @@
 Changelog
 =========
 
-0.23.1 (2021-02-23)
+0.25.0 (xxxx-xx-xx)
+-------------------
+* add support for charts in userspace
+* add multiple operation fields
+* improve analytics page - fix loading time, add loading overlay
+
+0.24.1 (2021-02-23)
 -------------------
 * add ADMIN_CHARTS_USE_JSONFIELD setting
 
-0.23.0 (2021-02-23)
+0.24.0 (2021-02-23)
 -------------------
 * fixes for MySQL
 * add quarter time scale option
