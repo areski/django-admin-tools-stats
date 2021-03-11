@@ -394,7 +394,7 @@ class DashboardStats(models.Model):
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
         dynamic_kwargs = []
-        if user.is_superuser and self.user_field_name:
+        if not user.is_superuser and self.user_field_name:
             kwargs[self.user_field_name] = user
         for m2m in all_criteria:
             criteria = m2m.criteria
