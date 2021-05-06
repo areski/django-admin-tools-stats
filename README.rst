@@ -65,7 +65,7 @@ Add ``admin_tools_stats`` (the Django admin charts application) & ``django_nvd3`
         ...
         'django.contrib.admin',
     )
-    
+
 Install the ``nvd3==1.7.1`` and ``d3==3.3.13`` javascript libraries. For installation with ``django-bower`` see section `Installation of javascript libraries with django-bower`_.
 Set library paths if they differ from the ``django-bower`` defaults::
 
@@ -157,7 +157,11 @@ Add following code to dashboard.py::
     # Copy following code into your custom dashboard
     # append following code after recent actions module or
     # a link list module for "quick links"
-    graph_list = get_active_graph()
+    if context['request'].user.has_perm('admin_tools_stats.view_dashboardstats'):
+            graph_list = get_active_graph()
+        else:
+            graph_list = []
+
     for i in graph_list:
         kwargs = {}
         kwargs['require_chart_jscss'] = True

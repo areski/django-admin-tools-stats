@@ -71,7 +71,11 @@ class CustomIndexDashboard(Dashboard):
         # Copy following code into your custom dashboard
         # append following code after recent actions module or
         # a link list module for "quick links"
-        graph_list = get_active_graph()
+        if context['request'].user.has_perm('admin_tools_stats.view_dashboardstats'):
+            graph_list = get_active_graph()
+        else:
+            graph_list = []
+
         for i in graph_list:
             kwargs = {}
             kwargs['require_chart_jscss'] = True
