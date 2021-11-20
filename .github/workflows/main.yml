@@ -22,7 +22,7 @@ jobs:
         
     strategy:
       matrix:
-        DJANGO_VERSION: [ '2.2.*', '3.0.*', '2.1.*', '3.2.*' ]
+        DJANGO_VERSION: [ '2.2.*', '3.0.*', '3.1.*', '3.2.*' ]
         DB_ENGINE: [ 'postgres', 'mysql' ]
         python-version: ['3.7', '3.8', '3.9', '3.10']
 
