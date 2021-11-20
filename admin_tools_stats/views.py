@@ -41,16 +41,12 @@ def get_dateformat(interval, chart_type):
     return interval_dateformat_map[interval]
 
 
-@method_decorator(
-    user_passes_test(lambda u: u.has_perm('admin_tools_stats.view_dashboardstats')),
-    name='dispatch',
-)
 class ChartDataView(TemplateView):
     template_name = 'admin_tools_stats/chart_data.html'
 
     def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
         dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
-        if not(self.request.user.is_superuser or dashboard_stats.show_to_users):
+        if not(self.request.user.has_perm('admin_tools_stats.view_dashboardstats') or dashboard_stats.show_to_users):
             self.handle_no_permission()
 
         context = super().get_context_data(*args, **kwargs)
@@ -129,14 +125,14 @@ class ChartDataView(TemplateView):
 class ChartsMixin:
     def get_charts_query(self):
         query = DashboardStats.objects.order_by('graph_title').all()
-        if not self.request.user.is_superuser:
+        if not self.request.user.has_perm('admin_tools_stats.view_dashboardstats'):
             query = query.filter(show_to_users=True)
         return query
 
 
 class AnalyticsView(LoginRequiredMixin, ChartsMixin, TemplateView):
     def get_template_names(self):
-        if self.request.user.is_superuser:
+        if self.request.user.has_perm('admin_tools_stats.view_dashboardstats'):
             return 'admin_tools_stats/analytics.html'
         return 'admin_tools_stats/analytics_user.html'
 
