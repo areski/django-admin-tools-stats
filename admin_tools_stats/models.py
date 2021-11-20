@@ -394,7 +394,7 @@ class DashboardStats(models.Model):
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
         dynamic_kwargs = []
-        if not user.is_superuser and self.user_field_name:
+        if not user.has_perm('admin_tools_stats.view_dashboardstats') and self.user_field_name:
             kwargs[self.user_field_name] = user
         for m2m in all_criteria:
             criteria = m2m.criteria
@@ -647,7 +647,7 @@ class CriteriaToStatsM2M(models.Model):
                 choices_queryset = model.objects.filter(
                         **date_filters,
                     )
-                if user and not user.is_superuser:
+                if user and not user.has_perm('admin_tools_stats.view_dashboardstats'):
                     if not self.stats.user_field_name:
                         raise Exception("User field must be defined to enable charts for non-superusers")
                     choices_queryset = choices_queryset.filter(**{self.stats.user_field_name: user})
