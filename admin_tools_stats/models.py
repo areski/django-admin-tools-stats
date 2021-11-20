@@ -371,14 +371,14 @@ class DashboardStats(models.Model):
     def get_operations_list(self):
         if self.operation_field_name:
             return self.operation_field_name.split(',')
-        return self.operation_field_name
+        return []
 
     def get_operation(self, operation_choice, operation_field_choice, dkwargs=None):
         if not operation_choice:
             operation_choice = self.type_operation_field_name or 'Count'
         if not operation_field_choice:
             operations = self.get_operations_list()
-            operation_field_choice = operations[0] if operations else None
+            operation_field_choice = operations[0] if operations else 'id'
         if not operation_field_choice:
             self.operation_field_name = 'id'
 
