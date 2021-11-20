@@ -9,7 +9,7 @@
 
     {% if module.form_field %}
        {% get_control_form module.dashboard_stats request.user as form %}
-       {% include "../chart_form.html" %}
+       {% include "../chart_form.html" with chart=module.dashboard_stats %}
     {% endif %}
 
     {% include_container module.chart_container %}
