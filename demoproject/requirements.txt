@@ -2,5 +2,6 @@ django-nvd3
 django-bower
 django-admin-tools
 model-mommy
-psycopg2
+psycopg2==2.8.6
 mysqlclient
+django-coverage-plugin

@@ -21,7 +21,7 @@ if os.environ.get('DB_ENGINE') == 'mysql':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'travis_ci',
+            'NAME': 'test_db',
             'USER': os.environ.get('MYSQL_USER', 'root'),
             'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'password'),
             'HOST': '127.0.0.1',
@@ -29,8 +29,8 @@ if os.environ.get('DB_ENGINE') == 'mysql':
             'TEST': {
                 'CHARSET': 'utf8',
                 'COLLATION': 'utf8_general_ci',
-            }
-        }
+            },
+        },
     }
 elif os.environ.get('DB_ENGINE') == 'sqlite':
     if 'test' in sys.argv:
@@ -41,18 +41,18 @@ elif os.environ.get('DB_ENGINE') == 'sqlite':
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': database_name,
-        }
+        },
     }
-else:
+elif os.environ.get('DB_ENGINE') == 'postgres':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'travis_ci',
+            'NAME': os.environ.get('POSTGRES_NAME', 'postgres'),
             'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', ''),
-            'HOST': '',
-            'PORT': '',
-        }
+            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
+            'HOST': os.environ.get('POSTGRES_HOST', ''),
+            'PORT': os.environ.get('POSTGRES_PORT', ''),
+        },
     }
 
 
@@ -144,7 +144,7 @@ TEMPLATES = [{
             "django.template.context_processors.csrf",
             "django.template.context_processors.tz",
             "django.template.context_processors.request",
-        ]
+        ],
     },
 }]
 
@@ -209,7 +209,7 @@ try:
 except ImportError:
     pass
 else:
-    INSTALLED_APPS = INSTALLED_APPS + ['django_extensions', ]
+    INSTALLED_APPS = INSTALLED_APPS + ['django_extensions']
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -221,15 +221,15 @@ LOGGING = {
     'disable_existing_loggers': False,
     'filters': {
         'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
     },
     'handlers': {
         'mail_admins': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
+            'class': 'django.utils.log.AdminEmailHandler',
+        },
     },
     'loggers': {
         'django.request': {
@@ -237,7 +237,7 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-    }
+    },
 }
 
 
