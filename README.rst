@@ -80,6 +80,8 @@ Register chart views in your ``urls.py``::
         path('admin_tools_stats/', include('admin_tools_stats.urls')),
     ]
 
+Ensure, you have ``default`` cache set up: https://docs.djangoproject.com/en/3.2/topics/cache/#memcached
+
 Run migrations::
 
     $ python manage.py migrate
