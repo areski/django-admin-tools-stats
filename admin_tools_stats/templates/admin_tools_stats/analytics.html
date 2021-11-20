@@ -9,21 +9,13 @@
    <script src="{% url 'admin-charts' %}" type="text/javascript"></script>
    <script>
       $( document ).ready(function() {
-       $(".change_chart_button").click(function(){
-          $('body').addClass("loading");
-          $('.admin_charts').hide();
-          var chart_key = $(this).data("chart-key")
-          $("#chart_element_" + chart_key + ".notloaded").load("/admin_tools_stats/analytics/chart/" + chart_key, function(){
-             $(this).removeClass('notloaded')
-             $(this).addClass('loaded')
-             $(this).find('form.stateform:visible').each(loadAnchor);
-          });
-          $("#chart_element_" + chart_key).each(function(){
-             $('#chart_element_' + $(this).data("chart-key")).show();
-             $('body').removeClass("loading");
-          });
-          return false;
-       });
+         {% if request.GET.show %}
+            loadAnalyticsChart('{{ request.GET.show }}');
+         {% endif %}
+         $(".change_chart_button").click(function(){
+            loadAnalyticsChart($(this).data("chart-key"));
+            return false;
+         });
       });
    </script>
 
