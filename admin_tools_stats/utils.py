@@ -54,7 +54,7 @@ class BaseAuthenticatedClient(TestCase):
         self.client = Client()
         self.user = User.objects.get(username='admin')
         auth = '%s:%s' % ('admin', 'admin')
-        auth = 'Basic %s' % base64.encodestring(auth.encode('utf8'))
+        auth = 'Basic %s' % base64.b64encode(auth.encode('utf8'))
         auth = auth.strip()
         self.extra = {
             'HTTP_AUTHORIZATION': auth,
