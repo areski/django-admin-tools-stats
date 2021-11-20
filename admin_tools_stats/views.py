@@ -65,7 +65,9 @@ class ChartDataView(TemplateView):
             return context
 
         try:
-            series = dashboard_stats.get_multi_time_series(self.request.GET, time_since, time_until, interval, operation, operation_field, self.request.user)
+            series = dashboard_stats.get_multi_time_series(
+                self.request.GET, time_since, time_until, interval, operation, operation_field, self.request.user,
+            )
         except Exception as e:
             if 'debug' in self.request.GET:
                 raise e
