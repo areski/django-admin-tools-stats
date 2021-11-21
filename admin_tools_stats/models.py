@@ -13,8 +13,10 @@ import logging
 from collections import OrderedDict
 
 from cache_utils.decorators import cached
+
 from dateutil.relativedelta import MO, relativedelta
 from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
+
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import FieldError, ValidationError
@@ -29,6 +31,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
+
 from multiselectfield import MultiSelectField
 
 try:
@@ -237,7 +240,7 @@ class DashboardStats(models.Model):
         help_text=_(
             "Note: Distinct is supported only for <i>Count</i>, <i>Sum</i>, "
             "<i>Avg</i> and <i>'Avgerage count per active model instance'</i>.<br/>"
-            "Django>=3.0 is needed for distinct <i>Sum</i> and <i>Avg</i>."
+            "Django>=3.0 is needed for distinct <i>Sum</i> and <i>Avg</i>.",
         ),
     )
     type_operation_field_name = models.CharField(
@@ -294,7 +297,7 @@ class DashboardStats(models.Model):
         verbose_name=_("Y axis format"),
         help_text=_(
             "Format of Y axis."
-            "<a href='https://github.com/d3/d3-format' target='_blank'>See description of possible values</a>."
+            "<a href='https://github.com/d3/d3-format' target='_blank'>See description of possible values</a>.",
         ),
         null=True,
         blank=True,
@@ -387,7 +390,7 @@ class DashboardStats(models.Model):
                 1.0 *
                 Count(field_name, distinct=distinct, filter=dkwargs) /
                 Count('id', distinct=True, filter=Q(**{field_name + "__isnull": False})),
-                output_field=models.FloatField()
+                output_field=models.FloatField(),
             ),
             'Count': lambda field_name, distinct, dkwargs: Count(field_name, distinct=distinct, filter=dkwargs),
             'Sum': lambda field_name, distinct, dkwargs: Sum(field_name, distinct=distinct, filter=dkwargs),
@@ -620,7 +623,7 @@ class CriteriaToStatsM2M(models.Model):
     @cached(60 * 5)
     def _get_dynamic_choices(
             self, slef, time_since=None, time_until=None, count_limit=None,
-            operation_choice=None, operation_field_choice=None, user=None
+            operation_choice=None, operation_field_choice=None, user=None,
     ):
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
@@ -683,7 +686,7 @@ class CriteriaToStatsM2M(models.Model):
                 )
                 if count_limit:
                     choices.update(
-                        [('other', ([i for i in other_choices_queryset], 'other'))]
+                        [('other', ([i for i in other_choices_queryset], 'other'))],
                     )
                     choices.move_to_end('other', last=False)
                 return choices
