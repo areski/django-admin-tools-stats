@@ -13,10 +13,8 @@ import logging
 from collections import OrderedDict
 
 from cache_utils.decorators import cached
-
 from dateutil.relativedelta import MO, relativedelta
 from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
-
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import FieldError, ValidationError
@@ -31,8 +29,9 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-
 from multiselectfield import MultiSelectField
+
+charts_timezone = getattr(settings, 'ADMIN_CHARTS_TIMEZONE', timezone.utc)
 
 try:
     if getattr(settings, 'ADMIN_CHARTS_USE_JSONFIELD', True):
@@ -85,24 +84,44 @@ rrule_freqs = {
 }
 
 
-def truncate(dt, interval):
+def truncate(dt, interval, add_intervals=0):
     ''' Returns interval bounds the datetime is in. '''
 
-    day = datetime.datetime(dt.year, dt.month, dt.day, tzinfo=dt.tzinfo)
-
     if interval == 'hours':
-        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo)
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo) + relativedelta(hours=add_intervals)
     elif interval == 'days':
-        return day
+        return datetime.datetime(dt.year, dt.month, dt.day, tzinfo=dt.tzinfo) + relativedelta(days=add_intervals)
     elif interval == 'weeks':
-        return day - relativedelta(weekday=MO(-1))
+        return (
+            datetime.datetime(dt.year, dt.month, dt.day, tzinfo=dt.tzinfo) -
+            relativedelta(weekday=MO(-1)) + relativedelta(days=add_intervals * 7)
+        )
     elif interval == 'months':
-        return datetime.datetime(dt.year, dt.month, 1, tzinfo=dt.tzinfo)
+        return datetime.datetime(dt.year, dt.month, 1, tzinfo=dt.tzinfo) + relativedelta(months=add_intervals)
     elif interval == 'quarters':
         qmonth = dt.month - (dt.month - 1) % 3
-        return datetime.datetime(dt.year, qmonth, 1, tzinfo=dt.tzinfo)
+        return datetime.datetime(dt.year, qmonth, 1, tzinfo=dt.tzinfo) + relativedelta(months=add_intervals * 3)
     elif interval == 'years':
-        return datetime.datetime(dt.year, 1, 1, tzinfo=dt.tzinfo)
+        return datetime.datetime(dt.year, 1, 1, tzinfo=dt.tzinfo) + relativedelta(years=add_intervals)
+
+
+def transform_cached_values(values):
+    ret_dict = {}
+    for v in values:
+        date = v['date']
+        if date not in ret_dict:
+            ret_dict[date] = {}
+        ret_dict[date][v['filtered_value']] = v['value']
+    return ret_dict
+
+
+def get_dynamic_choices_array(configuration):
+    array = []
+    for k, v in configuration.items():
+        if k.startswith('select_box_dynamic_'):
+            array += [(k, v)]
+    array.sort()
+    return array
 
 
 class DashboardStatsCriteria(models.Model):
@@ -468,7 +487,7 @@ class DashboardStats(models.Model):
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
         kind = interval[:-1]
-        qs = qs.annotate(d=Trunc(self.date_field_name, kind))
+        qs = qs.annotate(d=Trunc(self.date_field_name, kind, tzinfo=charts_timezone))
         qs = qs.values_list('d')
         qs = qs.order_by('d')
         qs = qs.annotate(**aggregate_dict)
@@ -483,10 +502,6 @@ class DashboardStats(models.Model):
         return criteria
 
     def get_multi_time_series(self, configuration, time_since, time_until, interval, operation_choice, operation_field_choice, user):
-        current_tz = timezone.get_current_timezone()
-        time_since_tz = current_tz.localize(time_since)
-        time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
-
         configuration = configuration.copy()
         series = {}
         all_criteria = self.criteriatostatsm2m_set.all()  # Outside of get_time_series just for performance reasons
@@ -496,7 +511,7 @@ class DashboardStats(models.Model):
         names = []
         operations = self.get_operations_list()
         if m2m and m2m.criteria.dynamic_criteria_field_name:
-            choices = m2m.get_dynamic_choices(time_since_tz, time_until_tz, operation_choice, operation_field_choice, user)
+            choices = m2m.get_dynamic_choices(time_since, time_until, operation_choice, operation_field_choice, user)
             for key, name in choices.items():
                 if key != '':
                     if isinstance(name, (list, tuple)):
@@ -511,7 +526,7 @@ class DashboardStats(models.Model):
 
         serie_map = {}
         serie_map = self.get_time_series(
-            configuration, all_criteria, user, time_since_tz, time_until_tz, operation_choice, operation_field_choice, interval,
+            configuration, all_criteria, user, time_since, time_until, operation_choice, operation_field_choice, interval,
         )
         for tv in serie_map:
             time = tv[0]
@@ -525,12 +540,12 @@ class DashboardStats(models.Model):
         # fill with zeros where the records are missing
         start = truncate(time_since, interval)
 
-        dates = list(rrule(**rrule_freqs[interval], dtstart=start, until=time_until))
+        dates = list(rrule(**rrule_freqs[interval], dtstart=start.replace(tzinfo=None), until=time_until.replace(tzinfo=None)))
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()
             elif settings.USE_TZ:
-                time = current_tz.localize(time)
+                time = charts_timezone.localize(time)
 
             if time not in series:
                 series[time] = {}
@@ -538,6 +553,57 @@ class DashboardStats(models.Model):
                 if key not in series[time]:
                     series[time][key] = 0
         return series
+
+    def get_multi_time_series_cached(self, configuration, time_since, time_until, interval, operation_choice, operation_field_choice, user):
+        common_options = {
+            'stats': self,
+            'operation': operation_choice,
+            'operation_field_name': operation_field_choice,
+            'time_scale': interval,
+            'multiple_series_choice': getattr(self.get_multi_series_criteria(configuration), 'criteria', None),
+            'dynamic_choices': get_dynamic_choices_array(configuration),
+        }
+        cached_query = CachedValue.objects.filter(
+            **common_options,
+            date__gte=time_since,
+            date__lte=time_until,
+        )
+        cached_query = cached_query.filter(
+        )
+        min_date = cached_query.aggregate(date=Min('date'))['date']
+        max_date = cached_query.aggregate(date=Max('date'))['date']
+        if min_date and max_date:  # TODO: include also gaps withing data
+            gaps = []
+            min_date = truncate(min_date, interval)
+            max_date = truncate(max_date, interval)
+
+            if time_since < min_date:
+                gaps += [(time_since, min_date - datetime.timedelta(microseconds=1))]
+
+            if truncate(max_date, interval, add_intervals=1) < time_until:
+                gaps += [(max_date, time_until)]
+        else:
+            gaps = (
+                (time_since, time_until),
+            )
+
+        bulk = []
+        for gap_since, gap_until in gaps:
+            cached_query.filter(date__gte=gap_since, date__lte=gap_until).delete()
+            values = self.get_multi_time_series(configuration, gap_since, gap_until, interval, operation_choice, operation_field_choice, user)
+            for date, values_dict in values.items():
+                for filtered_value, value in values_dict.items():
+                    bulk += [
+                        CachedValue(
+                            **common_options,
+                            date=date,
+                            filtered_value=filtered_value,
+                            value=value,
+                        ),
+                    ]
+        CachedValue.objects.bulk_create(bulk)
+
+        return transform_cached_values(cached_query.values('date', 'filtered_value', 'value'))
 
     def get_control_form_raw(self, user=None):
         from .forms import ChartSettingsForm
@@ -647,14 +713,13 @@ class CriteriaToStatsM2M(models.Model):
                 choices = OrderedDict()
                 fchoices = dict(field.choices or [])
                 date_filters = {}
-                current_tz = timezone.get_current_timezone()
                 if time_since is not None:
                     if time_since.tzinfo is None or time_since.tzinfo.utcoffset(time_since) is None:
-                        time_since = current_tz.localize(time_since)
+                        time_since = charts_timezone.localize(time_since)
                     date_filters['%s__gte' % self.stats.date_field_name] = time_since
                 if time_until is not None:
                     if time_until.tzinfo is None or time_until.tzinfo.utcoffset(time_until) is None:
-                        time_until = current_tz.localize(time_until).replace(hour=23, minute=59)
+                        time_until = charts_timezone.localize(time_until).replace(hour=23, minute=59)
                     end_time = time_until
                     date_filters['%s__lte' % self.stats.date_field_name] = end_time
                 choices_queryset = model.objects.filter(
@@ -700,6 +765,52 @@ class CriteriaToStatsM2M(models.Model):
             time_until = None
         choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit, operation_choice, operation_field_choice, user)
         return choices
+
+
+class CachedValue(models.Model):
+    stats = models.ForeignKey(
+        'DashboardStats',
+        on_delete=models.CASCADE,
+    )
+    date = models.DateTimeField()
+    time_scale = models.CharField(
+        verbose_name=_("Default time scale"),
+        null=False,
+        blank=False,
+        default='days',
+        choices=time_scales,
+        max_length=90,
+    )
+    operation = models.CharField(
+        max_length=90,
+        null=True,
+        blank=True,
+        choices=operation,
+    )
+    multiple_series_choice = models.ForeignKey(
+        'DashboardStatsCriteria',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    operation_field_name = models.CharField(
+        max_length=90,
+        null=True,
+        blank=True,
+    )
+    filtered_value = models.CharField(
+        max_length=512,
+        null=True,
+        blank=True,
+    )
+    value = models.FloatField(
+        default=None,
+        null=True,
+        blank=True,
+    )
+    dynamic_choices = JSONField(
+        default=[],
+    )
 
 
 @receiver(post_save, sender=DashboardStatsCriteria)
