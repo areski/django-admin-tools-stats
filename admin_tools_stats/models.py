@@ -555,6 +555,7 @@ class DashboardStats(models.Model):
         return series
 
     def get_multi_time_series_cached(self, configuration, time_since, time_until, interval, operation_choice, operation_field_choice, user):
+        reload_data = configuration.pop('reload', None) in ('true', 'True')
         common_options = {
             'stats': self,
             'operation': operation_choice,
@@ -571,7 +572,7 @@ class DashboardStats(models.Model):
         dates = cached_query.filter(is_final=True).aggregate(min_date=Min('date'), max_date=Max('date'))
         min_date = dates['min_date']
         max_date = dates['max_date']
-        if min_date and max_date:  # TODO: include also gaps withing data
+        if min_date and max_date and not reload_data:  # TODO: include also gaps withing data
             gaps = []
             min_date = truncate(min_date, interval)
             max_date = truncate(max_date, interval)

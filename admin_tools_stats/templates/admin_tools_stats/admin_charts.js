@@ -3,7 +3,7 @@ var html_string = '<svg style="width:100%;height:400px"></svg>';
 var html_string_analytics = '<svg style="width:100%;height:100%"></svg>';
 var chart_scripts = {};
 
-function loadChart(data, graph_key){
+function loadChart(data, graph_key, reload){
    function storeToChartScripts(data_str) {
       $('body').removeClass("loading");
       return function(data, textStatus, jqXHR) {
@@ -14,16 +14,20 @@ function loadChart(data, graph_key){
 
    data_str = data.serialize();
 
-   if(data_str in chart_scripts){
+   if(!reload && data_str in chart_scripts){
       $('body').removeClass("loading");
       console.log("run " + data_str);
       chart_scripts[data_str]();
    } else {
       url = "{% url 'chart-data' %}" + graph_key + "/";
+      if(reload)
+         reload_str = "&reload=true"
+      else
+         reload_str = ""
       $.ajax({
          dataType: "script",
          'url': url,
-         'data': data.serialize(),
+         'data': data_str + reload_str,
          success: storeToChartScripts(data_str),
          error: function(){
              alert("Error during chart loading.");
@@ -42,6 +46,7 @@ function defer(method) {
 }
 
 function loadAnchor(){
+   reload =  $(this)[0].id == 'reload';
    $('body').addClass("loading");
    var data = $(this).closest('form.stateform');
    var graph_key = data.find(".hidden_graph_key").first().val();
@@ -49,7 +54,7 @@ function loadAnchor(){
    if($(this).hasClass('select_box_chart_type') || $(this).hasClass('stateform')){
       $("#chart_container_" + graph_key).empty().append(is_analytics ? html_string_analytics : html_string);
    };
-   loadChart(data, graph_key);
+   loadChart(data, graph_key, reload);
 }
 
 function loadAnalyticsChart(chart_key){
@@ -70,6 +75,7 @@ defer( function(){
    $( document ).ready(function() {
 
       $('body').on('change', '.chart-input', loadAnchor);
+      $('body').on('click', '#reload', loadAnchor);
       $('form.stateform:visible').each(loadAnchor);
    });
 });

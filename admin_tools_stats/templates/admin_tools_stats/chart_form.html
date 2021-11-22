@@ -6,5 +6,6 @@
       {% endif %}
       {{ w }}
    {% endfor %}
-   <a href='{% url 'chart-analytics' %}?show={{ chart.graph_key }}' target='_blank'>analytics</a>
+   &nbsp;<button id="reload" type="button" style="font-size:14px">⟳</button>
+   &nbsp;<a href='{% url 'chart-analytics' %}?show={{ chart.graph_key }}' target='_blank'>analytics</a>
 </form>
