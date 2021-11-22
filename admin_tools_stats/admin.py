@@ -16,8 +16,8 @@ from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from admin_tools_stats.app_label_renamer import AppLabelRenamer
-from admin_tools_stats.models import (CriteriaToStatsM2M, DashboardStats,
-                                      DashboardStatsCriteria)
+from admin_tools_stats.models import (CachedValue, CriteriaToStatsM2M,
+                                      DashboardStats, DashboardStatsCriteria)
 
 AppLabelRenamer(native_app_label=u'admin_tools_stats', app_label=_('Admin Tools Stats')).main()
 
@@ -104,7 +104,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
                 'y_axis_format',
                 'default_multiseries_criteria',
                 'is_visible',
-            )
+            ),
         }),
     )
     list_display = (
@@ -138,3 +138,26 @@ class DashboardStatsAdmin(admin.ModelAdmin):
             url=reverse('chart-analytics'),
             key=obj.graph_key,
         )
+
+
+@admin.register(CachedValue)
+class CachedValueAdmin(admin.ModelAdmin):
+    list_display = (
+        'stats',
+        'date',
+        'value',
+        'operation',
+        'operation_field_name',
+        'filtered_value',
+        'time_scale',
+        'is_final',
+    )
+    list_filter = (
+        'stats',
+        'operation',
+        'operation_field_name',
+        'filtered_value',
+        'time_scale',
+        'is_final',
+        'multiple_series_choice',
+    )

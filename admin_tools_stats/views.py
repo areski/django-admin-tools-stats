@@ -4,10 +4,9 @@ from collections import OrderedDict
 from datetime import datetime
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.utils import timezone
 from django.views.generic import TemplateView
 
-from .models import DashboardStats
+from .models import DashboardStats, charts_timezone, truncate
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +40,11 @@ def get_dateformat(interval, chart_type):
     return interval_dateformat_map[interval]
 
 
+def remove_multiple_keys(in_dict, entries_to_remove):
+    for k in entries_to_remove:
+        in_dict.pop(k, None)
+
+
 class ChartDataView(TemplateView):
     template_name = 'admin_tools_stats/chart_data.html'
 
@@ -53,33 +57,35 @@ class ChartDataView(TemplateView):
             context['graph_title'] = dashboard_stats.graph_title
             return context
 
-        interval = self.request.GET.get('select_box_interval', interval) or dashboard_stats.default_time_scale
-        operation = self.request.GET.get('select_box_operation') or dashboard_stats.type_operation_field_name
-        operation_field = self.request.GET.get('select_box_operation_field') or dashboard_stats.operation_field_name
-        context['chart_type'] = self.request.GET.get('select_box_chart_type') or dashboard_stats.default_chart_type
+        configuration = dict(self.request.GET.dict())
+        remove_multiple_keys(configuration, ['csrfmiddlewaretoken', '_', 'graph_key'])
+        interval = configuration.pop('select_box_interval', interval) or dashboard_stats.default_time_scale
+        operation = configuration.pop('select_box_operation', dashboard_stats.type_operation_field_name)
+        operation_field = configuration.pop('select_box_operation_field', dashboard_stats.operation_field_name)
+        context['chart_type'] = configuration.pop('select_box_chart_type', dashboard_stats.default_chart_type)
         try:
-            time_since = datetime.strptime(self.request.GET.get('time_since', None), '%Y-%m-%d')
-            time_until = datetime.strptime(self.request.GET.get('time_until', None), '%Y-%m-%d')
+            utc_tz = charts_timezone
+            time_since = utc_tz.localize(datetime.strptime(configuration.pop('time_since', None), '%Y-%m-%d'))
+            time_until = utc_tz.localize(datetime.strptime(configuration.pop('time_until', None), '%Y-%m-%d')).replace(hour=23, minute=59)
+            time_until = truncate(time_until, interval, add_intervals=1)
+            time_since = truncate(time_since, interval)
         except ValueError:
             return context
 
         try:
-            series = dashboard_stats.get_multi_time_series(
-                self.request.GET, time_since, time_until, interval, operation, operation_field, self.request.user,
+            series = dashboard_stats.get_multi_time_series_cached(
+                configuration, time_since, time_until, interval, operation, operation_field, self.request.user,
             )
         except Exception as e:
-            if 'debug' in self.request.GET:
+            if 'debug' in configuration:
                 raise e
             context['error'] = str(e)
             context['graph_title'] = dashboard_stats.graph_title
             logger.exception(e)
             return context
-        criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
+        criteria = dashboard_stats.get_multi_series_criteria(configuration)
         if criteria:
-            current_tz = timezone.get_current_timezone()
-            time_since_tz = time_since.astimezone(current_tz)
-            time_until_tz = time_until.astimezone(current_tz).replace(hour=23, minute=59)
-            choices = criteria.get_dynamic_choices(time_since_tz, time_until_tz)
+            choices = criteria.get_dynamic_choices(time_since, time_until)
         else:
             choices = {}
 
