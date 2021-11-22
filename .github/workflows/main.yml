@@ -94,3 +94,5 @@ jobs:
         run: pip install flake8
       - name: Running Flake8
         run: flake8
+      - name: Running isort
+        run: python -m isort --check-only --diff
