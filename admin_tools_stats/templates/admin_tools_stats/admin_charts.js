@@ -21,7 +21,7 @@ function loadChart(data, graph_key, reload){
    } else {
       url = "{% url 'chart-data' %}" + graph_key + "/";
       if(reload)
-         reload_str = "&reload=true"
+         reload_str = "&" + reload + "=true"
       else
          reload_str = ""
       $.ajax({
@@ -46,7 +46,10 @@ function defer(method) {
 }
 
 function loadAnchor(){
-   reload =  $(this)[0].id == 'reload';
+   if($(this)[0].id == 'reload' || $(this)[0].id == 'reload_all')
+      reload = $(this)[0].id;
+   else
+      reload = false;
    $('body').addClass("loading");
    var data = $(this).closest('form.stateform');
    var graph_key = data.find(".hidden_graph_key").first().val();
@@ -75,7 +78,7 @@ defer( function(){
    $( document ).ready(function() {
 
       $('body').on('change', '.chart-input', loadAnchor);
-      $('body').on('click', '#reload', loadAnchor);
+      $('body').on('click', '.reload', loadAnchor);
       $('form.stateform:visible').each(loadAnchor);
    });
 });
