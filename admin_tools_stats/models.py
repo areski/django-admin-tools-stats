@@ -710,7 +710,7 @@ class CriteriaToStatsM2M(models.Model):
         return query.resolve_ref(field_name).field
 
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
-    @cached(60 * 60)
+    @cached(60 * 60 * 24 * 7)
     def _get_dynamic_choices(
             self, slef, count_limit=None, operation_choice=None, operation_field_choice=None, user=None,
     ):
