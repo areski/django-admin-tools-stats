@@ -834,7 +834,7 @@ class CachedValue(models.Model):
         blank=True,
     )
     dynamic_choices = JSONField(
-        default=[],
+        default=dict,
     )
     is_final = models.BooleanField(
         default=True,
