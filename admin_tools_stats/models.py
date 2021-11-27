@@ -598,10 +598,10 @@ class DashboardStats(models.Model):
                 gaps += [(time_since, min_date - datetime.timedelta(microseconds=1))]
 
             if truncate(max_date, interval, add_intervals=1) < time_until:
-                gaps += [(max_date, time_until)]
+                gaps += [(max_date, time_until - datetime.timedelta(microseconds=1))]
         else:
             gaps = (
-                (time_since, time_until),
+                (time_since, time_until - datetime.timedelta(microseconds=1)),
             )
 
         bulk = []
