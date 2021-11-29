@@ -5,8 +5,8 @@ var chart_scripts = {};
 
 function loadChart(data, graph_key, reload){
    function storeToChartScripts(data_str) {
-      $('body').removeClass("loading");
-      return function(data, textStatus, jqXHR) {
+      return function(f_data, textStatus, jqXHR) {
+            data.removeClass("loading");
             console.log("call " + data_str);
             chart_scripts[data_str] = loadChartScript;
       };
@@ -15,7 +15,7 @@ function loadChart(data, graph_key, reload){
    data_str = data.serialize();
 
    if(!reload && data_str in chart_scripts){
-      $('body').removeClass("loading");
+      data.removeClass("loading");
       console.log("run " + data_str);
       chart_scripts[data_str]();
    } else {
@@ -31,7 +31,7 @@ function loadChart(data, graph_key, reload){
          success: storeToChartScripts(data_str),
          error: function(){
              alert("Error during chart loading.");
-             $('body').removeClass("loading");
+             data.removeClass("loading");
          }
       });
    };
@@ -50,8 +50,8 @@ function loadAnchor(){
       reload = $(this)[0].id;
    else
       reload = false;
-   $('body').addClass("loading");
    var data = $(this).closest('form.stateform');
+   data.addClass("loading");
    var graph_key = data.find(".hidden_graph_key").first().val();
    var is_analytics = $(this).parent().hasClass("chrt_flex");
    if($(this).hasClass('select_box_chart_type') || $(this).hasClass('stateform')){
@@ -67,10 +67,10 @@ function loadAnalyticsChart(chart_key){
       $(this).removeClass('notloaded')
       $(this).addClass('loaded')
       $(this).find('form.stateform:visible').each(loadAnchor);
+      $('body').removeClass("loading");
    });
    $("#chart_element_" + chart_key).each(function(){
       $('#chart_element_' + $(this).data("chart-key")).show();
-      $('body').removeClass("loading");
    });
 }
 

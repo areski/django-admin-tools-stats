@@ -1,3 +1,19 @@
+<style>
+    .loading {
+        pointer-events:none;
+    }
+
+    form.loading::after {
+         content: " ";
+         height: 31px;
+         width: 31px;
+         display: inline-block;
+         background: rgba( 255, 255, 255, .8 )
+                url('http://i.stack.imgur.com/FhHRx.gif')
+                50% 50%
+                no-repeat;
+    }
+</style>
 <form class="stateform" action="." method="POST" enctype="multipart/form-data">
    {% csrf_token %}
    {% for w in form %}
