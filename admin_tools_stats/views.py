@@ -72,6 +72,11 @@ class ChartDataView(TemplateView):
         except ValueError:
             return context
 
+        if time_since > time_until:
+            context['error'] = "Time since is greater than time until"
+            context['graph_title'] = dashboard_stats.graph_title
+            return context
+
         try:
             series = dashboard_stats.get_multi_time_series_cached(
                 configuration, time_since, time_until, interval, operation, operation_field, self.request.user,
@@ -85,7 +90,7 @@ class ChartDataView(TemplateView):
             return context
         criteria = dashboard_stats.get_multi_series_criteria(configuration)
         if criteria:
-            choices = criteria.get_dynamic_choices(time_since, time_until)
+            choices = criteria.get_dynamic_choices()
         else:
             choices = {}
 
