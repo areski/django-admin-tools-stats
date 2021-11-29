@@ -64,14 +64,12 @@ function loadAnalyticsChart(chart_key){
    $('body').addClass("loading");
    $('.admin_charts').hide();
    $("#chart_element_" + chart_key + ".notloaded").load("/admin_tools_stats/analytics/chart/" + chart_key, function(){
-      $(this).removeClass('notloaded')
-      $(this).addClass('loaded')
+      $(this).removeClass('notloaded');
+      $(this).addClass('loaded');
       $(this).find('form.stateform:visible').each(loadAnchor);
       $('body').removeClass("loading");
    });
-   $("#chart_element_" + chart_key).each(function(){
-      $('#chart_element_' + $(this).data("chart-key")).show();
-   });
+   $("#chart_element_" + chart_key).show();
 }
 
 defer( function(){
