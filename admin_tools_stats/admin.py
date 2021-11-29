@@ -150,6 +150,7 @@ class CachedValueAdmin(admin.ModelAdmin):
         'operation_field_name',
         'filtered_value',
         'time_scale',
+        'multiple_series_choice',
         'is_final',
     )
     list_filter = (
