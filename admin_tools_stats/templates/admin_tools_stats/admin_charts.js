@@ -75,7 +75,7 @@ function loadAnalyticsChart(chart_key){
 defer( function(){
    $( document ).ready(function() {
 
-      $('body').on('change', '.chart-input', loadAnchor);
+      $('body').on('change', '#load_on_change:checked ~ .chart-input', loadAnchor);
       $('body').on('click', '.reload', loadAnchor);
       $('form.stateform:visible').each(loadAnchor);
    });

@@ -15,6 +15,7 @@
     }
 </style>
 <form class="stateform" action="." method="POST" enctype="multipart/form-data">
+   <input id="load_on_change" title="Load on change" checked type="checkbox">=&gt;</input>&nbsp;
    {% csrf_token %}
    {% for w in form %}
       {% if not w.is_hidden %}
