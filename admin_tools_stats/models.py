@@ -586,19 +586,21 @@ class DashboardStats(models.Model):
             dates_query = cached_query.filter(is_final=True)
         else:
             dates_query = cached_query
-        dates = dates_query.aggregate(min_date=Min('date'), max_date=Max('date'))
-        min_date = dates['min_date']
-        max_date = dates['max_date']
-        if min_date and max_date and not reload_all_data:  # TODO: include also gaps withing data
+        if dates_query.exists() and not reload_all_data:  # TODO: include also gaps withing data
             gaps = []
-            min_date = truncate(min_date, interval)
-            max_date = truncate(max_date, interval)
-
-            if time_since < min_date:
-                gaps += [(time_since, min_date - datetime.timedelta(microseconds=1))]
-
-            if truncate(max_date, interval, add_intervals=1) < time_until:
-                gaps += [(max_date, time_until - datetime.timedelta(microseconds=1))]
+            time_since = truncate(time_since, interval)
+            time_until = truncate(time_until - datetime.timedelta(microseconds=1), interval)
+            dates = list(rrule(**rrule_freqs[interval], dtstart=time_since, until=time_until))
+            cached_dates = dates_query.values('date').distinct().values_list('date', flat=True)
+            last_time = None
+            for time in dates:
+                time_m = time - datetime.timedelta(microseconds=1)
+                if time not in cached_dates:
+                    if last_time and len(gaps) > 0 and gaps[-1][1] == last_time:
+                        gaps[-1][1] = time_m
+                    else:
+                        gaps.append([time, time_m])
+                last_time = time_m
         else:
             gaps = (
                 (time_since, time_until - datetime.timedelta(microseconds=1)),
