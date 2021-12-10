@@ -610,6 +610,7 @@ class DashboardStats(models.Model):
             values = self.get_multi_time_series(
                 configuration, gap_since, gap_until, interval, operation_choice, operation_field_choice, user,
             )
+            i = 0
             for date, values_dict in values.items():
                 for filtered_value, value in values_dict.items():
                     is_final = truncate(charts_timezone.localize(datetime.datetime.now()), interval) > date
@@ -620,8 +621,10 @@ class DashboardStats(models.Model):
                             date=date,
                             filtered_value=filtered_value,
                             value=value,
+                            order=i,
                         ),
                     ]
+                    i += 1
         CachedValue.objects.bulk_create(bulk)
 
         return transform_cached_values(
@@ -839,6 +842,13 @@ class CachedValue(models.Model):
     is_final = models.BooleanField(
         default=True,
     )
+    order = models.IntegerField(
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ('order',)
 
 
 @receiver(post_save, sender=DashboardStatsCriteria)
