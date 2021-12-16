@@ -6,6 +6,7 @@ Changelog
 * add support for charts in userspace
 * add multiple operation fields
 * improve analytics page - fix loading time, add loading overlay
+* fix usage without jsonfield package installed
 
 0.24.1 (2021-02-23)
 -------------------
