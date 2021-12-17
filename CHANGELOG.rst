@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.26.0 (unreleased)
+-------------------
+* store chart values in CachedValue table in DB to make chats with more complicated queries fater
+* add refresh/refres all/reload on change controls to the charts
+* use unpkg versions of nvd3/d3 libraries as default to simplify initial configuration
+  set ADMIN_CHARTS_NVD3_JS_PATH, ADMIN_CHARTS_NVD3_CSS_PATH, ADMIN_CHARTS_D3_JS_PATH variables if you want to continu using your internal libraries
+
 0.25.2 (2021-12-30)
 -------------------
 * fix problem where in queries with count limit the choices could have been shuffled
