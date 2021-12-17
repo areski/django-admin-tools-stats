@@ -66,13 +66,6 @@ Add ``admin_tools_stats`` (the Django admin charts application) & ``django_nvd3`
         'django.contrib.admin',
     )
 
-Install the ``nvd3==1.7.1`` and ``d3==3.3.13`` javascript libraries. For installation with ``django-bower`` see section `Installation of javascript libraries with django-bower`_.
-Set library paths if they differ from the ``django-bower`` defaults::
-
-   ADMIN_CHARTS_NVD3_JS_PATH = 'bow/nvd3/build/nv.d3.js'
-   ADMIN_CHARTS_NVD3_CSS_PATH = 'bow/nvd3/build/nv.d3.css'
-   ADMIN_CHARTS_D3_JS_PATH = 'bow/d3/d3.js'
-
 Register chart views in your ``urls.py``::
 
     from django.urls import include, path
@@ -110,6 +103,19 @@ Change ``DashboardCharts`` to ``DashboardChart`` in dashboard definition (this i
 
 Check any overridden template from ``admin_tools_stats`` or ``DashboardChart(s)`` class that might interfere with the changes.
 
+Configure javascript libraries
+----------------------------------------------------------
+
+By default the nvd3/d3 libraries are taken from unpkg.
+If you want to install those libraries on your own, you can set their path by following settings::
+
+   ADMIN_CHARTS_NVD3_JS_PATH = 'bow/nvd3/build/nv.d3.js'
+   ADMIN_CHARTS_NVD3_CSS_PATH = 'bow/nvd3/build/nv.d3.css'
+   ADMIN_CHARTS_D3_JS_PATH = 'bow/d3/d3.js'
+
+The settings can accept either full path (with http...) or there can be static file path.
+Note that versions ``nvd3==1.8.6`` and ``d3==3.3.13`` are the only tested to be working.
+
 
 Installation of javascript libraries with ``django-bower``
 ----------------------------------------------------------
@@ -129,7 +135,7 @@ Add the following properties to you settings.py file::
 
     BOWER_INSTALLED_APPS = (
         'd3#3.3.13',
-        'nvd3#1.7.1',
+        'nvd3#1.8.6',
     )
 
 Add django-bower finder to your static file finders::
