@@ -21,7 +21,8 @@ from django.utils import timezone
 from model_mommy import mommy
 
 from admin_tools_stats.models import DashboardStatsCriteria
-from admin_tools_stats.utils import BaseAuthenticatedClient, assertContainsAny
+
+from .utils import BaseAuthenticatedClient, assertContainsAny
 
 
 class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
