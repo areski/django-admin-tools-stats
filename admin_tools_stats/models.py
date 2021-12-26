@@ -481,8 +481,8 @@ class DashboardStats(models.Model):
 
     def get_multi_time_series(self, configuration, time_since, time_until, interval, operation_choice, operation_field_choice, user):
         current_tz = timezone.get_current_timezone()
-        time_since_tz = current_tz.localize(time_since)
-        time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
+        time_since_tz = time_since.astimezone(current_tz)
+        time_until_tz = time_until.astimezone(current_tz).replace(hour=23, minute=59)
 
         configuration = configuration.copy()
         series = {}
@@ -527,7 +527,7 @@ class DashboardStats(models.Model):
             if self.get_date_field().__class__ == DateField:
                 time = time.date()
             elif settings.USE_TZ:
-                time = current_tz.localize(time)
+                time = time.astimezone(current_tz)
 
             if time not in series:
                 series[time] = {}

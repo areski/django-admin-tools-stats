@@ -74,8 +74,8 @@ class ChartDataView(TemplateView):
         criteria = dashboard_stats.get_multi_series_criteria(self.request.GET)
         if criteria:
             current_tz = timezone.get_current_timezone()
-            time_since_tz = current_tz.localize(time_since)
-            time_until_tz = current_tz.localize(time_until).replace(hour=23, minute=59)
+            time_since_tz = time_since.astimezone(current_tz)
+            time_until_tz = time_until.astimezone(current_tz).replace(hour=23, minute=59)
             choices = criteria.get_dynamic_choices(time_since_tz, time_until_tz)
         else:
             choices = {}

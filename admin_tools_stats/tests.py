@@ -300,9 +300,9 @@ class ModelTests(TestCase):
         interval = "days"
         serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, None, None, user)
         testing_data = {
-            current_tz.localize(datetime.datetime(2010, 10, 9, 0, 0)): {'': 0},
-            current_tz.localize(datetime.datetime(2010, 10, 10, 0, 0)): {'': 2},
-            current_tz.localize(datetime.datetime(2010, 10, 11, 0, 0)): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {'': 2},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {'': 0},
         }
         from pprint import pprint
         pprint(serie)
@@ -339,9 +339,9 @@ class ModelTests(TestCase):
         interval = "days"
         serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, None, None, user)
         testing_data = {
-            current_tz.localize(datetime.datetime(2019, 10, 27, 0, 0)): {'': 0},
-            current_tz.localize(datetime.datetime(2019, 10, 28, 0, 0)): {'': 1},
-            current_tz.localize(datetime.datetime(2019, 10, 29, 0, 0)): {'': 0},
+            datetime.datetime(2019, 10, 27, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2019, 10, 28, 0, 0).astimezone(current_tz): {'': 1},
+            datetime.datetime(2019, 10, 29, 0, 0).astimezone(current_tz): {'': 0},
         }
         self.assertDictEqual(serie, testing_data)
 
