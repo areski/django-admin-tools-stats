@@ -32,17 +32,23 @@ def build_test_suite_from(test_cases):
     return unittest.TestSuite(test_suites)
 
 
-class BaseAuthenticatedClient(TestCase):
+class BaseSuperuserAuthenticatedClient(TestCase):
     """Common Authentication"""
     fixtures = ['auth_user']
+    username = 'admin'
 
     def setUp(self):
         """To create admin user"""
         self.client = Client()
-        self.user = User.objects.get(username='admin')
+
+        self.user = User.objects.get(username=self.username)
         self.client.force_login(self.user)
 
         self.factory = RequestFactory()
+
+
+class BaseUserAuthenticatedClient(BaseSuperuserAuthenticatedClient):
+    username = 'user_1'
 
 
 def assertContainsAny(

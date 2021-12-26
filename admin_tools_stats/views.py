@@ -46,10 +46,13 @@ class ChartDataView(TemplateView):
 
     def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
         dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
-        if not(self.request.user.has_perm('admin_tools_stats.view_dashboardstats') or dashboard_stats.show_to_users):
-            self.handle_no_permission()
-
         context = super().get_context_data(*args, **kwargs)
+
+        if not(self.request.user.has_perm('admin_tools_stats.view_dashboardstats') or dashboard_stats.show_to_users):
+            context['error'] = "You have no permission to view this chart. Check if you are logged in"
+            context['graph_title'] = dashboard_stats.graph_title
+            return context
+
         interval = self.request.GET.get('select_box_interval', interval) or dashboard_stats.default_time_scale
         operation = self.request.GET.get('select_box_operation') or dashboard_stats.type_operation_field_name
         operation_field = self.request.GET.get('select_box_operation_field') or dashboard_stats.operation_field_name

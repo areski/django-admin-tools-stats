@@ -12,7 +12,9 @@ import datetime
 from collections import OrderedDict
 from unittest import skipIf
 
+import django
 from django.conf import settings
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
@@ -22,10 +24,11 @@ from model_mommy import mommy
 
 from admin_tools_stats.models import DashboardStatsCriteria
 
-from .utils import BaseAuthenticatedClient, assertContainsAny
+from .utils import (BaseSuperuserAuthenticatedClient,
+                    BaseUserAuthenticatedClient, assertContainsAny)
 
 
-class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
+class AdminToolsStatsAdminInterfaceTestCase(BaseSuperuserAuthenticatedClient):
     """
     Test cases for django-admin-tools-stats Admin Interface
     """
@@ -44,7 +47,7 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseAuthenticatedClient):
         self.assertEqual(response.status_code, 200)
 
 
-class AdminToolsStatsAdminCharts(BaseAuthenticatedClient):
+class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
     def test_admin_dashboard_page(self):
         """Test function to check dashboardstatscriteria admin pages"""
         stats = mommy.make(
@@ -270,6 +273,25 @@ class ModelTests(TestCase):
         testing_data = {
             datetime.datetime(2010, 10, 1, 0, 0): {'': 1},
             datetime.datetime(2010, 11, 1, 0, 0): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_quarters(self):
+        """Test function to check DashboardStats.get_multi_time_series()"""
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 30))
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2011, 10, 8)
+
+        interval = "quarters"
+        serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 1, 0, 0): {'': 1},
+            datetime.datetime(2011, 1, 1, 0, 0): {'': 0},
+            datetime.datetime(2011, 4, 1, 0, 0): {'': 0},
+            datetime.datetime(2011, 7, 1, 0, 0): {'': 0},
+            datetime.datetime(2011, 10, 1, 0, 0): {'': 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -570,6 +592,109 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series_criteria_combine_user_exception(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        If user has no permission and user field is not defined, exception must be thrown.
+        """
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="name",
+            dynamic_criteria_field_name="last_name",
+        )
+        m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series')
+        time_since = datetime.datetime(2010, 10, 10)
+        time_until = datetime.datetime(2010, 10, 14)
+
+        interval = "days"
+        user = mommy.make('User')
+        arguments = {'select_box_multiple_series': m2m.id}
+        with self.assertRaisesRegex(Exception, "^User field must be defined to enable charts for non-superusers$"):
+            self.stats.get_multi_time_series(arguments, time_since, time_until, interval, None, None, user)
+
+    @skipIf(django.VERSION[0] < 3, "Django < 3 doesn't support Sum")
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series_criteria_user(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Check results, if stats are displayed for user
+        """
+        stats = mommy.make(
+            'DashboardStats',
+            model_name="TestKid",
+            date_field_name='appointment',
+            model_app_name="demoproject",
+            type_operation_field_name="Sum",
+            distinct=True,
+            operation_field_name='age',
+            user_field_name='author',
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="name",
+            dynamic_criteria_field_name="name",
+        )
+        m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats, use_as='multiple_series')
+        user = mommy.make('User')
+        mommy.make('TestKid', appointment=datetime.date(2010, 10, 12), name="Foo", age=5, author=user)
+        mommy.make('TestKid', appointment=datetime.date(2010, 10, 13), name="Bar", age=7, author=user)
+        mommy.make('TestKid', appointment=datetime.date(2010, 10, 13), name="Bar", age=7)
+        time_since = datetime.datetime(2010, 10, 10)
+        time_until = datetime.datetime(2010, 10, 14)
+
+        interval = "days"
+        arguments = {'select_box_multiple_series': m2m.id}
+        serie = stats.get_multi_time_series(arguments, time_since, time_until, interval, None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict((('Bar', 0), ('Foo', 0))),
+            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict((('Bar', 0), ('Foo', 0))),
+            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict((('Bar', None), ('Foo', 5))),
+            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict((('Bar', 7), ('Foo', None))),
+            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict((('Bar', 0), ('Foo', 0))),
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @skipIf(django.VERSION[0] < 3, "Django < 3 doesn't support Avg")
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series_criteria_isnull(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Check __isnull criteria
+        """
+        stats = mommy.make(
+            'DashboardStats',
+            model_name="TestKid",
+            date_field_name='appointment',
+            model_app_name="demoproject",
+            type_operation_field_name="Avg",
+            distinct=True,
+            operation_field_name='age',
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="birthday",
+            dynamic_criteria_field_name="birthday__isnull",
+        )
+        m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats, use_as='multiple_series')
+        mommy.make('TestKid', appointment=datetime.date(2010, 10, 12), birthday=datetime.date(2010, 11, 12), age=4)
+        mommy.make('TestKid', appointment=datetime.date(2010, 10, 13), birthday=None, age=3)
+        time_since = datetime.datetime(2010, 10, 10)
+        time_until = datetime.datetime(2010, 10, 14)
+
+        interval = "days"
+        arguments = {'select_box_multiple_series': m2m.id}
+        user = mommy.make('User', is_staff=True)
+        serie = stats.get_multi_time_series(arguments, time_since, time_until, interval, None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=datetime.timezone.utc): {'Blank': 0, 'Non blank': 0},
+            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=datetime.timezone.utc): {'Blank': 0, 'Non blank': 0},
+            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=datetime.timezone.utc): {'Blank': None, 'Non blank': 4},
+            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=datetime.timezone.utc): {'Blank': 3, 'Non blank': None},
+            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=datetime.timezone.utc): {'Blank': 0, 'Non blank': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
     @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
     def test_get_multi_series_fixed_criteria(self):
@@ -630,7 +755,7 @@ class ModelTests(TestCase):
             self.stats.get_multi_time_series(arguments, time_since, time_until, "days", None, user)
 
 
-class ViewsTests(BaseAuthenticatedClient):
+class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
     def setUp(self):
         self.stats = mommy.make(
             'DashboardStats',
@@ -675,6 +800,58 @@ class ViewsTests(BaseAuthenticatedClient):
         response = self.client.get(url)
         self.assertContains(response, ('"key": "Inactive"'))
         self.assertContains(response, ('"key": "Active"'))
+
+
+class UserViewsTests(BaseUserAuthenticatedClient):
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_no_permissions_not_enabled(self):
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            user_field_name=None,
+            show_to_users=False,
+        )
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        self.assertContains(response, "You have no permission to view this chart. Check if you are logged in")
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_no_permissions(self):
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            user_field_name=None,
+            show_to_users=True,
+        )
+        permission = Permission.objects.get(codename='view_dashboardstats')
+        self.user.user_permissions.add(permission)
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 0}', '{"y": 0, "x": 1286668800000}'))
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_user_chart(self):
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            user_field_name=None,
+            show_to_users=True,
+        )
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 0}', '{"y": 0, "x": 1286668800000}'))
 
 
 class AdminToolsStatsModel(TestCase):
