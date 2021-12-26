@@ -18,7 +18,6 @@ from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
-
 from model_mommy import mommy
 
 from admin_tools_stats.models import DashboardStatsCriteria

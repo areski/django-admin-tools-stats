@@ -13,10 +13,8 @@ import logging
 from collections import OrderedDict
 
 from cache_utils.decorators import cached
-
 from dateutil.relativedelta import MO, relativedelta
 from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
-
 from django.apps import apps
 from django.conf import settings
 from django.core.exceptions import FieldError, ValidationError
@@ -31,7 +29,6 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
-
 from multiselectfield import MultiSelectField
 
 try:
