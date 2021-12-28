@@ -12,8 +12,8 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 
-
-__version__ = '0.24.1'  # edit also docs/source/conf.py and update requirements.txt
+# edit also docs/source/conf.py and update requirements.txt
+__version__ = '0.25.0'
 __author__ = "Petr Dlouhy"
 __contact__ = "petr.dlouhy@emai.cz"
 __homepage__ = "https://github.com/PetrDlouhy"
