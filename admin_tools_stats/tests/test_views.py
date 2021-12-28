@@ -10,6 +10,7 @@
 #
 import datetime
 
+import django
 from django.test.utils import override_settings
 from django.urls import reverse
 from model_mommy import mommy
@@ -64,11 +65,14 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
         a = AnalyticsView()
         a.request = self.client.request()
         a.request.user = mommy.make("User", is_superuser=True)
-        self.assertQuerysetEqual(a.get_charts_query(), ['<DashboardStats: kid_graph>', '<DashboardStats: user_graph>'])
+        if django.VERSION > (3, 2):
+            self.assertQuerysetEqual(a.get_charts_query(), [self.kid_stats, self.stats])
+        else:
+            self.assertQuerysetEqual(a.get_charts_query(), ['<DashboardStats: kid_graph>', '<DashboardStats: user_graph>'])
 
     def test_get_charts_query_usser(self):
         a = AnalyticsView()
-        mommy.make(
+        kid_graph_user = mommy.make(
             'DashboardStats',
             graph_title="Kid chart",
             date_field_name="birthday",
@@ -79,7 +83,10 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
         )
         a.request = self.client.request()
         a.request.user = mommy.make("User")
-        self.assertQuerysetEqual(a.get_charts_query(), ['<DashboardStats: kid_graph_user>'])
+        if django.VERSION > (3, 2):
+            self.assertQuerysetEqual(a.get_charts_query(), [kid_graph_user])
+        else:
+            self.assertQuerysetEqual(a.get_charts_query(), ['<DashboardStats: kid_graph_user>'])
 
     def test_get_templates_names(self):
         a = AnalyticsView()
