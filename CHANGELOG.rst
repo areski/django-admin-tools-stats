@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.25.0 (unreleased)
+0.25.0 (2021-12-28)
 -------------------
 * add support for charts in userspace
   Charts with option `show_for_users` turned on are displayed to users.
