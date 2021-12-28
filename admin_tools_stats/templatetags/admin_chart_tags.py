@@ -1,15 +1,15 @@
 
 from django import template
 from django.conf import settings
-from django.templatetags.static import static
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 
 from ..models import DashboardStats
 
 register = template.Library()
 
 
-def static_or_path(url:str):
+def static_or_path(url: str):
     if url.startswith("http"):
         return url
     return static(url)
