@@ -1,12 +1,15 @@
 Changelog
 =========
 
-0.25.0 (xxxx-xx-xx)
+0.25.0 (unreleased)
 -------------------
 * add support for charts in userspace
-* add multiple operation fields
+  Charts with option `show_for_users` turned on are displayed to users.
+  The charts has to have set some `user_field`, this filters data attributed only for the user.
+* add support for multiple operation fields (separated by comma)
 * improve analytics page - fix loading time, add loading overlay
 * fix usage without jsonfield package installed
+* Admin charts are now displayed only for users with `view_dashboardstats` permissions set on
 
 0.24.1 (2021-02-23)
 -------------------
