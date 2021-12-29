@@ -4,3 +4,4 @@ django-nvd3>=0.5.0
 django-bower
 python-dateutil
 django-multiselectfield
+backports.zoneinfo;python_version<"3.9"

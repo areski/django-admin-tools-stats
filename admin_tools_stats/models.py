@@ -12,6 +12,12 @@ import datetime
 import logging
 from collections import OrderedDict
 
+try:
+    import zoneinfo
+except ImportError:
+    from backports import zoneinfo
+
+import django
 from cache_utils.decorators import cached
 from dateutil.relativedelta import MO, relativedelta
 from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
@@ -34,6 +40,8 @@ from multiselectfield import MultiSelectField
 
 def get_charts_timezone():
     if settings.USE_TZ:
+        if django.VERSION < (4, 0):  # Django 4.0 compatible way
+            return zoneinfo.ZoneInfo(str(timezone.get_current_timezone()))
         return timezone.get_current_timezone()
     return None
     # TODO: make possible to set variable timezone for charts
@@ -100,21 +108,21 @@ def truncate(dt, interval, add_intervals=0):
     ''' Returns interval bounds the datetime is in. '''
 
     if interval == 'hours':
-        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour, tzinfo=dt.tzinfo) + relativedelta(hours=add_intervals)
+        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour).astimezone(dt.tzinfo) + relativedelta(hours=add_intervals)
     elif interval == 'days':
-        return datetime.datetime(dt.year, dt.month, dt.day, tzinfo=dt.tzinfo) + relativedelta(days=add_intervals)
+        return datetime.datetime(dt.year, dt.month, dt.day).astimezone(dt.tzinfo) + relativedelta(days=add_intervals)
     elif interval == 'weeks':
         return (
-            datetime.datetime(dt.year, dt.month, dt.day, tzinfo=dt.tzinfo) -
+            datetime.datetime(dt.year, dt.month, dt.day).astimezone(dt.tzinfo) -
             relativedelta(weekday=MO(-1)) + relativedelta(days=add_intervals * 7)
         )
     elif interval == 'months':
-        return datetime.datetime(dt.year, dt.month, 1, tzinfo=dt.tzinfo) + relativedelta(months=add_intervals)
+        return datetime.datetime(dt.year, dt.month, 1).astimezone(dt.tzinfo) + relativedelta(months=add_intervals)
     elif interval == 'quarters':
         qmonth = dt.month - (dt.month - 1) % 3
-        return datetime.datetime(dt.year, qmonth, 1, tzinfo=dt.tzinfo) + relativedelta(months=add_intervals * 3)
+        return datetime.datetime(dt.year, qmonth, 1).astimezone(dt.tzinfo) + relativedelta(months=add_intervals * 3)
     elif interval == 'years':
-        return datetime.datetime(dt.year, 1, 1, tzinfo=dt.tzinfo) + relativedelta(years=add_intervals)
+        return datetime.datetime(dt.year, 1, 1).astimezone(dt.tzinfo) + relativedelta(years=add_intervals)
 
 
 def transform_cached_values(values, choices_based_on_time_range):
@@ -560,13 +568,10 @@ class DashboardStats(models.Model):
                 series[time][name] = tv[i]
 
         # fill with zeros where the records are missing
-        start = truncate(time_since, interval)
+        start = truncate(time_since, interval).replace(tzinfo=get_charts_timezone())
+        end = time_until.replace(tzinfo=get_charts_timezone())
 
-        dates = list(rrule(
-            **rrule_freqs[interval],
-            dtstart=start.replace(tzinfo=get_charts_timezone()),
-            until=time_until.replace(tzinfo=get_charts_timezone()),
-        ))
+        dates = list(rrule(**rrule_freqs[interval], dtstart=start, until=end))
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()

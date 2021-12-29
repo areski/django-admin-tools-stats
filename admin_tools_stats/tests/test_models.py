@@ -13,13 +13,17 @@ from collections import OrderedDict
 from unittest import skipIf
 
 import django
-import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
 from model_mommy import mommy
+
+try:
+    import zoneinfo
+except ImportError:
+    from backports import zoneinfo
 
 
 class ModelTests(TestCase):
@@ -267,7 +271,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=True, TIME_ZONE='Europe/Prague')
     def test_get_multi_series_change_dst(self):
         """Test function to check DashboardStats.get_multi_time_series() on edge of daylight saving time change """
-        current_tz = pytz.timezone('Europe/Prague')
+        current_tz = zoneinfo.ZoneInfo('Europe/Prague')
         user = mommy.make('User', date_joined=datetime.datetime(2019, 10, 28).astimezone(current_tz))
         time_since = datetime.datetime(2019, 10, 27, 0, 0)
         time_until = datetime.datetime(2019, 10, 29, 0, 0)
