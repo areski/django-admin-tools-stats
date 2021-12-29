@@ -13,6 +13,7 @@ from collections import OrderedDict
 from unittest import skipIf
 
 import django
+import pytz
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -146,7 +147,7 @@ class ModelTests(TestCase):
         """Test function to check DashboardStats.get_multi_time_series()"""
         user = mommy.make('User', date_joined=datetime.datetime(2010, 10, 8, 23, 13))
         time_since = datetime.datetime(2010, 10, 8, 22)
-        time_until = datetime.datetime(2010, 10, 8, 23)
+        time_until = datetime.datetime(2010, 10, 8, 23, 59)
 
         interval = "hours"
         serie = self.stats.get_multi_time_series({}, time_since, time_until, interval, None, None, user)
@@ -266,8 +267,8 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=True, TIME_ZONE='Europe/Prague')
     def test_get_multi_series_change_dst(self):
         """Test function to check DashboardStats.get_multi_time_series() on edge of daylight saving time change """
-        current_tz = timezone.get_current_timezone()
-        user = mommy.make('User', date_joined=datetime.datetime(2019, 10, 28, tzinfo=current_tz))
+        current_tz = pytz.timezone('Europe/Prague')
+        user = mommy.make('User', date_joined=datetime.datetime(2019, 10, 28).astimezone(current_tz))
         time_since = datetime.datetime(2019, 10, 27, 0, 0)
         time_until = datetime.datetime(2019, 10, 29, 0, 0)
 

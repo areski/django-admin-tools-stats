@@ -6,7 +6,7 @@ from datetime import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from .models import DashboardStats, charts_timezone, truncate
+from .models import DashboardStats, get_charts_timezone, truncate
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +64,9 @@ class ChartDataView(TemplateView):
         operation_field = configuration.pop('select_box_operation_field', dashboard_stats.operation_field_name)
         context['chart_type'] = configuration.pop('select_box_chart_type', dashboard_stats.default_chart_type)
         try:
-            utc_tz = charts_timezone
-            time_since = utc_tz.localize(datetime.strptime(configuration.pop('time_since', None), '%Y-%m-%d'))
-            time_until = utc_tz.localize(datetime.strptime(configuration.pop('time_until', None), '%Y-%m-%d')).replace(hour=23, minute=59)
+            utc_tz = get_charts_timezone()
+            time_since = datetime.strptime(configuration.pop('time_since', None), '%Y-%m-%d').astimezone(utc_tz)
+            time_until = datetime.strptime(configuration.pop('time_until', None), '%Y-%m-%d').astimezone(utc_tz).replace(hour=23, minute=59)
             time_until = truncate(time_until, interval, add_intervals=1)
             time_since = truncate(time_since, interval)
         except ValueError:

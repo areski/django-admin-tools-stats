@@ -125,7 +125,7 @@ class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
             "select_box_chart_type=discreteBarChart&select_box_operation_field="
         )
         response = self.client.get(url)
-        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'))
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1.0}', '{"y": 1.0, "x": 1286668800000}'))
 
 
 class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
@@ -146,7 +146,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
         url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
         response = self.client.get(url)
-        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'))
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1.0}', '{"y": 1.0, "x": 1286668800000}'))
 
     @override_settings(USE_TZ=True, TIME_ZONE='UTC')
     def test_get_multi_series_dynamic_criteria(self):

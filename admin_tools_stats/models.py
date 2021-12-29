@@ -31,7 +31,19 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from multiselectfield import MultiSelectField
 
-charts_timezone = getattr(settings, 'ADMIN_CHARTS_TIMEZONE', timezone.utc)
+
+def get_charts_timezone():
+    if settings.USE_TZ:
+        return timezone.get_current_timezone()
+    return None
+    # TODO: make possible to set variable timezone for charts
+    # timezn = getattr(settings, 'ADMIN_CHARTS_TIMEZONE', None)
+    # if isinstance(timezn, str):
+    #     timezn = pytz.timezone(timezn)
+    # if timezn:
+    #     return timezn
+    # return timezn.utc
+
 
 try:
     if getattr(settings, 'ADMIN_CHARTS_USE_JSONFIELD', True):
@@ -482,7 +494,7 @@ class DashboardStats(models.Model):
             dynamic_kwargs = [None]
 
         operations = self.get_operations_list()
-        if operations and len(operations) > 1 and dynamic_criteria['select_box_operation_field'] == '':
+        if operations and len(operations) > 1 and operation_choice == '':
             for operation in operations:
                 i += 1
                 aggregate_dict['agg_%i' % i] = self.get_operation(operation_choice, operation)
@@ -497,7 +509,7 @@ class DashboardStats(models.Model):
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
         kind = interval[:-1]
-        qs = qs.annotate(d=Trunc(self.date_field_name, kind, tzinfo=charts_timezone))
+        qs = qs.annotate(d=Trunc(self.date_field_name, kind))  # tzinfo=get_charts_timezone()
         qs = qs.values_list('d')
         qs = qs.order_by('d')
         qs = qs.annotate(**aggregate_dict)
@@ -529,7 +541,7 @@ class DashboardStats(models.Model):
                     names.append(name)
                     values.append(key)
             configuration['select_box_dynamic_' + str(m2m.id)] = values
-        elif len(operations) > 1 and configuration['select_box_operation_field'] == '':
+        elif len(operations) > 1 and operation_choice == '':
             names = operations
         else:
             names = ['']
@@ -550,12 +562,16 @@ class DashboardStats(models.Model):
         # fill with zeros where the records are missing
         start = truncate(time_since, interval)
 
-        dates = list(rrule(**rrule_freqs[interval], dtstart=start.replace(tzinfo=None), until=time_until.replace(tzinfo=None)))
+        dates = list(rrule(
+            **rrule_freqs[interval],
+            dtstart=start.replace(tzinfo=get_charts_timezone()),
+            until=time_until.replace(tzinfo=get_charts_timezone()),
+        ))
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()
             elif settings.USE_TZ:
-                time = time.astimezone(charts_timezone)
+                time = time.astimezone(get_charts_timezone())
 
             if time not in series:
                 series[time] = {}
@@ -615,7 +631,7 @@ class DashboardStats(models.Model):
             i = 0
             for date, values_dict in values.items():
                 for filtered_value, value in values_dict.items():
-                    is_final = truncate(charts_timezone.localize(datetime.datetime.now()), interval) > date
+                    is_final = truncate(datetime.datetime.now().astimezone(get_charts_timezone()), interval) > date
                     bulk += [
                         CachedValue(
                             **common_options,
@@ -745,11 +761,11 @@ class CriteriaToStatsM2M(models.Model):
                 # (values are filtered afterwards, but if there is count_limit, it is for whole range)
                 # if time_since is not None:
                 #     if time_since.tzinfo is None or time_since.tzinfo.utcoffset(time_since) is None:
-                #         time_since = charts_timezone.localize(time_since)
+                #         time_since = get_charts_timezone().localize(time_since)
                 #     date_filters['%s__gte' % self.stats.date_field_name] = time_since
                 # if time_until is not None:
                 #     if time_until.tzinfo is None or time_until.tzinfo.utcoffset(time_until) is None:
-                #         time_until = charts_timezone.localize(time_until).replace(hour=23, minute=59)
+                #         time_until = get_charts_timezone().localize(time_until).replace(hour=23, minute=59)
                 #     end_time = time_until
                 #     date_filters['%s__lte' % self.stats.date_field_name] = end_time
                 choices_queryset = model.objects.filter(
