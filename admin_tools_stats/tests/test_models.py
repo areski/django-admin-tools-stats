@@ -81,6 +81,67 @@ class ModelTests(TestCase):
 
     @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
     @override_settings(USE_TZ=False)
+    def test_get_multi_series_time_based_choices(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Choices are based on time range
+        """
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="name",
+            dynamic_criteria_field_name="first_name",
+        )
+        m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series', choices_based_on_time_range=True)
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Petr", is_superuser=True)
+        mommy.make('User', date_joined=datetime.date(2010, 10, 9), first_name="Adam")
+        mommy.make('User', date_joined=datetime.date(2010, 10, 15), first_name="Jirka")
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2010, 10, 12)
+
+        interval = "days"
+        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval, None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0): {'Adam': 0, 'Petr': 0},
+            datetime.datetime(2010, 10, 9, 0, 0): {'Adam': 1, 'Petr': 0},
+            datetime.datetime(2010, 10, 10, 0, 0): {'Adam': 0, 'Petr': 1},
+            datetime.datetime(2010, 10, 11, 0, 0): {'Adam': 0, 'Petr': 0},
+            datetime.datetime(2010, 10, 12, 0, 0): {'Adam': 0, 'Petr': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_count_limit(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Choices are limited by count
+        """
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="name",
+            dynamic_criteria_field_name="first_name",
+        )
+        m2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series', count_limit=1)
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Petr", is_superuser=True)
+        mommy.make('User', date_joined=datetime.date(2010, 10, 10), first_name="Petr")
+        mommy.make('User', date_joined=datetime.date(2010, 10, 9), first_name="Adam")
+        mommy.make('User', date_joined=datetime.date(2010, 10, 11), first_name="Jirka")
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2010, 10, 12)
+
+        interval = "days"
+        serie = self.stats.get_multi_time_series({'select_box_multiple_series': m2m.id}, time_since, time_until, interval, None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0): {'other': 0, 'Petr': 0},
+            datetime.datetime(2010, 10, 9, 0, 0): {'other': 1, 'Petr': 0},
+            datetime.datetime(2010, 10, 10, 0, 0): {'other': 0, 'Petr': 2},
+            datetime.datetime(2010, 10, 11, 0, 0): {'other': 1, 'Petr': 0},
+            datetime.datetime(2010, 10, 12, 0, 0): {'other': 0, 'Petr': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @skipIf(settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql', 'no support of USE_TZ=False in mysql')
+    @override_settings(USE_TZ=False)
     def test_get_multi_series_hours(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
         user = mommy.make('User', date_joined=datetime.datetime(2010, 10, 8, 23, 13))

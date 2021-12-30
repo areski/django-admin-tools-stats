@@ -671,8 +671,9 @@ class CriteriaToStatsM2M(models.Model):
                     ).order_by(
                         '-f_count',
                     )
-                    other_choices_queryset = choices_queryset[count_limit:]
-                    choices_queryset = choices_queryset[:count_limit]
+                    choices_list = list(choices_queryset)
+                    other_choices_queryset = choices_list[count_limit:]
+                    choices_queryset = choices_list[:count_limit]
                 else:
                     choices_queryset = choices_queryset.order_by(field_name)
                 choices.update(
