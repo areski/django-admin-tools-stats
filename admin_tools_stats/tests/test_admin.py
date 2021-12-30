@@ -1,6 +1,10 @@
+from django.core.exceptions import ValidationError
+from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
 from model_mommy import mommy
+
+from admin_tools_stats.models import DashboardStatsCriteria
 
 from .utils import BaseSuperuserAuthenticatedClient
 
@@ -48,3 +52,193 @@ class AdminIndexTests(BaseSuperuserAuthenticatedClient):
             '</select>',
             html=True,
         )
+
+
+class AdminToolsStatsAdminInterfaceTestCase(BaseSuperuserAuthenticatedClient):
+    """
+    Test cases for django-admin-tools-stats Admin Interface
+    """
+
+    def test_admin_tools_stats_dashboardstats(self):
+        """Test function to check dashboardstats admin pages"""
+        response = self.client.get('/admin/admin_tools_stats/')
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get('/admin/admin_tools_stats/dashboardstats/')
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_tools_stats_dashboardstatscriteria(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        response = \
+            self.client.get('/admin/admin_tools_stats/dashboardstatscriteria/')
+        self.assertEqual(response.status_code, 200)
+
+
+class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
+    def test_admin_dashboard_page(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            graph_title="User graph",
+            model_name="User",
+            model_app_name="auth",
+        )
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            graph_title="User logged in graph",
+            model_name="User",
+            model_app_name="auth",
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [False, "Inactive"],
+                "true": [True, "Active"],
+            },
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats)
+        response = self.client.get('/admin/')
+        self.assertContains(
+            response,
+            '<h2>User graph</h2>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<h2>User logged in graph</h2>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<svg style="width:600px;height:400px;"></svg>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option value="True">Active</option>',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option value="False">Inactive</option>',
+            html=True,
+        )
+
+    def test_admin_dashboard_page_multi_series(self):
+        stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [False, "Inactive"],
+                "true": [True, "Active"],
+            },
+        )
+        cm2m = mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats, use_as='multiple_series')
+        stats.default_multiseries_criteria = cm2m
+        stats.save()
+        response = self.client.get('/admin/')
+        self.assertContains(
+            response,
+            '<select name="select_box_multiple_series" class="chart-input select_box_multiple_series" required>'
+            '<option value="">-------</option>'
+            '<option value="2" selected>active</option>'
+            '</select>',
+            html=True,
+        )
+
+    def test_admin_dashboard_page_post(self):
+        """Test function to check dashboardstatscriteria admin pages"""
+        stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [False, "Inactive"],
+                "true": [True, "Active"],
+            },
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=stats)
+        response = self.client.post('/admin/', {'select_box_user_graph': 'true'})
+        self.assertContains(
+            response,
+            '<input type="hidden" class="hidden_graph_key" name="graph_key" value="user_graph">',
+            html=True,
+        )
+        self.assertContains(
+            response,
+            '<option value="True">Active</option>',
+            html=True,
+        )
+
+
+class AdminToolsStatsModel(TestCase):
+    """
+    Test DashboardStatsCriteria, DashboardStats models
+    """
+    def setUp(self):
+        # DashboardStatsCriteria model
+        self.dashboard_stats_criteria = DashboardStatsCriteria(
+            criteria_name="call_type",
+            criteria_fix_mapping='',
+            dynamic_criteria_field_name='disposition',
+            criteria_dynamic_mapping={
+                "INVALIDARGS": "INVALIDARGS",
+                "BUSY": "BUSY",
+                "TORTURE": "TORTURE",
+                "ANSWER": "ANSWER",
+                "DONTCALL": "DONTCALL",
+                "FORBIDDEN": "FORBIDDEN",
+                "NOROUTE": "NOROUTE",
+                "CHANUNAVAIL": "CHANUNAVAIL",
+                "NOANSWER": "NOANSWER",
+                "CONGESTION": "CONGESTION",
+                "CANCEL": "CANCEL",
+            },
+        )
+        self.dashboard_stats_criteria.save()
+        self.assertEqual(self.dashboard_stats_criteria.__str__(), 'call_type')
+
+        # DashboardStats model
+        self.dashboard_stats = mommy.make(
+            'DashboardStats',
+            graph_key='user_graph_test',
+            graph_title='User graph',
+            model_app_name='auth',
+            model_name='User',
+            date_field_name='date_joined',
+            is_visible=1,
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=self.dashboard_stats_criteria, stats=self.dashboard_stats, use_as='multiple_series')
+        with self.assertRaises(ValidationError) as e:
+            self.dashboard_stats.clean()
+        self.assertEqual(e.exception.message_dict, {})
+        self.assertEqual(self.dashboard_stats.__str__(), 'user_graph_test')
+
+    def test_dashboard_criteria(self):
+        self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
+        self.assertEqual(self.dashboard_stats.graph_key, 'user_graph_test')
+
+    def tearDown(self):
+        self.dashboard_stats_criteria.delete()
+        self.dashboard_stats.delete()

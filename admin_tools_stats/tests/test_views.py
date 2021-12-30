@@ -11,13 +11,15 @@
 import datetime
 
 import django
+from django.contrib.auth.models import Permission
 from django.test.utils import override_settings
 from django.urls import reverse
 from model_mommy import mommy
 
 from admin_tools_stats.views import AnalyticsView
 
-from .utils import BaseSuperuserAuthenticatedClient, assertContainsAny
+from .utils import (BaseSuperuserAuthenticatedClient,
+                    BaseUserAuthenticatedClient, assertContainsAny)
 
 
 class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
@@ -124,3 +126,102 @@ class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
         )
         response = self.client.get(url)
         assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'))
+
+
+class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
+    def setUp(self):
+        self.stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+        super().setUp()
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series(self):
+        """Test function view rendering multi series"""
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc))
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'))
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_get_multi_series_dynamic_criteria(self):
+        """Test function view rendering multi series with dynamic criteria"""
+        criteria = mommy.make(
+            'DashboardStatsCriteria',
+            criteria_name="active",
+            dynamic_criteria_field_name="is_active",
+            criteria_dynamic_mapping={
+                "": [None, "All"],
+                "false": [True, "Inactive"],
+                "true": [False, "Active"],
+            },
+        )
+        mommy.make('CriteriaToStatsM2M', criteria=criteria, stats=self.stats, use_as='multiple_series', id=5)
+        mommy.make('User', date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc))
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08"
+        url += "&time_until=2010-10-12"
+        url += "&select_box_interval=days"
+        url += "&select_box_chart_type=discreteBarChart"
+        url += "&select_box_multiple_series=5"
+        url += "&debug=True"
+        response = self.client.get(url)
+        self.assertContains(response, ('"key": "Inactive"'))
+        self.assertContains(response, ('"key": "Active"'))
+
+
+class UserViewsTests(BaseUserAuthenticatedClient):
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_no_permissions_not_enabled(self):
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            user_field_name=None,
+            show_to_users=False,
+        )
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        self.assertContains(response, "You have no permission to view this chart. Check if you are logged in")
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_no_permissions(self):
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            user_field_name=None,
+            show_to_users=True,
+        )
+        permission = Permission.objects.get(codename='view_dashboardstats')
+        self.user.user_permissions.add(permission)
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 0}', '{"y": 0, "x": 1286668800000}'))
+
+    @override_settings(USE_TZ=True, TIME_ZONE='UTC')
+    def test_user_chart(self):
+        mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            user_field_name=None,
+            show_to_users=True,
+        )
+        url = reverse('chart-data', kwargs={'graph_key': 'user_graph'})
+        url += "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        response = self.client.get(url)
+        assertContainsAny(self, response, ('{"x": 1286668800000, "y": 0}', '{"y": 0, "x": 1286668800000}'))
