@@ -292,6 +292,12 @@ class DashboardStats(models.Model):
             "Django>=3.0 is needed for distinct <i>Sum</i> and <i>Avg</i>.",
         ),
     )
+    cache_values = models.BooleanField(
+        verbose_name=_("cache charts values"),
+        default=False,
+        null=False,
+        blank=False,
+    )
     type_operation_field_name = models.CharField(
         max_length=90, verbose_name=_("Choose Type operation"),
         null=True, blank=True, choices=operation,
@@ -482,7 +488,7 @@ class DashboardStats(models.Model):
                     for dynamic_value in dynamic_values:
                         try:
                             criteria_value = m2m.get_dynamic_choices(
-                                operation_choice, operation_field_choice, user,
+                                time_since, time_until, operation_choice, operation_field_choice, user,
                             )[dynamic_value]
                         except KeyError:
                             criteria_value = 0
@@ -541,7 +547,7 @@ class DashboardStats(models.Model):
         names = []
         operations = self.get_operations_list()
         if m2m and m2m.criteria.dynamic_criteria_field_name:
-            choices = m2m.get_dynamic_choices(operation_choice, operation_field_choice, user)
+            choices = m2m.get_dynamic_choices(time_since, time_until, operation_choice, operation_field_choice, user)
             for key, name in choices.items():
                 if key != '':
                     if isinstance(name, (list, tuple)):
@@ -738,7 +744,7 @@ class CriteriaToStatsM2M(models.Model):
     # The slef argument is here just because of this bug: https://github.com/infoscout/django-cache-utils/issues/19
     @cached(60 * 60 * 24 * 7)
     def _get_dynamic_choices(
-            self, slef, count_limit=None, operation_choice=None, operation_field_choice=None, user=None,
+            self, slef, time_since, time_until, count_limit=None, operation_choice=None, operation_field_choice=None, user=None,
     ):
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
@@ -762,17 +768,16 @@ class CriteriaToStatsM2M(models.Model):
                 choices = OrderedDict()
                 fchoices = dict(field.choices or [])
                 date_filters = {}
-                # This doesn't work along with DB caching:
-                # (values are filtered afterwards, but if there is count_limit, it is for whole range)
-                # if time_since is not None:
-                #     if time_since.tzinfo is None or time_since.tzinfo.utcoffset(time_since) is None:
-                #         time_since = get_charts_timezone().localize(time_since)
-                #     date_filters['%s__gte' % self.stats.date_field_name] = time_since
-                # if time_until is not None:
-                #     if time_until.tzinfo is None or time_until.tzinfo.utcoffset(time_until) is None:
-                #         time_until = get_charts_timezone().localize(time_until).replace(hour=23, minute=59)
-                #     end_time = time_until
-                #     date_filters['%s__lte' % self.stats.date_field_name] = end_time
+                if not self.stats.cache_values:
+                    if time_since is not None:
+                        if time_since.tzinfo is None or time_since.tzinfo.utcoffset(time_since) is None:
+                            time_since = time_since.astimezone(get_charts_timezone())
+                        date_filters['%s__gte' % self.stats.date_field_name] = time_since
+                    if time_until is not None:
+                        if time_until.tzinfo is None or time_until.tzinfo.utcoffset(time_until) is None:
+                            time_until = time_until.astimezone(get_charts_timezone()).replace(hour=23, minute=59)
+                        end_time = time_until
+                        date_filters['%s__lte' % self.stats.date_field_name] = end_time
                 choices_queryset = model.objects.filter(
                         **date_filters,
                     )
@@ -811,10 +816,13 @@ class CriteriaToStatsM2M(models.Model):
     def __str__(self):
         return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
 
-    def get_dynamic_choices(self, operation_choice=None, operation_field_choice=None, user=None):
+    def get_dynamic_choices(self, time_since=None, time_until=None, operation_choice=None, operation_field_choice=None, user=None):
         if not self.count_limit:  # We don't have to cache different operation choices
             operation_choice = None
-        choices = self._get_dynamic_choices(self, self.count_limit, operation_choice, operation_field_choice, user)
+        if not self.choices_based_on_time_range:
+            time_since = None
+            time_until = None
+        choices = self._get_dynamic_choices(self, time_since, time_until, self.count_limit, operation_choice, operation_field_choice, user)
         return choices
 
 
