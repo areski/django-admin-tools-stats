@@ -901,6 +901,6 @@ class AdminToolsStatsModel(TestCase):
         self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
         self.assertEqual(self.dashboard_stats.graph_key, 'user_graph_test')
 
-    def teardown(self):
+    def tearDown(self):
         self.dashboard_stats_criteria.delete()
         self.dashboard_stats.delete()
