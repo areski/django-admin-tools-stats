@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.25.2 (2021-12-30)
+-------------------
+* fix problem where in queries with count limit the choices could have been shuffled
+
 0.25.1 (2021-12-30)
 -------------------
 * fix broken admin index page
