@@ -55,6 +55,7 @@ copyright = u'2011-2014, Arezqui Belaid'
 #
 # The short X.Y version
 import admin_tools_stats
+
 version = admin_tools_stats.__version__
 # The full version, including alpha/beta/rc tags.
 release = version
