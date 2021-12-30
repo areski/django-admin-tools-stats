@@ -243,10 +243,6 @@ class ModelTests(TestCase):
             datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {'': 2},
             datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {'': 0},
         }
-        from pprint import pprint
-        pprint(serie)
-        pprint("-------------------------------")
-        pprint(testing_data)
         self.assertDictEqual(serie, testing_data)
 
     @override_settings(USE_TZ=True, TIME_ZONE='CET')
