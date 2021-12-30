@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.25.1 (2021-12-30)
+-------------------
+* fix broken admin index page
+
 0.25.0 (2021-12-28)
 -------------------
 * add support for charts in userspace
