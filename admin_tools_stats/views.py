@@ -1,7 +1,7 @@
 import logging
 import time
 from collections import OrderedDict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -67,8 +67,8 @@ class ChartDataView(TemplateView):
             utc_tz = get_charts_timezone()
             time_since = datetime.strptime(configuration.pop('time_since', None), '%Y-%m-%d').astimezone(utc_tz)
             time_until = datetime.strptime(configuration.pop('time_until', None), '%Y-%m-%d').astimezone(utc_tz).replace(hour=23, minute=59)
-            time_until = truncate(time_until, interval, add_intervals=1)
             time_since = truncate(time_since, interval)
+            time_until = truncate(time_until, interval, add_intervals=1) - timedelta(microseconds=1)
         except ValueError:
             return context
 

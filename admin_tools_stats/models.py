@@ -607,7 +607,7 @@ class DashboardStats(models.Model):
         cached_query = CachedValue.objects.filter(
             **common_options,
             date__gte=time_since,
-            date__lte=time_until - datetime.timedelta(microseconds=1),
+            date__lte=time_until
         )
         if reload_data:
             dates_query = cached_query.filter(is_final=True)
@@ -615,13 +615,11 @@ class DashboardStats(models.Model):
             dates_query = cached_query
         if dates_query.exists() and not reload_all_data:  # TODO: include also gaps withing data
             gaps = []
-            time_since = truncate(time_since, interval)
-            time_until = truncate(time_until - datetime.timedelta(microseconds=1), interval)
             dates = list(rrule(**rrule_freqs[interval], dtstart=time_since, until=time_until))
             cached_dates = dates_query.values('date').distinct().values_list('date', flat=True)
             last_time = None
             for time in dates:
-                time_m = time - datetime.timedelta(microseconds=1)
+                time_m = truncate(time, interval, add_intervals=1) - datetime.timedelta(microseconds=1)
                 if time not in cached_dates:
                     if last_time and len(gaps) > 0 and gaps[-1][1] == last_time:
                         gaps[-1][1] = time_m
@@ -630,7 +628,7 @@ class DashboardStats(models.Model):
                 last_time = time_m
         else:
             gaps = (
-                (time_since, time_until - datetime.timedelta(microseconds=1)),
+                (time_since, time_until),
             )
 
         bulk = []

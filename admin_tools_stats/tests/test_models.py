@@ -20,6 +20,8 @@ from django.test.utils import override_settings
 from django.utils import timezone
 from model_mommy import mommy
 
+from admin_tools_stats.models import CachedValue
+
 try:
     import zoneinfo
 except ImportError:
@@ -670,3 +672,120 @@ class ModelTests(TestCase):
         arguments = {'select_box_multiple_series': m2m.id}
         with self.assertRaises(Exception):
             self.stats.get_multi_time_series(arguments, time_since, time_until, "days", None, user)
+
+
+class CacheModelTests(TestCase):
+    def setUp(self):
+        self.stats = mommy.make(
+            'DashboardStats',
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+        self.kid_stats = mommy.make(
+            'DashboardStats',
+            date_field_name="birthday",
+            model_name="TestKid",
+            model_app_name="demoproject",
+            graph_key="kid_graph",
+        )
+        common_parameters = {
+            'stats': self.stats,
+            'time_scale': "days",
+            'operation': None,
+            'dynamic_choices': [],
+            'filtered_value': '',
+        }
+        current_tz = timezone.get_current_timezone()
+        mommy.make(
+            'CachedValue',
+            **common_parameters,
+            date=datetime.datetime(2010, 10, 9).astimezone(current_tz),
+            value=3,
+        )
+        mommy.make(
+            'CachedValue',
+            **common_parameters,
+            date=datetime.datetime(2010, 10, 11).astimezone(current_tz),
+            value=5,
+        )
+        mommy.make(
+            'CachedValue',
+            **common_parameters,
+            date=datetime.datetime(2010, 10, 12).astimezone(current_tz),
+            is_final=False,
+            value=5,
+        )
+
+    def test_get_multi_series_cached(self):
+        """ Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache """
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        CachedValue.objects.all().delete()
+        current_tz = timezone.get_current_timezone()
+        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime.datetime(2010, 10, 12).astimezone(current_tz)
+
+        serie = self.stats.get_multi_time_series_cached({}, time_since, time_until, "days", None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {'': 1},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_cached_values(self):
+        """ Test DashboardStats.get_multi_time_series_cached() if some values were already in cache """
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        current_tz = timezone.get_current_timezone()
+        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+
+        serie = self.stats.get_multi_time_series_cached({}, time_since, time_until, "days", None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {'': 3},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {'': 1},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {'': 5},
+            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {'': 5},
+            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_cached_values_reload(self):
+        """ Same as test above, but the data reload is requested """
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        current_tz = timezone.get_current_timezone()
+        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+
+        serie = self.stats.get_multi_time_series_cached({'reload': 'True'}, time_since, time_until, "days", None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {'': 3},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {'': 1},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {'': 5},
+            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_cached_values_reload_all(self):
+        """ Same as test above, but reload of all data is requested """
+        user = mommy.make('User', date_joined=datetime.date(2010, 10, 10))
+        current_tz = timezone.get_current_timezone()
+        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+
+        serie = self.stats.get_multi_time_series_cached({'reload_all': 'True'}, time_since, time_until, "days", None, None, user)
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {'': 1},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {'': 0},
+            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {'': 0},
+        }
+        self.assertDictEqual(serie, testing_data)
