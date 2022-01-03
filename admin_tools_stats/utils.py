@@ -13,17 +13,16 @@ import inspect
 
 
 class Choice(object):
-
     class __metaclass__(type):
         def __init__(cls, *args, **kwargs):
             cls._data = []
             for name, value in inspect.getmembers(cls):
-                if not name.startswith('_') and not inspect.ismethod(value):
+                if not name.startswith("_") and not inspect.ismethod(value):
                     if isinstance(value, tuple) and len(value) > 1:
                         data = value
                     else:
-                        pieces = [x.capitalize() for x in name.split('_')]
-                        data = (value, ' '.join(pieces))
+                        pieces = [x.capitalize() for x in name.split("_")]
+                        data = (value, " ".join(pieces))
                     cls._data.append(data)
                     setattr(cls, name, data[0])
 

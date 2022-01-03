@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admin_tools_stats', '0015_auto_20211209_0822'),
+        ("admin_tools_stats", "0015_auto_20211209_0822"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dashboardstats',
-            name='cache_values',
-            field=models.BooleanField(default=False, verbose_name='cache charts values'),
+            model_name="dashboardstats",
+            name="cache_values",
+            field=models.BooleanField(default=False, verbose_name="cache charts values"),
         ),
     ]

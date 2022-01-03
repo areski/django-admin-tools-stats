@@ -4,8 +4,9 @@ from __future__ import unicode_literals
 
 from django.conf import settings
 
+
 try:
-    if getattr(settings, 'ADMIN_CHARTS_USE_JSONFIELD', True):
+    if getattr(settings, "ADMIN_CHARTS_USE_JSONFIELD", True):
         from django.db.models import JSONField
     else:
         from jsonfield.fields import JSONField
@@ -19,51 +20,170 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='DashboardStats',
+            name="DashboardStats",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('graph_key', models.CharField(help_text='it needs to be one word unique. ex. auth, mygraph', max_length=90, unique=True, verbose_name='graph key')),
-                ('graph_title', models.CharField(db_index=True, help_text='heading title of graph box', max_length=90, verbose_name='graph title')),
-                ('model_app_name', models.CharField(help_text='ex. auth / dialer_cdr', max_length=90, verbose_name='app name')),
-                ('model_name', models.CharField(help_text='ex. User', max_length=90, verbose_name='model name')),
-                ('date_field_name', models.CharField(help_text='ex. date_joined', max_length=90, verbose_name='date field name')),
-                ('operation_field_name', models.CharField(blank=True, help_text='The field you want to aggregate, ex. amount', max_length=90, null=True, verbose_name='Operate field name')),
-                ('type_operation_field_name', models.CharField(blank=True, choices=[(b'Count', b'Count'), (b'Sum', b'Sum'), (b'Avg', b'Avg'), (b'Max', b'Max'), (b'Min', b'Min'), (b'StdDev', b'StdDev'), (b'Variance', b'Variance')], help_text='choose the type operation what you want to aggregate, ex. Sum', max_length=90, null=True, verbose_name='Choose Type operation')),
-                ('is_visible', models.BooleanField(default=True, verbose_name='visible')),
-                ('created_date', models.DateTimeField(auto_now_add=True, verbose_name='date')),
-                ('updated_date', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "graph_key",
+                    models.CharField(
+                        help_text="it needs to be one word unique. ex. auth, mygraph",
+                        max_length=90,
+                        unique=True,
+                        verbose_name="graph key",
+                    ),
+                ),
+                (
+                    "graph_title",
+                    models.CharField(
+                        db_index=True,
+                        help_text="heading title of graph box",
+                        max_length=90,
+                        verbose_name="graph title",
+                    ),
+                ),
+                (
+                    "model_app_name",
+                    models.CharField(
+                        help_text="ex. auth / dialer_cdr",
+                        max_length=90,
+                        verbose_name="app name",
+                    ),
+                ),
+                (
+                    "model_name",
+                    models.CharField(
+                        help_text="ex. User", max_length=90, verbose_name="model name"
+                    ),
+                ),
+                (
+                    "date_field_name",
+                    models.CharField(
+                        help_text="ex. date_joined",
+                        max_length=90,
+                        verbose_name="date field name",
+                    ),
+                ),
+                (
+                    "operation_field_name",
+                    models.CharField(
+                        blank=True,
+                        help_text="The field you want to aggregate, ex. amount",
+                        max_length=90,
+                        null=True,
+                        verbose_name="Operate field name",
+                    ),
+                ),
+                (
+                    "type_operation_field_name",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            (b"Count", b"Count"),
+                            (b"Sum", b"Sum"),
+                            (b"Avg", b"Avg"),
+                            (b"Max", b"Max"),
+                            (b"Min", b"Min"),
+                            (b"StdDev", b"StdDev"),
+                            (b"Variance", b"Variance"),
+                        ],
+                        help_text="choose the type operation what you want to aggregate, ex. Sum",
+                        max_length=90,
+                        null=True,
+                        verbose_name="Choose Type operation",
+                    ),
+                ),
+                (
+                    "is_visible",
+                    models.BooleanField(default=True, verbose_name="visible"),
+                ),
+                (
+                    "created_date",
+                    models.DateTimeField(auto_now_add=True, verbose_name="date"),
+                ),
+                ("updated_date", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'dashboard_stats',
-                'verbose_name': 'dashboard stats',
-                'verbose_name_plural': 'dashboard stats',
+                "db_table": "dashboard_stats",
+                "verbose_name": "dashboard stats",
+                "verbose_name_plural": "dashboard stats",
             },
         ),
         migrations.CreateModel(
-            name='DashboardStatsCriteria',
+            name="DashboardStatsCriteria",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('criteria_name', models.CharField(db_index=True, help_text='it needs to be one word unique. Ex. status, yesno', max_length=90, verbose_name='criteria name')),
-                ('criteria_fix_mapping', JSONField(blank=True, help_text='a JSON dictionary of key-value pairs that will be used for the criteria', null=True, verbose_name='fixed criteria / value')),
-                ('dynamic_criteria_field_name', models.CharField(blank=True, help_text='ex. for call records - disposition', max_length=90, null=True, verbose_name='dynamic criteria field name')),
-                ('criteria_dynamic_mapping', JSONField(blank=True, help_text='a JSON dictionary of key-value pairs that will be used for the criteria', null=True, verbose_name='dynamic criteria / value')),
-                ('created_date', models.DateTimeField(auto_now_add=True, verbose_name='date')),
-                ('updated_date', models.DateTimeField(auto_now=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "criteria_name",
+                    models.CharField(
+                        db_index=True,
+                        help_text="it needs to be one word unique. Ex. status, yesno",
+                        max_length=90,
+                        verbose_name="criteria name",
+                    ),
+                ),
+                (
+                    "criteria_fix_mapping",
+                    JSONField(
+                        blank=True,
+                        help_text="a JSON dictionary of key-value pairs that will be used for the criteria",
+                        null=True,
+                        verbose_name="fixed criteria / value",
+                    ),
+                ),
+                (
+                    "dynamic_criteria_field_name",
+                    models.CharField(
+                        blank=True,
+                        help_text="ex. for call records - disposition",
+                        max_length=90,
+                        null=True,
+                        verbose_name="dynamic criteria field name",
+                    ),
+                ),
+                (
+                    "criteria_dynamic_mapping",
+                    JSONField(
+                        blank=True,
+                        help_text="a JSON dictionary of key-value pairs that will be used for the criteria",
+                        null=True,
+                        verbose_name="dynamic criteria / value",
+                    ),
+                ),
+                (
+                    "created_date",
+                    models.DateTimeField(auto_now_add=True, verbose_name="date"),
+                ),
+                ("updated_date", models.DateTimeField(auto_now=True)),
             ],
             options={
-                'db_table': 'dash_stats_criteria',
-                'verbose_name': 'dashboard stats criteria',
-                'verbose_name_plural': 'dashboard stats criteria',
+                "db_table": "dash_stats_criteria",
+                "verbose_name": "dashboard stats criteria",
+                "verbose_name_plural": "dashboard stats criteria",
             },
         ),
         migrations.AddField(
-            model_name='dashboardstats',
-            name='criteria',
-            field=models.ManyToManyField(blank=True, to='admin_tools_stats.DashboardStatsCriteria'),
+            model_name="dashboardstats",
+            name="criteria",
+            field=models.ManyToManyField(blank=True, to="admin_tools_stats.DashboardStatsCriteria"),
         ),
     ]

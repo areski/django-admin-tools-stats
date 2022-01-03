@@ -7,18 +7,58 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admin_tools_stats', '0010_dashboardstats_show_to_users'),
+        ("admin_tools_stats", "0010_dashboardstats_show_to_users"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dashboardstats',
-            name='allowed_chart_types',
-            field=multiselectfield.db.fields.MultiSelectField(blank=True, choices=[('discreteBarChart', 'Bar'), ('lineChart', 'Line'), ('multiBarChart', 'Multi Bar'), ('pieChart', 'Pie'), ('stackedAreaChart', 'Stacked Area'), ('multiBarHorizontalChart', 'Multi Bar Horizontal'), ('linePlusBarChart', 'Line Plus Bar'), ('scatterChart', 'Scatter'), ('cumulativeLineChart', 'Cumulative Line'), ('lineWithFocusChart', 'Line With Focus')], default=('discreteBarChart', 'lineChart', 'multiBarChart', 'pieChart', 'stackedAreaChart', 'multiBarHorizontalChart', 'linePlusBarChart', 'scatterChart', 'cumulativeLineChart', 'lineWithFocusChart'), max_length=1000, null=True, verbose_name='Allowed chart types'),
+            model_name="dashboardstats",
+            name="allowed_chart_types",
+            field=multiselectfield.db.fields.MultiSelectField(
+                blank=True,
+                choices=[
+                    ("discreteBarChart", "Bar"),
+                    ("lineChart", "Line"),
+                    ("multiBarChart", "Multi Bar"),
+                    ("pieChart", "Pie"),
+                    ("stackedAreaChart", "Stacked Area"),
+                    ("multiBarHorizontalChart", "Multi Bar Horizontal"),
+                    ("linePlusBarChart", "Line Plus Bar"),
+                    ("scatterChart", "Scatter"),
+                    ("cumulativeLineChart", "Cumulative Line"),
+                    ("lineWithFocusChart", "Line With Focus"),
+                ],
+                default=(
+                    "discreteBarChart",
+                    "lineChart",
+                    "multiBarChart",
+                    "pieChart",
+                    "stackedAreaChart",
+                    "multiBarHorizontalChart",
+                    "linePlusBarChart",
+                    "scatterChart",
+                    "cumulativeLineChart",
+                    "lineWithFocusChart",
+                ),
+                max_length=1000,
+                null=True,
+                verbose_name="Allowed chart types",
+            ),
         ),
         migrations.AddField(
-            model_name='dashboardstats',
-            name='allowed_time_scales',
-            field=multiselectfield.db.fields.MultiSelectField(choices=[('hours', 'Hours'), ('days', 'Days'), ('weeks', 'Weeks'), ('months', 'Months'), ('years', 'Years')], default=('hours', 'days', 'weeks', 'months', 'years'), max_length=1000, verbose_name='Chart type'),
+            model_name="dashboardstats",
+            name="allowed_time_scales",
+            field=multiselectfield.db.fields.MultiSelectField(
+                choices=[
+                    ("hours", "Hours"),
+                    ("days", "Days"),
+                    ("weeks", "Weeks"),
+                    ("months", "Months"),
+                    ("years", "Years"),
+                ],
+                default=("hours", "days", "weeks", "months", "years"),
+                max_length=1000,
+                verbose_name="Chart type",
+            ),
         ),
     ]

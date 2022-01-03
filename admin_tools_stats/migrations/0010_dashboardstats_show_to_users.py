@@ -6,13 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admin_tools_stats', '0009_auto_20200928_1003'),
+        ("admin_tools_stats", "0009_auto_20200928_1003"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dashboardstats',
-            name='show_to_users',
-            field=models.BooleanField(default=False, help_text="Be carefull and test if it still doesn't expose sensitive data", verbose_name='show to ordinary users'),
+            model_name="dashboardstats",
+            name="show_to_users",
+            field=models.BooleanField(
+                default=False,
+                help_text="Be carefull and test if it still doesn't expose sensitive data",
+                verbose_name="show to ordinary users",
+            ),
         ),
     ]

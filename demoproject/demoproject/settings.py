@@ -3,9 +3,10 @@
 import os
 import sys
 
+
 DEBUG = True
 
-APPLICATION_DIR = os.path.dirname(globals()['__file__'])
+APPLICATION_DIR = os.path.dirname(globals()["__file__"])
 
 PROJECT_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), ".."),
@@ -17,41 +18,41 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-if os.environ.get('DB_ENGINE') == 'mysql':
+if os.environ.get("DB_ENGINE") == "mysql":
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'test_db',
-            'USER': os.environ.get('MYSQL_USER', 'root'),
-            'PASSWORD': os.environ.get('MYSQL_PASSWORD', 'password'),
-            'HOST': '127.0.0.1',
-            'PORT': 3306,
-            'TEST': {
-                'CHARSET': 'utf8',
-                'COLLATION': 'utf8_general_ci',
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": "test_db",
+            "USER": os.environ.get("MYSQL_USER", "root"),
+            "PASSWORD": os.environ.get("MYSQL_PASSWORD", "password"),
+            "HOST": "127.0.0.1",
+            "PORT": 3306,
+            "TEST": {
+                "CHARSET": "utf8",
+                "COLLATION": "utf8_general_ci",
             },
         },
     }
-elif os.environ.get('DB_ENGINE') == 'sqlite':
-    if 'test' in sys.argv:
-        database_name = ''
+elif os.environ.get("DB_ENGINE") == "sqlite":
+    if "test" in sys.argv:
+        database_name = ""
     else:
-        database_name = os.path.join(os.path.dirname(__file__), 'database.db')
+        database_name = os.path.join(os.path.dirname(__file__), "database.db")
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': database_name,
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": database_name,
         },
     }
-elif os.environ.get('DB_ENGINE') == 'postgres':
+elif os.environ.get("DB_ENGINE") == "postgres":
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.environ.get('POSTGRES_NAME', 'postgres'),
-            'USER': os.environ.get('POSTGRES_USER', 'postgres'),
-            'PASSWORD': os.environ.get('POSTGRES_PASSWORD', 'postgres'),
-            'HOST': os.environ.get('POSTGRES_HOST', ''),
-            'PORT': os.environ.get('POSTGRES_PORT', ''),
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_NAME", "postgres"),
+            "USER": os.environ.get("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+            "HOST": os.environ.get("POSTGRES_HOST", ""),
+            "PORT": os.environ.get("POSTGRES_PORT", ""),
         },
     }
 
@@ -64,11 +65,11 @@ ALLOWED_HOSTS = []
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = "America/Chicago"
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
 SITE_ID = 1
 
@@ -84,22 +85,22 @@ USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/var/www/example.com/media/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = ""
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://example.com/media/", "http://media.example.com/"
-MEDIA_URL = ''
+MEDIA_URL = ""
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/var/www/example.com/static/"
-STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+STATIC_ROOT = os.path.join(PROJECT_ROOT, "static")
 
 # URL prefix for static files.
 # Example: "http://example.com/static/", "http://static.example.com/"
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -111,76 +112,81 @@ STATICFILES_DIRS = (
 # List of finder classes that know how to find static files in
 # various locations.
 STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
-    'djangobower.finders.BowerFinder',
+    "djangobower.finders.BowerFinder",
 )
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'sq)9^f#mf444c(#om$zpo0v!%y=%pqem*9s_qav93fwr_&x40u'
+SECRET_KEY = "sq)9^f#mf444c(#om$zpo0v!%y=%pqem*9s_qav93fwr_&x40u"
 
 # List of callables that know how to import templates from various sources.
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [os.path.join(APPLICATION_DIR, 'templates')],
-    'OPTIONS': {
-        'debug': DEBUG,
-        'loaders': [
-            ('django.template.loaders.cached.Loader', [
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
-                'admin_tools.template_loaders.Loader',
-            ]),
-        ],
-        'context_processors': [
-            "django.contrib.auth.context_processors.auth",
-            "django.contrib.messages.context_processors.messages",
-            "django.template.context_processors.debug",
-            "django.template.context_processors.i18n",
-            "django.template.context_processors.media",
-            "django.template.context_processors.static",
-            "django.template.context_processors.csrf",
-            "django.template.context_processors.tz",
-            "django.template.context_processors.request",
-        ],
-    },
-}]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [os.path.join(APPLICATION_DIR, "templates")],
+        "OPTIONS": {
+            "debug": DEBUG,
+            "loaders": [
+                (
+                    "django.template.loaders.cached.Loader",
+                    [
+                        "django.template.loaders.filesystem.Loader",
+                        "django.template.loaders.app_directories.Loader",
+                        "admin_tools.template_loaders.Loader",
+                    ],
+                ),
+            ],
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.debug",
+                "django.template.context_processors.i18n",
+                "django.template.context_processors.media",
+                "django.template.context_processors.static",
+                "django.template.context_processors.csrf",
+                "django.template.context_processors.tz",
+                "django.template.context_processors.request",
+            ],
+        },
+    }
+]
 
 
 MIDDLEWARE = (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+    "django.middleware.common.CommonMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
     # Uncomment the next line for simple clickjacking protection:
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
 
-ROOT_URLCONF = 'demoproject.urls'
+ROOT_URLCONF = "demoproject.urls"
 
 # Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'demoproject.wsgi.application'
+WSGI_APPLICATION = "demoproject.wsgi.application"
 
 INSTALLED_APPS = [
     # admin tool apps
-    'django_nvd3',
-    'admin_tools_stats',
-    'admin_tools',
-    'admin_tools.theming',
-    'admin_tools.menu',
-    'admin_tools.dashboard',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'djangobower',
-    'demoproject',
+    "django_nvd3",
+    "admin_tools_stats",
+    "admin_tools",
+    "admin_tools.theming",
+    "admin_tools.menu",
+    "admin_tools.dashboard",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "djangobower",
+    "demoproject",
     # 'south',
 ]
 
@@ -190,7 +196,7 @@ try:
 except ImportError:
     pass
 else:
-    INSTALLED_APPS = INSTALLED_APPS + ['django_extensions']
+    INSTALLED_APPS = INSTALLED_APPS + ["django_extensions"]
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
@@ -198,25 +204,25 @@ else:
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "require_debug_false": {
+            "()": "django.utils.log.RequireDebugFalse",
         },
     },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler',
+    "handlers": {
+        "mail_admins": {
+            "level": "ERROR",
+            "filters": ["require_debug_false"],
+            "class": "django.utils.log.AdminEmailHandler",
         },
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
+    "loggers": {
+        "django.request": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": True,
         },
     },
 }
@@ -226,23 +232,23 @@ LOGGING = {
 # ------------
 
 # Specifie path to components root (you need to use absolute path)
-BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'components')
+BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, "components")
 
-BOWER_PATH = '/usr/local/bin/bower'
+BOWER_PATH = "/usr/local/bin/bower"
 
 BOWER_INSTALLED_APPS = (
-    'd3#3.3.13',
-    'nvd3#1.7.1',
+    "d3#3.3.13",
+    "nvd3#1.7.1",
 )
 
 # DJANGO-ADMIN-TOOL
 # =================
-ADMIN_TOOLS_MENU = 'menu.CustomMenu'
-ADMIN_TOOLS_INDEX_DASHBOARD = 'dashboard.CustomIndexDashboard'
-ADMIN_TOOLS_APP_INDEX_DASHBOARD = 'dashboard.CustomAppIndexDashboard'
-ADMIN_MEDIA_PREFIX = '/static/admin/'
+ADMIN_TOOLS_MENU = "menu.CustomMenu"
+ADMIN_TOOLS_INDEX_DASHBOARD = "dashboard.CustomIndexDashboard"
+ADMIN_TOOLS_APP_INDEX_DASHBOARD = "dashboard.CustomAppIndexDashboard"
+ADMIN_MEDIA_PREFIX = "/static/admin/"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 
 # IMPORT LOCAL SETTINGS

@@ -7,21 +7,28 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='TestKid',
+            name="TestKid",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('happy', models.BooleanField()),
-                ('name', models.CharField(max_length=30)),
-                ('age', models.IntegerField()),
-                ('bio', models.TextField()),
-                ('wanted_games_qtd', models.BigIntegerField()),
-                ('birthday', models.DateField()),
-                ('appointment', models.DateTimeField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("happy", models.BooleanField()),
+                ("name", models.CharField(max_length=30)),
+                ("age", models.IntegerField()),
+                ("bio", models.TextField()),
+                ("wanted_games_qtd", models.BigIntegerField()),
+                ("birthday", models.DateField()),
+                ("appointment", models.DateTimeField()),
             ],
         ),
     ]

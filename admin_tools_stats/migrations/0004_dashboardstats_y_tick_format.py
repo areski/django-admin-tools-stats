@@ -6,13 +6,20 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('admin_tools_stats', '0003_auto_20191007_0950'),
+        ("admin_tools_stats", "0003_auto_20191007_0950"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='dashboardstats',
-            name='y_axis_format',
-            field=models.CharField(blank=True, default=None, help_text="Format of Y axis. <a href='https://github.com/d3/d3-format'>See description of possible values</a>.", max_length=90, null=True, verbose_name='Y axis format'),
+            model_name="dashboardstats",
+            name="y_axis_format",
+            field=models.CharField(
+                blank=True,
+                default=None,
+                help_text="Format of Y axis. <a href='https://github.com/d3/d3-format'>See description of possible values</a>.",
+                max_length=90,
+                null=True,
+                verbose_name="Y axis format",
+            ),
         ),
     ]
