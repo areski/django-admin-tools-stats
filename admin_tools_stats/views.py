@@ -89,15 +89,12 @@ class ChartDataView(TemplateView):
             )
             time_since = truncate(time_since, interval)
             time_until = truncate(time_until, interval, add_intervals=1) - timedelta(microseconds=1)
-        except ValueError:
-            return context
 
-        if time_since > time_until:
-            context["error"] = "Time since is greater than time until"
-            context["graph_title"] = dashboard_stats.graph_title
-            return context
+            if time_since > time_until:
+                context["error"] = "Time since is greater than time until"
+                context["graph_title"] = dashboard_stats.graph_title
+                return context
 
-        try:
             series = dashboard_stats.get_multi_time_series_cached(
                 configuration,
                 time_since,

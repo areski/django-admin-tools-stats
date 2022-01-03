@@ -172,6 +172,48 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         )
 
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
+    def test_get_multi_series_since_gt_until(self):
+        """
+        Test function view rendering multi series
+        returns error if since is greater than until
+        """
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += "?time_since=2010-11-08&time_until=2010-10-12"
+        response = self.client.get(url)
+        self.assertContains(
+            response,
+            "Time since is greater than time until",
+        )
+
+    @override_settings(USE_TZ=True, TIME_ZONE="UTC")
+    def test_get_multi_series_fault_date(self):
+        """
+        Test function view rendering multi series
+        returns error if date is faulty
+        """
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += "?time_since=2010-10-08&time_until=2010-13-12"
+        response = self.client.get(url)
+        self.assertContains(
+            response,
+            b"time data \u00272010\u002D13\u002D12\u0027 "
+            b"does not match format \u0027%Y\u002D%m\u002D%d\u0027",
+        )
+
+    @override_settings(USE_TZ=True, TIME_ZONE="UTC")
+    def test_get_multi_series_fault_date_debug(self):
+        """
+        Test function view rendering multi series
+        returns error if date is faulty
+        """
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += "?time_since=2010-10-08&time_until=2010-13-12&debug=True"
+        with self.assertRaisesRegexp(
+            ValueError, "^time data '2010-13-12' does not match format '%Y-%m-%d'$"
+        ):
+            self.client.get(url)
+
+    @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series_dynamic_criteria(self):
         """Test function view rendering multi series with dynamic criteria"""
         criteria = mommy.make(

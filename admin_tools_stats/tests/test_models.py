@@ -29,6 +29,43 @@ except ImportError:
     from backports import zoneinfo
 
 
+class DashboardStatsCriteriaTests(TestCase):
+    def test_criteria_dynamic_mapping_preview(self):
+        """
+        Test criteria_dynamic_mapping_preview() function
+        """
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="name",
+            criteria_dynamic_mapping="{'foo': 'bar'}",
+        )
+        self.assertEqual(criteria.criteria_dynamic_mapping_preview(), "{'foo': 'bar'}")
+
+    def test_criteria_dynamic_mapping_preview_blank(self):
+        """
+        Test criteria_dynamic_mapping_preview() function
+        """
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="name",
+        )
+        self.assertEqual(criteria.criteria_dynamic_mapping_preview(), "")
+
+    def test_criteria_dynamic_mapping_preview_long(self):
+        """
+        Test criteria_dynamic_mapping_preview() function
+        """
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="name",
+            criteria_dynamic_mapping="{'foo': 'bar" + "a" * 105 + "'}",
+        )
+        result = criteria.criteria_dynamic_mapping_preview()
+        self.assertTrue("{'foo': 'baraaaaaa" in result)
+        self.assertTrue("aaaaaa..." in result)
+        self.assertEquals(len(result), 103)
+
+
 class ModelTests(TestCase):
     maxDiff = None
 
@@ -1000,6 +1037,8 @@ class ModelTests(TestCase):
 
 
 class CacheModelTests(TestCase):
+    maxDiff = None
+
     def setUp(self):
         self.stats = mommy.make(
             "DashboardStats",
@@ -1007,13 +1046,6 @@ class CacheModelTests(TestCase):
             model_name="User",
             model_app_name="auth",
             graph_key="user_graph",
-        )
-        self.kid_stats = mommy.make(
-            "DashboardStats",
-            date_field_name="birthday",
-            model_name="TestKid",
-            model_app_name="demoproject",
-            graph_key="kid_graph",
         )
         common_parameters = {
             "stats": self.stats,
@@ -1120,5 +1152,53 @@ class CacheModelTests(TestCase):
             datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
             datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
             datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    def test_choices_based_on_time_range(self):
+        """Same as test above, but reload of all data is requested"""
+        user = mommy.make(
+            "User",
+            date_joined=datetime.date(2010, 10, 10),
+            is_superuser=True,
+            first_name="John",
+        )
+        mommy.make("User", date_joined=datetime.date(2010, 10, 11), first_name="Karl")
+        mommy.make("User", date_joined=datetime.date(2010, 10, 18), first_name="Mark")
+        current_tz = timezone.get_current_timezone()
+        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="name",
+            dynamic_criteria_field_name="first_name",
+        )
+        m2m = mommy.make(
+            "CriteriaToStatsM2M",
+            criteria=criteria,
+            stats=self.stats,
+            use_as="multiple_series",
+            choices_based_on_time_range=True,
+        )
+        serie = self.stats.get_multi_time_series_cached(
+            {
+                "reload_all": "True",
+                "select_box_multiple_series": m2m.id,
+            },
+            time_since,
+            time_until,
+            "days",
+            None,
+            None,
+            user,
+        )
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"John": 1, "Karl": 0},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 1},
+            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
         }
         self.assertDictEqual(serie, testing_data)
