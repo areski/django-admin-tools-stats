@@ -9,6 +9,7 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 import warnings
+from typing import Dict
 
 from admin_tools.dashboard import modules
 from django.contrib import messages
@@ -25,7 +26,7 @@ class DashboardChart(modules.DashboardModule):
     template = "admin_tools_stats/modules/chart.html"
     days = None
     require_chart_jscss = False
-    extra = {}
+    extra: Dict[str, str] = {}
     chart_height = 300
     chart_width = "100%"
 

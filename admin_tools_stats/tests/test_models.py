@@ -27,7 +27,7 @@ from admin_tools_stats.models import CachedValue
 try:
     import zoneinfo
 except ImportError:
-    from backports import zoneinfo
+    from backports import zoneinfo  # type: ignore
 
 UTC = datetime.timezone.utc
 
@@ -1208,6 +1208,41 @@ class ModelTests(TestCase):
         arguments = {"select_box_multiple_series": m2m.id}
         with self.assertRaises(Exception):
             self.stats.get_multi_time_series(arguments, time_since, time_until, "days", None, user)
+
+
+class GetTimeSeriesTests(TestCase):
+    def setUp(self):
+        self.stats = mommy.make(
+            "DashboardStats",
+            date_field_name="date_joined",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+        )
+
+    def test_get_time_series(self):
+        """Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache"""
+        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
+        CachedValue.objects.all().delete()
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2010, 10, 12)
+
+        serie = self.stats.get_time_series({}, [], user, time_since, time_until, None, None, "days")
+        testing_data = [
+            (datetime.datetime(2010, 10, 10, 0, 0).astimezone(UTC), 1),
+        ]
+        if django.VERSION > (3, 2):
+            self.assertQuerysetEqual(serie, testing_data)
+        else:
+            self.assertQuerysetEqual(
+                serie,
+                [
+                    (
+                        "(datetime.datetime(2010, 10, 10, 0, 0, "
+                        "tzinfo=<DstTzInfo 'America/Chicago' CDT-1 day, 19:00:00 DST>), 1)"
+                    )
+                ],
+            )
 
 
 class CacheModelTests(TestCase):

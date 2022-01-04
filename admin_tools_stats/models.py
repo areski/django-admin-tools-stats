@@ -16,7 +16,14 @@ from collections import OrderedDict
 try:
     import zoneinfo
 except ImportError:
-    from backports import zoneinfo
+    from backports import zoneinfo  # type: ignore
+
+try:
+    from typing import Literal
+except ImportError:  # Python <= 3.7
+    from typing_extensions import Literal  # type: ignore
+
+from typing import Dict, List, Optional, Union
 
 import django
 from cache_utils.decorators import cached
@@ -24,6 +31,7 @@ from dateutil.relativedelta import MO, relativedelta
 from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
 from django.apps import apps
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import FieldError, ValidationError
 from django.db import models
 from django.db.models import ExpressionWrapper, Q
@@ -57,9 +65,9 @@ try:
     if getattr(settings, "ADMIN_CHARTS_USE_JSONFIELD", True):
         from django.db.models import JSONField
     else:
-        from jsonfield.fields import JSONField
+        from jsonfield.fields import JSONField  # type: ignore
 except ImportError:
-    from jsonfield.fields import JSONField
+    from jsonfield.fields import JSONField  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -94,17 +102,33 @@ time_scales = (
     ("quarters", "Quarters"),
     ("years", "Years"),
 )
-rrule_freqs = {
-    "years": {"freq": YEARLY},
-    "quarters": {"freq": MONTHLY, "interval": 3},
-    "months": {"freq": MONTHLY},
-    "weeks": {"freq": WEEKLY},
-    "days": {"freq": DAILY},
-    "hours": {"freq": HOURLY},
-}
 
 
-def truncate(dt, interval, add_intervals=0):
+Interval = Literal["hours", "days", "weeks", "months", "quarters", "years"]
+
+
+def rrule_list(
+    interval: Interval, start: datetime.datetime, end: datetime.datetime
+) -> List[datetime.datetime]:
+    rrule_freqs = {
+        "years": {"freq": YEARLY},
+        "quarters": {"freq": MONTHLY, "interval": 3},
+        "months": {"freq": MONTHLY},
+        "weeks": {"freq": WEEKLY},
+        "days": {"freq": DAILY},
+        "hours": {"freq": HOURLY},
+    }
+    freq = rrule_freqs[interval]["freq"]
+    rrule_interval = rrule_freqs[interval].get("interval", None)
+    if rrule_interval:
+        return list(rrule(freq=freq, interval=rrule_interval, dtstart=start, until=end))
+    else:
+        return list(rrule(freq=freq, dtstart=start, until=end))
+
+
+def truncate(
+    dt: datetime.datetime, interval: Interval, add_intervals: int = 0
+) -> datetime.datetime:
     """Returns interval bounds the datetime is in."""
 
     if interval == "hours":
@@ -134,6 +158,7 @@ def truncate(dt, interval, add_intervals=0):
         return datetime.datetime(dt.year, 1, 1).astimezone(dt.tzinfo) + relativedelta(
             years=add_intervals
         )
+    raise Exception(f"Unknown interval {interval}")
 
 
 def transform_cached_values(values, choices_based_on_time_range):
@@ -507,19 +532,19 @@ class DashboardStats(models.Model):
 
     def get_time_series(
         self,
-        dynamic_criteria,
-        all_criteria,
-        user,
-        time_since,
-        time_until,
-        operation_choice,
-        operation_field_choice,
-        interval,
+        dynamic_criteria: Dict[str, List[str]],
+        all_criteria: List["CriteriaToStatsM2M"],
+        user: Union[User, AnonymousUser],
+        time_since: datetime.datetime,
+        time_until: datetime.datetime,
+        operation_choice: str,
+        operation_field_choice: str,
+        interval: Interval,
     ):
         """Get the stats time series"""
         model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
-        dynamic_kwargs = []
+        dynamic_kwargs: List[Optional[Q]] = []
         if not user.has_perm("admin_tools_stats.view_dashboardstats") and self.user_field_name:
             kwargs[self.user_field_name] = user
         for m2m in all_criteria:
@@ -539,8 +564,10 @@ class DashboardStats(models.Model):
                     criteria_key = "id" if dynamic_field_name == "" else dynamic_field_name
                     if isinstance(dynamic_values, (list, tuple)):
                         single_value = False
-                    else:
-                        dynamic_values = (dynamic_values,)
+                    elif isinstance(dynamic_values, str):
+                        dynamic_values = [
+                            dynamic_values,
+                        ]
                         single_value = True
 
                     for dynamic_value in dynamic_values:
@@ -605,19 +632,18 @@ class DashboardStats(models.Model):
 
     def get_multi_time_series(
         self,
-        configuration,
-        time_since,
-        time_until,
-        interval,
-        operation_choice,
-        operation_field_choice,
-        user,
+        configuration: Dict[str, List[str]],
+        time_since: datetime.datetime,
+        time_until: datetime.datetime,
+        interval: Interval,
+        operation_choice: str,
+        operation_field_choice: str,
+        user: Union[User, AnonymousUser],
     ):
         configuration = configuration.copy()
-        series = {}
-        all_criteria = (
-            self.criteriatostatsm2m_set.all()
-        )  # Outside of get_time_series just for performance reasons
+        series: Dict[str, Dict[str, int]] = {}
+        # Outside of get_time_series just for performance reasons
+        all_criteria: List[CriteriaToStatsM2M] = list(self.criteriatostatsm2m_set.all())
         m2m = self.get_multi_series_criteria(configuration)
 
         values = []
@@ -663,7 +689,7 @@ class DashboardStats(models.Model):
         start = truncate(time_since, interval).replace(tzinfo=get_charts_timezone())
         end = time_until.replace(tzinfo=get_charts_timezone())
 
-        dates = list(rrule(**rrule_freqs[interval], dtstart=start, until=end))
+        dates: List[datetime.datetime] = rrule_list(interval, start, end)
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()
@@ -679,13 +705,13 @@ class DashboardStats(models.Model):
 
     def get_multi_time_series_cached(
         self,
-        configuration,
-        time_since,
-        time_until,
-        interval,
-        operation_choice,
-        operation_field_choice,
-        user,
+        configuration: Dict[str, List[str]],
+        time_since: datetime.datetime,
+        time_until: datetime.datetime,
+        interval: Interval,
+        operation_choice: str,
+        operation_field_choice: str,
+        user: Union[User, AnonymousUser],
     ):
         reload_data = configuration.pop("reload", None) in ("true", "True")
         reload_all_data = configuration.pop("reload_all", None) in ("true", "True")
@@ -708,7 +734,7 @@ class DashboardStats(models.Model):
             dates_query = cached_query
         if dates_query.exists() and not reload_all_data:  # TODO: include also gaps withing data
             gaps = []
-            dates = list(rrule(**rrule_freqs[interval], dtstart=time_since, until=time_until))
+            dates: List[datetime.datetime] = rrule_list(interval, time_since, time_until)
             cached_dates = dates_query.values("date").distinct().values_list("date", flat=True)
             last_time = None
             for time in dates:
@@ -722,7 +748,9 @@ class DashboardStats(models.Model):
                         gaps.append([time, time_m])
                 last_time = time_m
         else:
-            gaps = ((time_since, time_until),)
+            gaps = [
+                [time_since, time_until],
+            ]
 
         bulk = []
         for gap_since, gap_until in gaps:

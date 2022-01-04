@@ -5,3 +5,4 @@ django-bower
 python-dateutil
 django-multiselectfield
 backports.zoneinfo;python_version<"3.9"
+typing_extensions;python_version<="3.7"

@@ -1,0 +1,9 @@
+-r requirements.txt
+flake8
+isort
+black
+mypy
+types-python-dateutil
+types-backports
+django-stubs
+django_admin_tools
