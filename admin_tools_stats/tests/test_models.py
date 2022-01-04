@@ -15,6 +15,7 @@ from unittest import skipIf
 import django
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone
@@ -27,6 +28,8 @@ try:
     import zoneinfo
 except ImportError:
     from backports import zoneinfo
+
+UTC = datetime.timezone.utc
 
 
 class DashboardStatsCriteriaTests(TestCase):
@@ -65,6 +68,18 @@ class DashboardStatsCriteriaTests(TestCase):
         self.assertTrue("aaaaaa..." in result)
         self.assertEquals(len(result), 103)
 
+    def test_criteria_m2m_get_dynamic_criteria_field_name_prefix(self):
+        """
+        Test get_dynamic_criteria_field_name() function
+        """
+        criteria = mommy.make(
+            "CriteriaToStatsM2M",
+            criteria__dynamic_criteria_field_name="field_name",
+            prefix="related__",
+        )
+        result = criteria.get_dynamic_criteria_field_name()
+        self.assertEquals(result, "related__field_name")
+
 
 class ModelTests(TestCase):
     maxDiff = None
@@ -85,55 +100,129 @@ class ModelTests(TestCase):
             graph_key="kid_graph",
         )
 
+    def test_clean(self):
+        self.stats.clean()
+
     def test_clean_error_model_app_app_name(self):
-        stats = mommy.make(
-            "DashboardStats",
-            model_name="User1",
-            model_app_name="auth1",
-            graph_key="error_graph",
+        self.stats.model_app_name = ("auth1",)
+        with self.assertRaises(ValidationError) as e:
+            self.stats.clean()
+        self.assertEqual(
+            e.exception.message_dict,
+            {
+                "model_app_name": ["No installed app with label 'auth1'."],
+                "model_name": ["No installed app with label 'auth1'."],
+            },
         )
-        with self.assertRaisesRegex(ValidationError, "model_name.*No installed app with label"):
-            stats.clean()
 
     def test_clean_error_model_name(self):
-        stats = mommy.make(
-            "DashboardStats",
-            model_name="User1",
-            model_app_name="auth",
-            graph_key="error_graph",
+        self.stats.model_name = "User1"
+        with self.assertRaises(ValidationError) as e:
+            self.stats.clean()
+        self.assertEqual(
+            e.exception.message_dict,
+            {"model_name": ["App 'auth' doesn't have a 'User1' model."]},
         )
-        with self.assertRaisesRegex(
-            ValidationError, "model_name.*App 'auth' doesn't have a 'User1' model."
-        ):
-            stats.clean()
 
     def test_clean_error_operation_field(self):
-        stats = mommy.make(
-            "DashboardStats",
-            model_name="User",
-            model_app_name="auth",
-            graph_key="error_graph",
-            operation_field_name="asdf",
+        self.stats.operation_field_name = "asdf"
+        with self.assertRaises(ValidationError) as e:
+            self.stats.clean()
+        self.assertEqual(
+            e.exception.message_dict,
+            {
+                "operation_field_name": [
+                    "Cannot resolve keyword 'asdf' into field. Choices are: "
+                    "bookmark, dashboardpreferences, date_joined, email, "
+                    "first_name, groups, id, is_active, is_staff, "
+                    "is_superuser, last_login, last_name, logentry, password, "
+                    "testkid, user_permissions, username"
+                ]
+            },
         )
-        with self.assertRaisesRegex(
-            ValidationError,
-            "operation_field_name.*Cannot resolve keyword 'asdf' into field. Choices are:",
-        ):
-            stats.clean()
 
     def test_clean_error_date_field(self):
+        self.stats.date_field_name = "asdf"
+        with self.assertRaises(ValidationError) as e:
+            self.stats.clean()
+        self.assertEqual(
+            e.exception.message_dict,
+            {
+                "date_field_name": [
+                    "Cannot resolve keyword 'asdf' into field. Choices are: "
+                    "bookmark, dashboardpreferences, date_joined, email, "
+                    "first_name, groups, id, is_active, is_staff, "
+                    "is_superuser, last_login, last_name, logentry, password, "
+                    "testkid, user_permissions, username"
+                ]
+            },
+        )
+
+    maxDiff = None
+
+    def test_get_operation(self):
         stats = mommy.make(
             "DashboardStats",
-            model_name="User",
-            model_app_name="auth",
-            graph_key="error_graph",
-            date_field_name="asdf",
+            model_name="TestKid",
+            model_app_name="demoproject",
+            operation_field_name="age,height",
         )
-        with self.assertRaisesRegex(
-            ValidationError,
-            "date_field_name.*Cannot resolve keyword 'asdf' into field. Choices are:",
-        ):
-            stats.clean()
+        self.assertEqual(
+            stats.get_operation("Count", ""), Count("age", distinct=False, filter=None)
+        )
+        self.assertEqual(stats.get_operation("Sum", ""), Sum("age"))
+        self.assertEqual(stats.get_operation("Avg", ""), Avg("age"))
+        self.assertEqual(stats.get_operation("StdDev", ""), StdDev("age", filter=None))
+        self.assertEqual(stats.get_operation("Max", ""), Max("age"))
+        self.assertEqual(stats.get_operation("Min", ""), Min("age"))
+        self.assertEqual(stats.get_operation("Variance", ""), Variance("age", filter=None))
+        self.assertEqual(
+            str(stats.get_operation("AvgCountPerInstance", "")),
+            "ExpressionWrapper(Value(1.0) * Count(F(age)) / Count(F(id), "
+            "distinct=True, filter=(AND: ('age__isnull', False))))",
+        )
+
+    @skipIf(django.VERSION[0] < 3, "Django < 3 doesn't support distinct Avg, Sum, ...")
+    def test_get_operation_distinct(self):
+        stats = mommy.make(
+            "DashboardStats",
+            model_name="TestKid",
+            model_app_name="demoproject",
+            distinct=True,
+            operation_field_name="age,height",
+        )
+        self.assertEqual(stats.get_operation("Count", ""), Count("age", distinct=True, filter=None))
+        self.assertEqual(stats.get_operation("Sum", ""), Sum("age", distinct=True))
+        self.assertEqual(stats.get_operation("Avg", ""), Avg("age", distinct=True))
+        self.assertEqual(stats.get_operation("StdDev", ""), StdDev("age", filter=None))
+        self.assertEqual(stats.get_operation("Max", ""), Max("age"))
+        self.assertEqual(stats.get_operation("Min", ""), Min("age"))
+        self.assertEqual(stats.get_operation("Variance", ""), Variance("age", filter=None))
+        self.assertEqual(
+            str(stats.get_operation("AvgCountPerInstance", "")),
+            "ExpressionWrapper(Value(1.0) * Count(F(age), distinct=True) / Count(F(id), "
+            "distinct=True, filter=(AND: ('age__isnull', False))))",
+        )
+
+    def test_get_operation_no_operation_choice(self):
+        stats = mommy.make(
+            "DashboardStats",
+            model_name="TestKid",
+            model_app_name="demoproject",
+            operation_field_name=",height",
+        )
+        self.assertEqual(stats.get_operation("Count", ""), Count("id", distinct=False, filter=None))
+        self.assertEqual(stats.get_operation("Sum", ""), Sum("id"))
+        self.assertEqual(stats.get_operation("Avg", ""), Avg("id"))
+        self.assertEqual(stats.get_operation("StdDev", ""), StdDev("id", filter=None))
+        self.assertEqual(stats.get_operation("Max", ""), Max("id"))
+        self.assertEqual(stats.get_operation("Min", ""), Min("id"))
+        self.assertEqual(stats.get_operation("Variance", ""), Variance("id", filter=None))
+        self.assertEqual(
+            str(stats.get_operation("AvgCountPerInstance", "")),
+            "ExpressionWrapper(Value(1.0) * Count(F(id)) / Count(F(id), "
+            "distinct=True, filter=(AND: ('id__isnull', False))))",
+        )
 
     @skipIf(
         settings.DATABASES["default"]["ENGINE"] == "django.db.backends.mysql",
@@ -156,6 +245,53 @@ class ModelTests(TestCase):
             datetime.datetime(2010, 10, 10, 0, 0): {"": 1},
             datetime.datetime(2010, 10, 11, 0, 0): {"": 0},
             datetime.datetime(2010, 10, 12, 0, 0): {"": 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @skipIf(
+        settings.DATABASES["default"]["ENGINE"] == "django.db.backends.mysql",
+        "no support of USE_TZ=False in mysql",
+    )
+    @override_settings(USE_TZ=False)
+    def test_get_multi_series_m2m_prefix(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        with m2m criteria with related prefix
+        """
+        user = mommy.make("User", first_name="Milos", is_superuser=True)
+        mommy.make("TestKid", author=user, birthday=datetime.date(2010, 10, 10))
+        time_since = datetime.datetime(2010, 10, 8)
+        time_until = datetime.datetime(2010, 10, 12)
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="name",
+            dynamic_criteria_field_name="first_name",
+        )
+        m2m = mommy.make(
+            "CriteriaToStatsM2M",
+            criteria=criteria,
+            stats=self.kid_stats,
+            prefix="author__",
+            use_as="multiple_series",
+            choices_based_on_time_range=True,
+        )
+
+        interval = "days"
+        serie = self.kid_stats.get_multi_time_series(
+            {"select_box_multiple_series": m2m.id},
+            time_since,
+            time_until,
+            interval,
+            None,
+            None,
+            user,
+        )
+        testing_data = {
+            datetime.date(2010, 10, 8): {"Milos": 0},
+            datetime.date(2010, 10, 9): {"Milos": 0},
+            datetime.date(2010, 10, 10): {"Milos": 1},
+            datetime.date(2010, 10, 11): {"Milos": 0},
+            datetime.date(2010, 10, 12): {"Milos": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -856,25 +992,25 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict(
+            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=UTC): OrderedDict(
                 (("Bar", 0), ("Foo", 0))
             ),
-            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict(
+            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=UTC): OrderedDict(
                 (("Bar", 0), ("Foo", 0))
             ),
-            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict(
+            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=UTC): OrderedDict(
                 (("Bar", None), ("Foo", 5))
             ),
-            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict(
+            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=UTC): OrderedDict(
                 (("Bar", 7), ("Foo", None))
             ),
-            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=datetime.timezone.utc): OrderedDict(
+            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=UTC): OrderedDict(
                 (("Bar", 0), ("Foo", 0))
             ),
         }
         self.assertDictEqual(serie, testing_data)
 
-    @skipIf(django.VERSION[0] < 3, "Django < 3 doesn't support Avg")
+    @skipIf(django.VERSION[0] < 3, "Django < 3 doesn't support distinct Avg")
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series_criteria_isnull(self):
         """
@@ -918,26 +1054,64 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=datetime.timezone.utc): {
-                "Blank": 0,
-                "Non blank": 0,
-            },
-            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=datetime.timezone.utc): {
-                "Blank": 0,
-                "Non blank": 0,
-            },
-            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=datetime.timezone.utc): {
-                "Blank": None,
-                "Non blank": 4,
-            },
-            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=datetime.timezone.utc): {
-                "Blank": 3,
-                "Non blank": None,
-            },
-            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=datetime.timezone.utc): {
-                "Blank": 0,
-                "Non blank": 0,
-            },
+            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
+            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
+            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=UTC): {"Blank": None, "Non blank": 4},
+            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=UTC): {"Blank": 3, "Non blank": None},
+            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @override_settings(USE_TZ=True, TIME_ZONE="UTC")
+    def test_get_multi_series_criteria_multiple_operations(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Test case with multiple operations and no operation field set
+        """
+        stats = mommy.make(
+            "DashboardStats",
+            model_name="TestKid",
+            date_field_name="appointment",
+            model_app_name="demoproject",
+            type_operation_field_name="Sum",
+            operation_field_name="age, height",
+        )
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="birthday",
+            dynamic_criteria_field_name="birthday__isnull",
+        )
+        mommy.make(
+            "CriteriaToStatsM2M",
+            criteria=criteria,
+            stats=stats,
+            use_as="multiple_series",
+        )
+        mommy.make(
+            "TestKid",
+            appointment=datetime.date(2010, 10, 12),
+            birthday=datetime.date(2010, 11, 12),
+            age=4,
+            height=60,
+        )
+        mommy.make(
+            "TestKid", appointment=datetime.date(2010, 10, 13), birthday=None, age=3, height=50
+        )
+        time_since = datetime.datetime(2010, 10, 10)
+        time_until = datetime.datetime(2010, 10, 14)
+
+        interval = "days"
+        arguments = {"operation_choice": ""}
+        user = mommy.make("User", is_staff=True)
+        serie = stats.get_multi_time_series(
+            arguments, time_since, time_until, interval, "", None, user
+        )
+        testing_data = {
+            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
+            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
+            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=UTC): {"age": 4, "height": 60},
+            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=UTC): {"age": 3, "height": 50},
+            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1200,5 +1374,50 @@ class CacheModelTests(TestCase):
             datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 1},
             datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
             datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_cached_dynamic(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series_cached()
+        with m2m criteria with dynamic_choices
+        """
+        user = mommy.make(
+            "User", date_joined=datetime.date(2010, 10, 10), first_name="Milos", is_superuser=True
+        )
+        mommy.make("User", date_joined=datetime.date(2010, 10, 12), first_name="Milos")
+        mommy.make("User", date_joined=datetime.date(2010, 10, 11), first_name="Kuba")
+        current_tz = timezone.get_current_timezone()
+        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime.datetime(2010, 10, 12).astimezone(current_tz)
+        criteria = mommy.make(
+            "DashboardStatsCriteria",
+            criteria_name="name",
+            dynamic_criteria_field_name="first_name",
+        )
+        m2m = mommy.make(
+            "CriteriaToStatsM2M",
+            criteria=criteria,
+            stats=self.stats,
+            use_as="dynamic_choices",
+            choices_based_on_time_range=True,
+        )
+
+        interval = "days"
+        serie = self.stats.get_multi_time_series_cached(
+            {f"select_box_dynamic_{m2m.id}": "Milos"},
+            time_since,
+            time_until,
+            interval,
+            None,
+            None,
+            user,
+        )
+        testing_data = {
+            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
+            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
+            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
+            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 1},
         }
         self.assertDictEqual(serie, testing_data)

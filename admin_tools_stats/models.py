@@ -464,12 +464,13 @@ class DashboardStats(models.Model):
         except FieldError as e:
             errors["date_field_name"] = str(e)
 
+        if errors == {}:
+            return super().clean(*args, **kwargs)
         raise ValidationError(errors)
-        return super(DashboardStats, self).clean(*args, **kwargs)
 
     def get_operations_list(self):
         if self.operation_field_name:
-            return self.operation_field_name.split(",")
+            return self.operation_field_name.replace(" ", "").split(",")
         return []
 
     def get_operation(self, operation_choice, operation_field_choice, dkwargs=None):
@@ -479,7 +480,7 @@ class DashboardStats(models.Model):
             operations = self.get_operations_list()
             operation_field_choice = operations[0] if operations else "id"
         if not operation_field_choice:
-            self.operation_field_name = "id"
+            operation_field_choice = "id"
 
         operations = {
             "AvgCountPerInstance": lambda field_name, distinct, dkwargs: ExpressionWrapper(

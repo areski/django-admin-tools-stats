@@ -1,4 +1,3 @@
-from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
@@ -241,14 +240,12 @@ class AdminToolsStatsModel(TestCase):
             stats=self.dashboard_stats,
             use_as="multiple_series",
         )
-        with self.assertRaises(ValidationError) as e:
-            self.dashboard_stats.clean()
-        self.assertEqual(e.exception.message_dict, {})
-        self.assertEqual(self.dashboard_stats.__str__(), "user_graph_test")
 
     def test_dashboard_criteria(self):
+        self.dashboard_stats.clean()
         self.assertEqual(self.dashboard_stats_criteria.criteria_name, "call_type")
         self.assertEqual(self.dashboard_stats.graph_key, "user_graph_test")
+        self.assertEqual(self.dashboard_stats.__str__(), "user_graph_test")
 
     def tearDown(self):
         self.dashboard_stats_criteria.delete()

@@ -9,6 +9,7 @@ class TestKid(models.Model):
     happy = models.BooleanField()
     name = models.CharField(max_length=30)
     age = models.IntegerField()
+    height = models.IntegerField(null=True)
     bio = models.TextField()
     wanted_games_qtd = models.BigIntegerField()
     birthday = models.DateField(null=True)
