@@ -43,18 +43,20 @@ from multiselectfield import MultiSelectField
 
 
 def get_charts_timezone():
+    timezn = getattr(settings, "ADMIN_CHARTS_TIMEZONE", None)
+    if timezn:
+        if isinstance(timezn, str):
+            try:
+                import pytz
+            except ImportError:
+                raise Exception("If you want to set timezone from string, you have to install pytz")
+            timezn = pytz.timezone(timezn)
+        return timezn
     if settings.USE_TZ:
         if django.VERSION < (4, 0):  # Django 4.0 compatible way
             return zoneinfo.ZoneInfo(str(timezone.get_current_timezone()))
         return timezone.get_current_timezone()
     return None
-    # TODO: make possible to set variable timezone for charts
-    # timezn = getattr(settings, 'ADMIN_CHARTS_TIMEZONE', None)
-    # if isinstance(timezn, str):
-    #     timezn = pytz.timezone(timezn)
-    # if timezn:
-    #     return timezn
-    # return timezn.utc
 
 
 try:

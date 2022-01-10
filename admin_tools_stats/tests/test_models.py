@@ -518,10 +518,33 @@ class ModelTests(TestCase):
         """Test function to check DashboardStats.get_multi_time_series()"""
         current_tz = dj_timezone.get_current_timezone()
         user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=current_tz))
-        mommy.make(
-            "User",
-            date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz),
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
+        time_since = datetime(2010, 10, 9, 0, 0)
+        time_until = datetime(2010, 10, 11, 0, 0)
+
+        interval = Interval.days
+        serie = self.stats.get_multi_time_series(
+            {}, time_since, time_until, interval, None, None, user
         )
+        testing_data = {
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 2},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    @override_settings(USE_TZ=True, TIME_ZONE="Europe/Prague", ADMIN_CHARTS_TIMEZONE="UTC")
+    def test_get_multi_series_datetime_set_utc(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Test, that everything works, if the chart is set in different timezone than the server
+        """
+        current_tz = dj_timezone.get_current_timezone()
+        user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=current_tz))
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
         time_since = datetime(2010, 10, 9, 0, 0)
         time_until = datetime(2010, 10, 11, 0, 0)
 
