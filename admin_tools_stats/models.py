@@ -19,7 +19,7 @@ try:
 except ImportError:
     from backports import zoneinfo  # type: ignore
 
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Mapping, Optional, Union
 
 import django
 from cache_utils.decorators import cached
@@ -500,7 +500,9 @@ class DashboardStats(models.Model):
             return self.operation_field_name.replace(" ", "").split(",")
         return []
 
-    def get_operation(self, operation_choice, operation_field_choice, dkwargs=None):
+    def get_operation(
+        self, operation_choice: Optional[str], operation_field_choice: Optional[str], dkwargs=None
+    ):
         if not operation_choice:
             operation_choice = self.type_operation_field_name or "Count"
         if not operation_field_choice:
@@ -534,13 +536,13 @@ class DashboardStats(models.Model):
 
     def get_time_series(
         self,
-        dynamic_criteria: Dict[str, List[str]],
+        dynamic_criteria: Mapping[str, Union[str, List[str]]],
         all_criteria: List["CriteriaToStatsM2M"],
         user: Union[User, AnonymousUser],
         time_since: datetime.datetime,
         time_until: datetime.datetime,
-        operation_choice: str,
-        operation_field_choice: str,
+        operation_choice: Optional[str],
+        operation_field_choice: Optional[str],
         interval: Interval,
     ):
         """Get the stats time series"""
@@ -624,9 +626,11 @@ class DashboardStats(models.Model):
         qs = qs.annotate(**aggregate_dict)
         return qs
 
-    def get_multi_series_criteria(self, request_get):
+    def get_multi_series_criteria(
+        self, request_get: Dict[str, Union[str, List[str]]]
+    ) -> Optional["CriteriaToStatsM2M"]:
         try:
-            m2m_id = int(request_get.get("select_box_multiple_series", ""))
+            m2m_id = int(str(request_get.get("select_box_multiple_series", "")))
             criteria = self.criteriatostatsm2m_set.get(use_as="multiple_series", pk=m2m_id)
         except (DashboardStatsCriteria.DoesNotExist, ValueError):
             criteria = None
@@ -634,19 +638,19 @@ class DashboardStats(models.Model):
 
     def get_multi_time_series(
         self,
-        configuration: Dict[str, List[str]],
+        configuration: Dict[str, Union[str, List[str]]],
         time_since: datetime.datetime,
         time_until: datetime.datetime,
         interval: Interval,
-        operation_choice: str,
-        operation_field_choice: str,
+        operation_choice: Optional[str],
+        operation_field_choice: Optional[str],
         user: Union[User, AnonymousUser],
     ):
-        configuration = configuration.copy()
+        dynamic_criteria: Dict[str, Union[str, List[str]]] = configuration.copy()
         series: Dict[str, Dict[str, int]] = {}
         # Outside of get_time_series just for performance reasons
         all_criteria: List[CriteriaToStatsM2M] = list(self.criteriatostatsm2m_set.all())
-        m2m = self.get_multi_series_criteria(configuration)
+        m2m = self.get_multi_series_criteria(dynamic_criteria)
 
         values = []
         names = []
@@ -661,7 +665,7 @@ class DashboardStats(models.Model):
                         name = name[1]
                     names.append(name)
                     values.append(key)
-            configuration["select_box_dynamic_" + str(m2m.id)] = values
+            dynamic_criteria["select_box_dynamic_" + str(m2m.id)] = values
         elif len(operations) > 1 and operation_choice == "":
             names = operations
         else:
@@ -669,7 +673,7 @@ class DashboardStats(models.Model):
 
         serie_map = {}
         serie_map = self.get_time_series(
-            configuration,
+            dynamic_criteria,
             all_criteria,
             user,
             time_since,
@@ -707,12 +711,12 @@ class DashboardStats(models.Model):
 
     def get_multi_time_series_cached(
         self,
-        configuration: Dict[str, List[str]],
+        configuration: Dict[str, Union[str, List[str]]],
         time_since: datetime.datetime,
         time_until: datetime.datetime,
         interval: Interval,
-        operation_choice: str,
-        operation_field_choice: str,
+        operation_choice: Optional[str],
+        operation_field_choice: Optional[str],
         user: Union[User, AnonymousUser],
     ):
         reload_data = configuration.pop("reload", None) in ("true", "True")

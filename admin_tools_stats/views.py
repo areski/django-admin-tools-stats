@@ -2,6 +2,7 @@ import logging
 import time
 from collections import OrderedDict
 from datetime import datetime, timedelta
+from typing import Dict, List, Union
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
@@ -63,7 +64,7 @@ class ChartDataView(TemplateView):
             context["graph_title"] = dashboard_stats.graph_title
             return context
 
-        configuration = dict(self.request.GET.dict())
+        configuration: Dict[str, Union[str, List[str]]] = self.request.GET.dict()
         remove_multiple_keys(configuration, ["csrfmiddlewaretoken", "_", "graph_key"])
         selected_interval: Interval = Interval(
             configuration.pop("select_box_interval", interval) or dashboard_stats.default_time_scale
@@ -71,19 +72,23 @@ class ChartDataView(TemplateView):
         operation = configuration.pop(
             "select_box_operation", dashboard_stats.type_operation_field_name
         )
+        if not isinstance(operation, str):
+            operation = None
         operation_field = configuration.pop(
             "select_box_operation_field", dashboard_stats.operation_field_name
         )
+        if not isinstance(operation_field, str):
+            operation_field = None
         context["chart_type"] = configuration.pop(
             "select_box_chart_type", dashboard_stats.default_chart_type
         )
         try:
             utc_tz = get_charts_timezone()
             time_since = datetime.strptime(
-                configuration.pop("time_since", None), "%Y-%m-%d"
+                str(configuration.pop("time_since")), "%Y-%m-%d"
             ).astimezone(utc_tz)
             time_until = (
-                datetime.strptime(configuration.pop("time_until", None), "%Y-%m-%d")
+                datetime.strptime(str(configuration.pop("time_until")), "%Y-%m-%d")
                 .astimezone(utc_tz)
                 .replace(hour=23, minute=59)
             )
@@ -119,10 +124,10 @@ class ChartDataView(TemplateView):
         else:
             choices = {}
 
-        ydata_serie = {}
+        ydata_serie: Dict[str, List[int]] = {}
         names = {}
         xdata = []
-        serie_i_map = OrderedDict()
+        serie_i_map: Dict[str, int] = OrderedDict()
         for date in sorted(
             series.keys(),
             key=lambda d: datetime(d.year, d.month, d.day, getattr(d, "hour", 0)),
