@@ -8,8 +8,8 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
-import datetime
 from collections import OrderedDict
+from datetime import date, datetime, timezone
 from unittest import skipIf
 
 import django
@@ -18,7 +18,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
 from django.test import TestCase
 from django.test.utils import override_settings
-from django.utils import timezone
+from django.utils import timezone as dj_timezone
 from model_mommy import mommy
 
 from admin_tools_stats.models import CachedValue
@@ -30,7 +30,7 @@ try:
 except ImportError:
     from backports import zoneinfo  # type: ignore
 
-UTC = datetime.timezone.utc
+UTC = timezone.utc
 
 
 class DashboardStatsCriteriaTests(TestCase):
@@ -232,20 +232,20 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 10, 12)
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 10, 12)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 10, 0, 0): {"": 1},
-            datetime.datetime(2010, 10, 11, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 12, 0, 0): {"": 0},
+            datetime(2010, 10, 8, 0, 0): {"": 0},
+            datetime(2010, 10, 9, 0, 0): {"": 0},
+            datetime(2010, 10, 10, 0, 0): {"": 1},
+            datetime(2010, 10, 11, 0, 0): {"": 0},
+            datetime(2010, 10, 12, 0, 0): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -260,9 +260,9 @@ class ModelTests(TestCase):
         with m2m criteria with related prefix
         """
         user = mommy.make("User", first_name="Milos", is_superuser=True)
-        mommy.make("TestKid", author=user, birthday=datetime.date(2010, 10, 10))
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 10, 12)
+        mommy.make("TestKid", author=user, birthday=date(2010, 10, 10))
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 10, 12)
         criteria = mommy.make(
             "DashboardStatsCriteria",
             criteria_name="name",
@@ -288,11 +288,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.date(2010, 10, 8): {"Milos": 0},
-            datetime.date(2010, 10, 9): {"Milos": 0},
-            datetime.date(2010, 10, 10): {"Milos": 1},
-            datetime.date(2010, 10, 11): {"Milos": 0},
-            datetime.date(2010, 10, 12): {"Milos": 0},
+            date(2010, 10, 8): {"Milos": 0},
+            date(2010, 10, 9): {"Milos": 0},
+            date(2010, 10, 10): {"Milos": 1},
+            date(2010, 10, 11): {"Milos": 0},
+            date(2010, 10, 12): {"Milos": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -320,14 +320,14 @@ class ModelTests(TestCase):
         )
         user = mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 10),
+            date_joined=date(2010, 10, 10),
             first_name="Petr",
             is_superuser=True,
         )
-        mommy.make("User", date_joined=datetime.date(2010, 10, 9), first_name="Adam")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 15), first_name="Jirka")
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 10, 12)
+        mommy.make("User", date_joined=date(2010, 10, 9), first_name="Adam")
+        mommy.make("User", date_joined=date(2010, 10, 15), first_name="Jirka")
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 10, 12)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
@@ -340,11 +340,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0): {"Adam": 0, "Petr": 0},
-            datetime.datetime(2010, 10, 9, 0, 0): {"Adam": 1, "Petr": 0},
-            datetime.datetime(2010, 10, 10, 0, 0): {"Adam": 0, "Petr": 1},
-            datetime.datetime(2010, 10, 11, 0, 0): {"Adam": 0, "Petr": 0},
-            datetime.datetime(2010, 10, 12, 0, 0): {"Adam": 0, "Petr": 0},
+            datetime(2010, 10, 8, 0, 0): {"Adam": 0, "Petr": 0},
+            datetime(2010, 10, 9, 0, 0): {"Adam": 1, "Petr": 0},
+            datetime(2010, 10, 10, 0, 0): {"Adam": 0, "Petr": 1},
+            datetime(2010, 10, 11, 0, 0): {"Adam": 0, "Petr": 0},
+            datetime(2010, 10, 12, 0, 0): {"Adam": 0, "Petr": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -372,15 +372,15 @@ class ModelTests(TestCase):
         )
         user = mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 10),
+            date_joined=date(2010, 10, 10),
             first_name="Petr",
             is_superuser=True,
         )
-        mommy.make("User", date_joined=datetime.date(2010, 10, 10), first_name="Petr")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 9), first_name="Adam")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 11), first_name="Jirka")
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 10, 12)
+        mommy.make("User", date_joined=date(2010, 10, 10), first_name="Petr")
+        mommy.make("User", date_joined=date(2010, 10, 9), first_name="Adam")
+        mommy.make("User", date_joined=date(2010, 10, 11), first_name="Jirka")
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 10, 12)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
@@ -393,11 +393,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0): {"other": 0, "Petr": 0},
-            datetime.datetime(2010, 10, 9, 0, 0): {"other": 1, "Petr": 0},
-            datetime.datetime(2010, 10, 10, 0, 0): {"other": 0, "Petr": 2},
-            datetime.datetime(2010, 10, 11, 0, 0): {"other": 1, "Petr": 0},
-            datetime.datetime(2010, 10, 12, 0, 0): {"other": 0, "Petr": 0},
+            datetime(2010, 10, 8, 0, 0): {"other": 0, "Petr": 0},
+            datetime(2010, 10, 9, 0, 0): {"other": 1, "Petr": 0},
+            datetime(2010, 10, 10, 0, 0): {"other": 0, "Petr": 2},
+            datetime(2010, 10, 11, 0, 0): {"other": 1, "Petr": 0},
+            datetime(2010, 10, 12, 0, 0): {"other": 0, "Petr": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -408,17 +408,17 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_hours(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime.datetime(2010, 10, 8, 23, 13))
-        time_since = datetime.datetime(2010, 10, 8, 22)
-        time_until = datetime.datetime(2010, 10, 8, 23, 59)
+        user = mommy.make("User", date_joined=datetime(2010, 10, 8, 23, 13))
+        time_since = datetime(2010, 10, 8, 22)
+        time_until = datetime(2010, 10, 8, 23, 59)
 
         interval = Interval.hours
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 22, 0): {"": 0},
-            datetime.datetime(2010, 10, 8, 23, 0): {"": 1},
+            datetime(2010, 10, 8, 22, 0): {"": 0},
+            datetime(2010, 10, 8, 23, 0): {"": 1},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -429,21 +429,21 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_weeks(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 30))
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 11, 8)
+        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 11, 8)
 
         interval = Interval.weeks
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 4, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 11, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 18, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 25, 0, 0): {"": 1},
-            datetime.datetime(2010, 11, 1, 0, 0): {"": 0},
-            datetime.datetime(2010, 11, 8, 0, 0): {"": 0},
+            datetime(2010, 10, 4, 0, 0): {"": 0},
+            datetime(2010, 10, 11, 0, 0): {"": 0},
+            datetime(2010, 10, 18, 0, 0): {"": 0},
+            datetime(2010, 10, 25, 0, 0): {"": 1},
+            datetime(2010, 11, 1, 0, 0): {"": 0},
+            datetime(2010, 11, 8, 0, 0): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -454,17 +454,17 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_months(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 30))
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 11, 30)
+        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 11, 30)
 
         interval = Interval.months
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 1, 0, 0): {"": 1},
-            datetime.datetime(2010, 11, 1, 0, 0): {"": 0},
+            datetime(2010, 10, 1, 0, 0): {"": 1},
+            datetime(2010, 11, 1, 0, 0): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -475,20 +475,20 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_quarters(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 30))
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2011, 10, 8)
+        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2011, 10, 8)
 
         interval = Interval.quarters
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 1, 0, 0): {"": 1},
-            datetime.datetime(2011, 1, 1, 0, 0): {"": 0},
-            datetime.datetime(2011, 4, 1, 0, 0): {"": 0},
-            datetime.datetime(2011, 7, 1, 0, 0): {"": 0},
-            datetime.datetime(2011, 10, 1, 0, 0): {"": 0},
+            datetime(2010, 10, 1, 0, 0): {"": 1},
+            datetime(2011, 1, 1, 0, 0): {"": 0},
+            datetime(2011, 4, 1, 0, 0): {"": 0},
+            datetime(2011, 7, 1, 0, 0): {"": 0},
+            datetime(2011, 10, 1, 0, 0): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -499,50 +499,50 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_years(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 30))
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2011, 10, 8)
+        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2011, 10, 8)
 
         interval = Interval.years
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 1, 1, 0, 0): {"": 1},
-            datetime.datetime(2011, 1, 1, 0, 0): {"": 0},
+            datetime(2010, 1, 1, 0, 0): {"": 1},
+            datetime(2011, 1, 1, 0, 0): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
     @override_settings(USE_TZ=True, TIME_ZONE="Europe/Prague")
     def test_get_multi_series_datetime_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        current_tz = timezone.get_current_timezone()
-        user = mommy.make("User", date_joined=datetime.datetime(2010, 10, 10, tzinfo=current_tz))
+        current_tz = dj_timezone.get_current_timezone()
+        user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=current_tz))
         mommy.make(
             "User",
-            date_joined=datetime.datetime(2010, 10, 10, 12, 34, tzinfo=current_tz),
+            date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz),
         )
-        time_since = datetime.datetime(2010, 10, 9, 0, 0)
-        time_until = datetime.datetime(2010, 10, 11, 0, 0)
+        time_since = datetime(2010, 10, 9, 0, 0)
+        time_until = datetime(2010, 10, 11, 0, 0)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 2},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(UTC): {"": 0},
+            datetime(2010, 10, 10, 0, 0).astimezone(UTC): {"": 2},
+            datetime(2010, 10, 11, 0, 0).astimezone(UTC): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
     @override_settings(USE_TZ=True, TIME_ZONE="CET")
     def test_get_multi_series_date_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make("TestKid", birthday=datetime.date(2010, 10, 10))
+        mommy.make("TestKid", birthday=date(2010, 10, 10))
         mommy.make("TestKid", birthday=None)
-        time_since = datetime.datetime(2010, 10, 9)
-        time_until = datetime.datetime(2010, 10, 11)
+        time_since = datetime(2010, 10, 9)
+        time_until = datetime(2010, 10, 11)
 
         interval = Interval.days
         user = mommy.make("User")
@@ -550,9 +550,9 @@ class ModelTests(TestCase):
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.date(2010, 10, 9): {"": 0},
-            datetime.date(2010, 10, 10): {"": 1},
-            datetime.date(2010, 10, 11): {"": 0},
+            date(2010, 10, 9): {"": 0},
+            date(2010, 10, 10): {"": 1},
+            date(2010, 10, 11): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -563,20 +563,18 @@ class ModelTests(TestCase):
         on edge of daylight saving time change
         """
         current_tz = zoneinfo.ZoneInfo("Europe/Prague")
-        user = mommy.make(
-            "User", date_joined=datetime.datetime(2019, 10, 28).astimezone(current_tz)
-        )
-        time_since = datetime.datetime(2019, 10, 27, 0, 0)
-        time_until = datetime.datetime(2019, 10, 29, 0, 0)
+        user = mommy.make("User", date_joined=datetime(2019, 10, 28).astimezone(current_tz))
+        time_since = datetime(2019, 10, 27, 0, 0)
+        time_until = datetime(2019, 10, 29, 0, 0)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2019, 10, 27, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2019, 10, 28, 0, 0).astimezone(current_tz): {"": 1},
-            datetime.datetime(2019, 10, 29, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2019, 10, 27, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2019, 10, 28, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2019, 10, 29, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -596,20 +594,20 @@ class ModelTests(TestCase):
             distinct=True,
             operation_field_name="first_name",
         )
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10), first_name="Foo")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 10), first_name="Foo")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 10), first_name="Bar")
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 10, 12)
+        user = mommy.make("User", date_joined=date(2010, 10, 10), first_name="Foo")
+        mommy.make("User", date_joined=date(2010, 10, 10), first_name="Foo")
+        mommy.make("User", date_joined=date(2010, 10, 10), first_name="Bar")
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 10, 12)
 
         interval = Interval.days
         serie = stats.get_multi_time_series({}, time_since, time_until, interval, None, None, user)
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 10, 0, 0): {"": 2},
-            datetime.datetime(2010, 10, 11, 0, 0): {"": 0},
-            datetime.datetime(2010, 10, 12, 0, 0): {"": 0},
+            datetime(2010, 10, 8, 0, 0): {"": 0},
+            datetime(2010, 10, 9, 0, 0): {"": 0},
+            datetime(2010, 10, 10, 0, 0): {"": 2},
+            datetime(2010, 10, 11, 0, 0): {"": 0},
+            datetime(2010, 10, 12, 0, 0): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -637,12 +635,12 @@ class ModelTests(TestCase):
                 type_operation_field_name=func,
                 operation_field_name="age",
             )
-            mommy.make("TestKid", birthday=datetime.date(2010, 10, 10), age=12)
-            mommy.make("TestKid", birthday=datetime.date(2010, 10, 10), age=1)
-            mommy.make("TestKid", birthday=datetime.date(2010, 10, 10), age=2)
+            mommy.make("TestKid", birthday=date(2010, 10, 10), age=12)
+            mommy.make("TestKid", birthday=date(2010, 10, 10), age=1)
+            mommy.make("TestKid", birthday=date(2010, 10, 10), age=2)
             mommy.make("TestKid", birthday=None)
-            time_since = datetime.datetime(2010, 10, 9)
-            time_until = datetime.datetime(2010, 10, 10)
+            time_since = datetime(2010, 10, 9)
+            time_until = datetime(2010, 10, 10)
 
             interval = Interval.days
             user = mommy.make("User")
@@ -650,7 +648,7 @@ class ModelTests(TestCase):
                 {}, time_since, time_until, interval, None, None, user
             )
             self.assertEqual(
-                serie[datetime.date(2010, 10, 10)][""],
+                serie[date(2010, 10, 10)][""],
                 result,
                 "Bad value for function %s" % func,
             )
@@ -678,10 +676,10 @@ class ModelTests(TestCase):
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 12), is_active=True)
-        mommy.make("User", date_joined=datetime.date(2010, 10, 13), is_active=False)
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        mommy.make("User", date_joined=date(2010, 10, 13), is_active=False)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
@@ -694,11 +692,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
-            datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
-            datetime.datetime(2010, 10, 12, 0, 0): OrderedDict((("Active", 1), ("Inactive", 0))),
-            datetime.datetime(2010, 10, 13, 0, 0): OrderedDict((("Active", 0), ("Inactive", 1))),
-            datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
+            datetime(2010, 10, 10, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
+            datetime(2010, 10, 11, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
+            datetime(2010, 10, 12, 0, 0): OrderedDict((("Active", 1), ("Inactive", 0))),
+            datetime(2010, 10, 13, 0, 0): OrderedDict((("Active", 0), ("Inactive", 1))),
+            datetime(2010, 10, 14, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -727,10 +725,10 @@ class ModelTests(TestCase):
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 12), is_active=True)
-        mommy.make("User", date_joined=datetime.date(2010, 10, 13), is_active=False)
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        mommy.make("User", date_joined=date(2010, 10, 13), is_active=False)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
@@ -743,11 +741,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
-            datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
-            datetime.datetime(2010, 10, 12, 0, 0): OrderedDict((("Active", 1), ("Inactive", 0))),
-            datetime.datetime(2010, 10, 13, 0, 0): OrderedDict((("Active", 0), ("Inactive", 1))),
-            datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
+            datetime(2010, 10, 10, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
+            datetime(2010, 10, 11, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
+            datetime(2010, 10, 12, 0, 0): OrderedDict((("Active", 1), ("Inactive", 0))),
+            datetime(2010, 10, 13, 0, 0): OrderedDict((("Active", 0), ("Inactive", 1))),
+            datetime(2010, 10, 14, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -772,10 +770,10 @@ class ModelTests(TestCase):
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 12), is_active=True)
-        mommy.make("User", date_joined=datetime.date(2010, 10, 13), is_active=False)
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        mommy.make("User", date_joined=date(2010, 10, 13), is_active=False)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
@@ -788,11 +786,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((("True", 0), ("False", 0))),
-            datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((("True", 0), ("False", 0))),
-            datetime.datetime(2010, 10, 12, 0, 0): OrderedDict((("True", 1), ("False", 0))),
-            datetime.datetime(2010, 10, 13, 0, 0): OrderedDict((("True", 0), ("False", 1))),
-            datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((("True", 0), ("False", 0))),
+            datetime(2010, 10, 10, 0, 0): OrderedDict((("True", 0), ("False", 0))),
+            datetime(2010, 10, 11, 0, 0): OrderedDict((("True", 0), ("False", 0))),
+            datetime(2010, 10, 12, 0, 0): OrderedDict((("True", 1), ("False", 0))),
+            datetime(2010, 10, 13, 0, 0): OrderedDict((("True", 0), ("False", 1))),
+            datetime(2010, 10, 14, 0, 0): OrderedDict((("True", 0), ("False", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -818,11 +816,11 @@ class ModelTests(TestCase):
             stats=self.stats,
             use_as="multiple_series",
         )
-        mommy.make("User", date_joined=datetime.date(2010, 10, 12), last_name="Foo")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 13), last_name="Bar")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 14))
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        mommy.make("User", date_joined=date(2010, 10, 12), last_name="Foo")
+        mommy.make("User", date_joined=date(2010, 10, 13), last_name="Bar")
+        mommy.make("User", date_joined=date(2010, 10, 14))
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         user = mommy.make("User", is_superuser=True)
@@ -836,11 +834,11 @@ class ModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 12, 0, 0): OrderedDict((("Bar", 0), ("Foo", 1))),
-            datetime.datetime(2010, 10, 13, 0, 0): OrderedDict((("Bar", 1), ("Foo", 0))),
-            datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 10, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 11, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 12, 0, 0): OrderedDict((("Bar", 0), ("Foo", 1))),
+            datetime(2010, 10, 13, 0, 0): OrderedDict((("Bar", 1), ("Foo", 0))),
+            datetime(2010, 10, 14, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -878,18 +876,18 @@ class ModelTests(TestCase):
         )
         mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 12),
+            date_joined=date(2010, 10, 12),
             last_name="Foo",
             is_active=True,
         )
         mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 13),
+            date_joined=date(2010, 10, 13),
             last_name="Bar",
             is_active=False,
         )
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         user = mommy.make("User", is_superuser=True)
@@ -901,11 +899,11 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 12, 0, 0): OrderedDict((("Bar", 0), ("Foo", 1))),
-            datetime.datetime(2010, 10, 13, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 10, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 11, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 12, 0, 0): OrderedDict((("Bar", 0), ("Foo", 1))),
+            datetime(2010, 10, 13, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 14, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -926,8 +924,8 @@ class ModelTests(TestCase):
             stats=self.stats,
             use_as="multiple_series",
         )
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         user = mommy.make("User")
@@ -971,21 +969,21 @@ class ModelTests(TestCase):
         user = mommy.make("User")
         mommy.make(
             "TestKid",
-            appointment=datetime.date(2010, 10, 12),
+            appointment=date(2010, 10, 12),
             name="Foo",
             age=5,
             author=user,
         )
         mommy.make(
             "TestKid",
-            appointment=datetime.date(2010, 10, 13),
+            appointment=date(2010, 10, 13),
             name="Bar",
             age=7,
             author=user,
         )
-        mommy.make("TestKid", appointment=datetime.date(2010, 10, 13), name="Bar", age=7)
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        mommy.make("TestKid", appointment=date(2010, 10, 13), name="Bar", age=7)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
@@ -993,21 +991,11 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=UTC): OrderedDict(
-                (("Bar", 0), ("Foo", 0))
-            ),
-            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=UTC): OrderedDict(
-                (("Bar", 0), ("Foo", 0))
-            ),
-            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=UTC): OrderedDict(
-                (("Bar", None), ("Foo", 5))
-            ),
-            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=UTC): OrderedDict(
-                (("Bar", 7), ("Foo", None))
-            ),
-            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=UTC): OrderedDict(
-                (("Bar", 0), ("Foo", 0))
-            ),
+            datetime(2010, 10, 10, 0, 0, tzinfo=UTC): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 11, 0, 0, tzinfo=UTC): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 12, 0, 0, tzinfo=UTC): OrderedDict((("Bar", None), ("Foo", 5))),
+            datetime(2010, 10, 13, 0, 0, tzinfo=UTC): OrderedDict((("Bar", 7), ("Foo", None))),
+            datetime(2010, 10, 14, 0, 0, tzinfo=UTC): OrderedDict((("Bar", 0), ("Foo", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1040,13 +1028,13 @@ class ModelTests(TestCase):
         )
         mommy.make(
             "TestKid",
-            appointment=datetime.date(2010, 10, 12),
-            birthday=datetime.date(2010, 11, 12),
+            appointment=date(2010, 10, 12),
+            birthday=date(2010, 11, 12),
             age=4,
         )
-        mommy.make("TestKid", appointment=datetime.date(2010, 10, 13), birthday=None, age=3)
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        mommy.make("TestKid", appointment=date(2010, 10, 13), birthday=None, age=3)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
@@ -1055,11 +1043,11 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
-            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
-            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=UTC): {"Blank": None, "Non blank": 4},
-            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=UTC): {"Blank": 3, "Non blank": None},
-            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
+            datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
+            datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
+            datetime(2010, 10, 12, 0, 0, tzinfo=UTC): {"Blank": None, "Non blank": 4},
+            datetime(2010, 10, 13, 0, 0, tzinfo=UTC): {"Blank": 3, "Non blank": None},
+            datetime(2010, 10, 14, 0, 0, tzinfo=UTC): {"Blank": 0, "Non blank": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1090,16 +1078,14 @@ class ModelTests(TestCase):
         )
         mommy.make(
             "TestKid",
-            appointment=datetime.date(2010, 10, 12),
-            birthday=datetime.date(2010, 11, 12),
+            appointment=date(2010, 10, 12),
+            birthday=date(2010, 11, 12),
             age=4,
             height=60,
         )
-        mommy.make(
-            "TestKid", appointment=datetime.date(2010, 10, 13), birthday=None, age=3, height=50
-        )
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        mommy.make("TestKid", appointment=date(2010, 10, 13), birthday=None, age=3, height=50)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         arguments = {"operation_choice": ""}
@@ -1108,11 +1094,11 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, "", None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
-            datetime.datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
-            datetime.datetime(2010, 10, 12, 0, 0, tzinfo=UTC): {"age": 4, "height": 60},
-            datetime.datetime(2010, 10, 13, 0, 0, tzinfo=UTC): {"age": 3, "height": 50},
-            datetime.datetime(2010, 10, 14, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
+            datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
+            datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
+            datetime(2010, 10, 12, 0, 0, tzinfo=UTC): {"age": 4, "height": 60},
+            datetime(2010, 10, 13, 0, 0, tzinfo=UTC): {"age": 3, "height": 50},
+            datetime(2010, 10, 14, 0, 0, tzinfo=UTC): {"age": 0, "height": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1150,18 +1136,18 @@ class ModelTests(TestCase):
         )
         mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 12),
+            date_joined=date(2010, 10, 12),
             last_name="Foo",
             is_active=True,
         )
         mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 13),
+            date_joined=date(2010, 10, 13),
             last_name="Bar",
             is_active=False,
         )
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
@@ -1170,11 +1156,11 @@ class ModelTests(TestCase):
             arguments, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 10, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 11, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 12, 0, 0): OrderedDict((("Bar", 0), ("Foo", 1))),
-            datetime.datetime(2010, 10, 13, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
-            datetime.datetime(2010, 10, 14, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 10, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 11, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 12, 0, 0): OrderedDict((("Bar", 0), ("Foo", 1))),
+            datetime(2010, 10, 13, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
+            datetime(2010, 10, 14, 0, 0): OrderedDict((("Bar", 0), ("Foo", 0))),
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1200,15 +1186,17 @@ class ModelTests(TestCase):
         )
         user = mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 12),
+            date_joined=date(2010, 10, 12),
             last_name="Foo",
             is_active=True,
         )
-        time_since = datetime.datetime(2010, 10, 10)
-        time_until = datetime.datetime(2010, 10, 14)
+        time_since = datetime(2010, 10, 10)
+        time_until = datetime(2010, 10, 14)
         arguments = {"select_box_multiple_series": m2m.id}
         with self.assertRaises(Exception):
-            self.stats.get_multi_time_series(arguments, time_since, time_until, "days", None, user)
+            self.stats.get_multi_time_series(
+                arguments, time_since, time_until, Interval.days, None, user
+            )
 
 
 class GetTimeSeriesTests(TestCase):
@@ -1223,16 +1211,16 @@ class GetTimeSeriesTests(TestCase):
 
     def test_get_time_series(self):
         """Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
         CachedValue.objects.all().delete()
-        time_since = datetime.datetime(2010, 10, 8)
-        time_until = datetime.datetime(2010, 10, 12)
+        time_since = datetime(2010, 10, 8)
+        time_until = datetime(2010, 10, 12)
 
         serie = self.stats.get_time_series(
             {}, [], user, time_since, time_until, None, None, Interval.days
         )
         testing_data = [
-            (datetime.datetime(2010, 10, 10, 0, 0).astimezone(UTC), 1),
+            (datetime(2010, 10, 10, 0, 0).astimezone(UTC), 1),
         ]
         if django.VERSION > (3, 2):
             self.assertQuerysetEqual(serie, testing_data)
@@ -1266,104 +1254,104 @@ class CacheModelTests(TestCase):
             "dynamic_choices": [],
             "filtered_value": "",
         }
-        current_tz = timezone.get_current_timezone()
+        current_tz = dj_timezone.get_current_timezone()
         mommy.make(
             "CachedValue",
             **common_parameters,
-            date=datetime.datetime(2010, 10, 9).astimezone(current_tz),
+            date=datetime(2010, 10, 9).astimezone(current_tz),
             value=3,
         )
         mommy.make(
             "CachedValue",
             **common_parameters,
-            date=datetime.datetime(2010, 10, 11).astimezone(current_tz),
+            date=datetime(2010, 10, 11).astimezone(current_tz),
             value=5,
         )
         mommy.make(
             "CachedValue",
             **common_parameters,
-            date=datetime.datetime(2010, 10, 12).astimezone(current_tz),
+            date=datetime(2010, 10, 12).astimezone(current_tz),
             is_final=False,
             value=5,
         )
 
     def test_get_multi_series_cached(self):
         """Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
         CachedValue.objects.all().delete()
-        current_tz = timezone.get_current_timezone()
-        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
-        time_until = datetime.datetime(2010, 10, 12).astimezone(current_tz)
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 12).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
             {}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
     def test_get_multi_series_cached_values(self):
         """Test DashboardStats.get_multi_time_series_cached() if some values were already in cache"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
-        current_tz = timezone.get_current_timezone()
-        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
-        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
             {}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 3},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 5},
-            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 5},
-            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 3},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 5},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 5},
+            datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
     def test_get_multi_series_cached_values_reload(self):
         """Same as test above, but the data reload is requested"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
-        current_tz = timezone.get_current_timezone()
-        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
-        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
             {"reload": "True"}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 3},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 5},
-            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 3},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 5},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
     def test_get_multi_series_cached_values_reload_all(self):
         """Same as test above, but reload of all data is requested"""
-        user = mommy.make("User", date_joined=datetime.date(2010, 10, 10))
-        current_tz = timezone.get_current_timezone()
-        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
-        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
             {"reload_all": "True"}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1371,15 +1359,15 @@ class CacheModelTests(TestCase):
         """Same as test above, but reload of all data is requested"""
         user = mommy.make(
             "User",
-            date_joined=datetime.date(2010, 10, 10),
+            date_joined=date(2010, 10, 10),
             is_superuser=True,
             first_name="John",
         )
-        mommy.make("User", date_joined=datetime.date(2010, 10, 11), first_name="Karl")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 18), first_name="Mark")
-        current_tz = timezone.get_current_timezone()
-        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
-        time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
+        mommy.make("User", date_joined=date(2010, 10, 11), first_name="Karl")
+        mommy.make("User", date_joined=date(2010, 10, 18), first_name="Mark")
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 13).astimezone(current_tz)
 
         criteria = mommy.make(
             "DashboardStatsCriteria",
@@ -1406,12 +1394,12 @@ class CacheModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"John": 1, "Karl": 0},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 1},
-            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
-            datetime.datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"John": 1, "Karl": 0},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 1},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
+            datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"John": 0, "Karl": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -1421,13 +1409,13 @@ class CacheModelTests(TestCase):
         with m2m criteria with dynamic_choices
         """
         user = mommy.make(
-            "User", date_joined=datetime.date(2010, 10, 10), first_name="Milos", is_superuser=True
+            "User", date_joined=date(2010, 10, 10), first_name="Milos", is_superuser=True
         )
-        mommy.make("User", date_joined=datetime.date(2010, 10, 12), first_name="Milos")
-        mommy.make("User", date_joined=datetime.date(2010, 10, 11), first_name="Kuba")
-        current_tz = timezone.get_current_timezone()
-        time_since = datetime.datetime(2010, 10, 8).astimezone(current_tz)
-        time_until = datetime.datetime(2010, 10, 12).astimezone(current_tz)
+        mommy.make("User", date_joined=date(2010, 10, 12), first_name="Milos")
+        mommy.make("User", date_joined=date(2010, 10, 11), first_name="Kuba")
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 12).astimezone(current_tz)
         criteria = mommy.make(
             "DashboardStatsCriteria",
             criteria_name="name",
@@ -1452,10 +1440,10 @@ class CacheModelTests(TestCase):
             user,
         )
         testing_data = {
-            datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
-            datetime.datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
-            datetime.datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 1},
         }
         self.assertDictEqual(serie, testing_data)
