@@ -1470,3 +1470,33 @@ class CacheModelTests(TestCase):
             datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 1},
         }
         self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_cached_last_value(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series_cached()
+        Test, that last value is counted correctly
+        """
+        CachedValue.objects.all().delete()
+        user = mommy.make("User", date_joined=date(2010, 10, 10), is_superuser=True)
+        mommy.make("User", date_joined=datetime(2010, 10, 12, 12, 12))
+        mommy.make("User", date_joined=datetime(2010, 10, 11))
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 10).astimezone(current_tz)
+        time_until = datetime(2010, 10, 12, 23, 59).astimezone(current_tz)
+
+        interval = Interval.days
+        serie = self.stats.get_multi_time_series_cached(
+            {"reload_all": "True"},
+            time_since,
+            time_until,
+            interval,
+            None,
+            None,
+            user,
+        )
+        testing_data = {
+            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 1},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 1},
+        }
+        self.assertDictEqual(serie, testing_data)
