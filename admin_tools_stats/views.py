@@ -1,13 +1,14 @@
 import logging
 import time
 from collections import OrderedDict
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Union
 
+from datetime_truncate import truncate
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from .models import DashboardStats, Interval, get_charts_timezone, truncate
+from .models import DashboardStats, Interval, get_charts_timezone, truncate_ceiling
 
 
 logger = logging.getLogger(__name__)
@@ -83,19 +84,14 @@ class ChartDataView(TemplateView):
             "select_box_chart_type", dashboard_stats.default_chart_type
         )
         try:
-            utc_tz = get_charts_timezone()
-            time_since = datetime.strptime(
-                str(configuration.pop("time_since")), "%Y-%m-%d"
-            ).astimezone(utc_tz)
-            time_until = (
-                datetime.strptime(str(configuration.pop("time_until")), "%Y-%m-%d")
-                .astimezone(utc_tz)
-                .replace(hour=23, minute=59)
-            )
-            time_since = truncate(time_since, selected_interval)
-            time_until = truncate(time_until, selected_interval, add_intervals=1) - timedelta(
-                microseconds=1
-            )
+            chart_tz = get_charts_timezone()
+            time_since = datetime.strptime(str(configuration.pop("time_since")), "%Y-%m-%d")
+            time_since = truncate(time_since, selected_interval.val())
+            time_since = time_since.replace(tzinfo=chart_tz)
+
+            time_until = datetime.strptime(str(configuration.pop("time_until")), "%Y-%m-%d")
+            time_until = truncate_ceiling(time_until, selected_interval.val())
+            time_until = time_until.replace(tzinfo=chart_tz)
 
             if time_since > time_until:
                 context["error"] = "Time since is greater than time until"

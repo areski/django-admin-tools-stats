@@ -21,9 +21,9 @@ except ImportError:
 
 from typing import Dict, List, Mapping, Optional, Union
 
-import django
 from cache_utils.decorators import cached
-from dateutil.relativedelta import MO, relativedelta
+from datetime_truncate import truncate
+from dateutil.relativedelta import relativedelta
 from dateutil.rrule import DAILY, HOURLY, MONTHLY, WEEKLY, YEARLY, rrule
 from django.apps import apps
 from django.conf import settings
@@ -32,7 +32,7 @@ from django.core.exceptions import FieldError, ValidationError
 from django.db import models
 from django.db.models import ExpressionWrapper, Q
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
-from django.db.models.fields import DateField
+from django.db.models.fields import DateField, DateTimeField
 from django.db.models.functions import Trunc
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -46,15 +46,9 @@ def get_charts_timezone():
     timezn = getattr(settings, "ADMIN_CHARTS_TIMEZONE", None)
     if timezn:
         if isinstance(timezn, str):
-            try:
-                import pytz
-            except ImportError:
-                raise Exception("If you want to set timezone from string, you have to install pytz")
-            timezn = pytz.timezone(timezn)
+            return zoneinfo.ZoneInfo(key=timezn)
         return timezn
     if settings.USE_TZ:
-        if django.VERSION < (4, 0):  # Django 4.0 compatible way
-            return zoneinfo.ZoneInfo(str(timezone.get_current_timezone()))
         return timezone.get_current_timezone()
     return None
 
@@ -110,6 +104,9 @@ class Interval(enum.Enum):
     quarters = "quarters"
     years = "years"
 
+    def val(self):
+        return self.value[:-1]
+
 
 def rrule_list(
     interval: Interval, start: datetime.datetime, end: datetime.datetime
@@ -130,39 +127,13 @@ def rrule_list(
         return list(rrule(freq=freq, dtstart=start, until=end))
 
 
-def truncate(
-    dt: datetime.datetime, interval: Interval, add_intervals: int = 0
-) -> datetime.datetime:
-    """Returns interval bounds the datetime is in."""
-
-    if interval == Interval.hours:
-        return datetime.datetime(dt.year, dt.month, dt.day, dt.hour).astimezone(
-            dt.tzinfo
-        ) + relativedelta(hours=add_intervals)
-    elif interval == Interval.days:
-        return datetime.datetime(dt.year, dt.month, dt.day).astimezone(dt.tzinfo) + relativedelta(
-            days=add_intervals
-        )
-    elif interval == Interval.weeks:
-        return (
-            datetime.datetime(dt.year, dt.month, dt.day).astimezone(dt.tzinfo)
-            - relativedelta(weekday=MO(-1))
-            + relativedelta(days=add_intervals * 7)
-        )
-    elif interval == Interval.months:
-        return datetime.datetime(dt.year, dt.month, 1).astimezone(dt.tzinfo) + relativedelta(
-            months=add_intervals
-        )
-    elif interval == Interval.quarters:
-        qmonth = dt.month - (dt.month - 1) % 3
-        return datetime.datetime(dt.year, qmonth, 1).astimezone(dt.tzinfo) + relativedelta(
-            months=add_intervals * 3
-        )
-    elif interval == Interval.years:
-        return datetime.datetime(dt.year, 1, 1).astimezone(dt.tzinfo) + relativedelta(
-            years=add_intervals
-        )
-    raise Exception(f"Unknown interval {interval}")
+def truncate_ceiling(dt: datetime.datetime, interval: Interval) -> datetime.datetime:
+    """Truncate to the last moment before next interval"""
+    if interval == "quarter":
+        add_delta = relativedelta(months=3)
+    else:
+        add_delta = relativedelta(**{f"{interval}s": 1})  # type: ignore
+    return truncate(dt + add_delta, interval) - datetime.timedelta(microseconds=1)
 
 
 def transform_cached_values(values, choices_based_on_time_range: bool):
@@ -621,8 +592,11 @@ class DashboardStats(models.Model):
         qs = model_name.objects
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
-        kind = interval.value[:-1]
-        qs = qs.annotate(d=Trunc(self.date_field_name, kind))  # tzinfo=get_charts_timezone()
+        if isinstance(self.get_date_field(), DateTimeField):
+            tzinfo_kwargs = {"tzinfo": get_charts_timezone()}
+        else:
+            tzinfo_kwargs = {}
+        qs = qs.annotate(d=Trunc(self.date_field_name, interval.val(), **tzinfo_kwargs))
         qs = qs.values_list("d")
         qs = qs.order_by("d")
         qs = qs.annotate(**aggregate_dict)
@@ -648,6 +622,8 @@ class DashboardStats(models.Model):
         operation_field_choice: Optional[str],
         user: Union[User, AnonymousUser],
     ):
+        if time_since > time_until:
+            raise Exception("time_since is greater than time_until")
         dynamic_criteria: Dict[str, Union[str, List[str]]] = configuration.copy()
         series: Dict[str, Dict[str, int]] = {}
         # Outside of get_time_series just for performance reasons
@@ -694,9 +670,8 @@ class DashboardStats(models.Model):
                 series[time][name] = tv[i]
 
         # fill with zeros where the records are missing
-        start = truncate(time_since, interval).replace(tzinfo=get_charts_timezone())
-        end = time_until.replace(tzinfo=get_charts_timezone())
-
+        start = truncate(time_since, interval.val())
+        end = time_until
         dates: List[datetime.datetime] = rrule_list(interval, start, end)
         for time in dates:
             if self.get_date_field().__class__ == DateField:
@@ -711,6 +686,38 @@ class DashboardStats(models.Model):
                     series[time][key] = 0
         return series
 
+    def get_gaps(
+        self,
+        reload_data: bool,
+        reload_all_data: bool,
+        time_since: datetime.datetime,
+        time_until: datetime.datetime,
+        interval: Interval,
+        cached_query,
+    ):
+        if reload_data:
+            dates_query = cached_query.filter(is_final=True)
+        else:
+            dates_query = cached_query
+        if dates_query.exists() and not reload_all_data:
+            gaps = []
+            dates: List[datetime.datetime] = rrule_list(interval, time_since, time_until)
+            cached_dates = dates_query.values("date").distinct().values_list("date", flat=True)
+            last_time = None
+            for time in dates:
+                time_m = truncate_ceiling(time, interval.val())
+                if time not in cached_dates:
+                    if last_time and len(gaps) > 0 and gaps[-1][1] == last_time:
+                        gaps[-1][1] = time_m
+                    else:
+                        gaps.append([time, time_m])
+                last_time = time_m
+        else:
+            gaps = [
+                [time_since, time_until],
+            ]
+        return gaps
+
     def get_multi_time_series_cached(
         self,
         configuration: Dict[str, Union[str, List[str]]],
@@ -721,9 +728,9 @@ class DashboardStats(models.Model):
         operation_field_choice: Optional[str],
         user: Union[User, AnonymousUser],
     ):
+        m2m = self.get_multi_series_criteria(configuration)
         reload_data = configuration.pop("reload", None) in ("true", "True")
         reload_all_data = configuration.pop("reload_all", None) in ("true", "True")
-        m2m = self.get_multi_series_criteria(configuration)
         criteria = getattr(m2m, "criteria", None)
         common_options = {
             "stats": self,
@@ -736,30 +743,14 @@ class DashboardStats(models.Model):
         cached_query = CachedValue.objects.filter(
             **common_options, date__gte=time_since, date__lte=time_until
         )
-        if reload_data:
-            dates_query = cached_query.filter(is_final=True)
-        else:
-            dates_query = cached_query
-        if dates_query.exists() and not reload_all_data:  # TODO: include also gaps withing data
-            gaps = []
-            dates: List[datetime.datetime] = rrule_list(interval, time_since, time_until)
-            cached_dates = dates_query.values("date").distinct().values_list("date", flat=True)
-            last_time = None
-            for time in dates:
-                time_m = truncate(time, interval, add_intervals=1) - datetime.timedelta(
-                    microseconds=1
-                )
-                if time not in cached_dates:
-                    if last_time and len(gaps) > 0 and gaps[-1][1] == last_time:
-                        gaps[-1][1] = time_m
-                    else:
-                        gaps.append([time, time_m])
-                last_time = time_m
-        else:
-            gaps = [
-                [time_since, time_until],
-            ]
-
+        gaps = self.get_gaps(
+            reload_data,
+            reload_all_data,
+            time_since,
+            time_until,
+            interval,
+            cached_query,
+        )
         bulk = []
         for gap_since, gap_until in gaps:
             cached_query.filter(date__gte=gap_since, date__lte=gap_until).delete()
@@ -778,7 +769,7 @@ class DashboardStats(models.Model):
                     is_final = (
                         truncate(
                             datetime.datetime.now().astimezone(get_charts_timezone()),
-                            interval,
+                            interval.val(),
                         )
                         > date
                     )

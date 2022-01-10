@@ -21,7 +21,7 @@ from django.test.utils import override_settings
 from django.utils import timezone as dj_timezone
 from model_mommy import mommy
 
-from admin_tools_stats.models import CachedValue
+from admin_tools_stats.models import CachedValue, truncate_ceiling
 from admin_tools_stats.views import Interval
 
 
@@ -31,6 +31,7 @@ except ImportError:
     from backports import zoneinfo  # type: ignore
 
 UTC = timezone.utc
+chicago_tz = zoneinfo.ZoneInfo(key="America/Chicago")
 
 
 class DashboardStatsCriteriaTests(TestCase):
@@ -540,22 +541,20 @@ class ModelTests(TestCase):
         Test, that everything works, if the chart is set in different timezone than the server
         """
         current_tz = dj_timezone.get_current_timezone()
-        user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
+        user = mommy.make("User", date_joined=datetime(2010, 10, 10, 0, 0, tzinfo=current_tz))
         mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
         mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
-        time_since = datetime(2010, 10, 9, 0, 0)
-        time_until = datetime(2010, 10, 11, 0, 0)
+        time_since = datetime(2010, 10, 9, 0, 0, tzinfo=UTC)
+        time_until = datetime(2010, 10, 11, 0, 0, tzinfo=UTC)
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
         testing_data = {
-            datetime(2010, 10, 9, 0, 0).astimezone(UTC): {"": 0},
-            datetime(2010, 10, 10, 0, 0).astimezone(UTC): {"": 2},
-            datetime(2010, 10, 11, 0, 0).astimezone(UTC): {"": 0},
+            datetime(2010, 10, 9, 0, 0, tzinfo=UTC): {"": 1},
+            datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"": 2},
+            datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
 
@@ -771,6 +770,16 @@ class ModelTests(TestCase):
             datetime(2010, 10, 14, 0, 0): OrderedDict((("Active", 0), ("Inactive", 0))),
         }
         self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_criteria_time_exception(self):
+        """
+        Test exception is thrown, if time_since is greate than time_until
+        """
+        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        with self.assertRaisesRegexp(Exception, "time_since is greater than time_until"):
+            self.stats.get_multi_time_series(
+                {}, datetime(2010, 10, 14), datetime(2010, 10, 10), Interval.days, None, None, user
+            )
 
     @skipIf(
         settings.DATABASES["default"]["ENGINE"] == "django.db.backends.mysql",
@@ -1221,6 +1230,34 @@ class ModelTests(TestCase):
                 arguments, time_since, time_until, Interval.days, None, user
             )
 
+    def test_truncate_ceiling(self):
+        """Test truncate_ceiling() function"""
+        date = datetime(2022, 1, 8, 0, 0, tzinfo=chicago_tz)
+        self.assertEqual(
+            truncate_ceiling(date, "hour"),
+            datetime(2022, 1, 8, 0, 59, 59, 999999, tzinfo=chicago_tz),
+        )
+        self.assertEqual(
+            truncate_ceiling(date, "day"),
+            datetime(2022, 1, 8, 23, 59, 59, 999999, tzinfo=chicago_tz),
+        )
+        self.assertEqual(
+            truncate_ceiling(date, "week"),
+            datetime(2022, 1, 9, 23, 59, 59, 999999, tzinfo=chicago_tz),
+        )
+        self.assertEqual(
+            truncate_ceiling(date, "month"),
+            datetime(2022, 1, 31, 23, 59, 59, 999999, tzinfo=chicago_tz),
+        )
+        self.assertEqual(
+            truncate_ceiling(date, "quarter"),
+            datetime(2022, 3, 31, 23, 59, 59, 999999, tzinfo=chicago_tz),
+        )
+        self.assertEqual(
+            truncate_ceiling(date, "year"),
+            datetime(2022, 12, 31, 23, 59, 59, 999999, tzinfo=chicago_tz),
+        )
+
 
 class GetTimeSeriesTests(TestCase):
     def setUp(self):
@@ -1317,6 +1354,31 @@ class CacheModelTests(TestCase):
             datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
+
+    def test_get_gaps(self):
+        """Test DashboardStats.get_gaps() if some values were already in cache"""
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 13).astimezone(current_tz)
+
+        gaps = self.stats.get_gaps(
+            False, False, time_since, time_until, Interval.days, CachedValue.objects.all()
+        )
+        expected_gaps = [
+            [
+                datetime(2010, 10, 8, 0, 0, tzinfo=chicago_tz),
+                datetime(2010, 10, 8, 23, 59, 59, 999999, tzinfo=chicago_tz),
+            ],
+            [
+                datetime(2010, 10, 10, 0, 0, tzinfo=chicago_tz),
+                datetime(2010, 10, 10, 23, 59, 59, 999999, tzinfo=chicago_tz),
+            ],
+            [
+                datetime(2010, 10, 13, 0, 0, tzinfo=chicago_tz),
+                datetime(2010, 10, 13, 23, 59, 59, 999999, tzinfo=chicago_tz),
+            ],
+        ]
+        self.assertEqual(gaps, expected_gaps)
 
     def test_get_multi_series_cached_values(self):
         """Test DashboardStats.get_multi_time_series_cached() if some values were already in cache"""
