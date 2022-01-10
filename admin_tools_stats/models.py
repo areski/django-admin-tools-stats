@@ -163,7 +163,7 @@ def truncate(
     raise Exception(f"Unknown interval {interval}")
 
 
-def transform_cached_values(values, choices_based_on_time_range):
+def transform_cached_values(values, choices_based_on_time_range: bool):
     all_filtered_values = None
     if choices_based_on_time_range:
         all_filtered_values = {}
