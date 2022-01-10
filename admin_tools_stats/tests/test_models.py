@@ -22,6 +22,7 @@ from django.utils import timezone
 from model_mommy import mommy
 
 from admin_tools_stats.models import CachedValue
+from admin_tools_stats.views import Interval
 
 
 try:
@@ -235,7 +236,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -276,7 +277,7 @@ class ModelTests(TestCase):
             choices_based_on_time_range=True,
         )
 
-        interval = "days"
+        interval = Interval.days
         serie = self.kid_stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -328,7 +329,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -381,7 +382,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -411,7 +412,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8, 22)
         time_until = datetime.datetime(2010, 10, 8, 23, 59)
 
-        interval = "hours"
+        interval = Interval.hours
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -432,7 +433,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 11, 8)
 
-        interval = "weeks"
+        interval = Interval.weeks
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -457,7 +458,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 11, 30)
 
-        interval = "months"
+        interval = Interval.months
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -478,7 +479,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2011, 10, 8)
 
-        interval = "quarters"
+        interval = Interval.quarters
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -502,7 +503,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2011, 10, 8)
 
-        interval = "years"
+        interval = Interval.years
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -524,7 +525,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 9, 0, 0)
         time_until = datetime.datetime(2010, 10, 11, 0, 0)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -543,7 +544,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 9)
         time_until = datetime.datetime(2010, 10, 11)
 
-        interval = "days"
+        interval = Interval.days
         user = mommy.make("User")
         serie = self.kid_stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
@@ -568,7 +569,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2019, 10, 27, 0, 0)
         time_until = datetime.datetime(2019, 10, 29, 0, 0)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -601,7 +602,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
-        interval = "days"
+        interval = Interval.days
         serie = stats.get_multi_time_series({}, time_since, time_until, interval, None, None, user)
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0): {"": 0},
@@ -643,7 +644,7 @@ class ModelTests(TestCase):
             time_since = datetime.datetime(2010, 10, 9)
             time_until = datetime.datetime(2010, 10, 10)
 
-            interval = "days"
+            interval = Interval.days
             user = mommy.make("User")
             serie = stats.get_multi_time_series(
                 {}, time_since, time_until, interval, None, None, user
@@ -682,7 +683,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -731,7 +732,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -776,7 +777,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -823,7 +824,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         user = mommy.make("User", is_superuser=True)
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
@@ -890,7 +891,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         user = mommy.make("User", is_superuser=True)
         arguments = {
             "select_box_multiple_series": m2m.id,
@@ -928,7 +929,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         user = mommy.make("User")
         arguments = {"select_box_multiple_series": m2m.id}
         with self.assertRaisesRegex(
@@ -986,7 +987,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
         serie = stats.get_multi_time_series(
             arguments, time_since, time_until, interval, None, None, user
@@ -1047,7 +1048,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
         user = mommy.make("User", is_staff=True)
         serie = stats.get_multi_time_series(
@@ -1100,7 +1101,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         arguments = {"operation_choice": ""}
         user = mommy.make("User", is_staff=True)
         serie = stats.get_multi_time_series(
@@ -1162,7 +1163,7 @@ class ModelTests(TestCase):
         time_since = datetime.datetime(2010, 10, 10)
         time_until = datetime.datetime(2010, 10, 14)
 
-        interval = "days"
+        interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
         user = mommy.make("User", is_superuser=True)
         serie = self.stats.get_multi_time_series(
@@ -1227,7 +1228,9 @@ class GetTimeSeriesTests(TestCase):
         time_since = datetime.datetime(2010, 10, 8)
         time_until = datetime.datetime(2010, 10, 12)
 
-        serie = self.stats.get_time_series({}, [], user, time_since, time_until, None, None, "days")
+        serie = self.stats.get_time_series(
+            {}, [], user, time_since, time_until, None, None, Interval.days
+        )
         testing_data = [
             (datetime.datetime(2010, 10, 10, 0, 0).astimezone(UTC), 1),
         ]
@@ -1258,7 +1261,7 @@ class CacheModelTests(TestCase):
         )
         common_parameters = {
             "stats": self.stats,
-            "time_scale": "days",
+            "time_scale": Interval.days,
             "operation": None,
             "dynamic_choices": [],
             "filtered_value": "",
@@ -1293,7 +1296,7 @@ class CacheModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 12).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
-            {}, time_since, time_until, "days", None, None, user
+            {}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
@@ -1312,7 +1315,7 @@ class CacheModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
-            {}, time_since, time_until, "days", None, None, user
+            {}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
@@ -1332,7 +1335,7 @@ class CacheModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
-            {"reload": "True"}, time_since, time_until, "days", None, None, user
+            {"reload": "True"}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
@@ -1352,7 +1355,7 @@ class CacheModelTests(TestCase):
         time_until = datetime.datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
-            {"reload_all": "True"}, time_since, time_until, "days", None, None, user
+            {"reload_all": "True"}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
             datetime.datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
@@ -1397,7 +1400,7 @@ class CacheModelTests(TestCase):
             },
             time_since,
             time_until,
-            "days",
+            Interval.days,
             None,
             None,
             user,
@@ -1438,7 +1441,7 @@ class CacheModelTests(TestCase):
             choices_based_on_time_range=True,
         )
 
-        interval = "days"
+        interval = Interval.days
         serie = self.stats.get_multi_time_series_cached(
             {f"select_box_dynamic_{m2m.id}": "Milos"},
             time_since,

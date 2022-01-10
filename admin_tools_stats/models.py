@@ -9,6 +9,7 @@
 # Arezqui Belaid <info@star2billing.com>
 #
 import datetime
+import enum
 import logging
 from collections import OrderedDict
 
@@ -17,11 +18,6 @@ try:
     import zoneinfo
 except ImportError:
     from backports import zoneinfo  # type: ignore
-
-try:
-    from typing import Literal
-except ImportError:  # Python <= 3.7
-    from typing_extensions import Literal  # type: ignore
 
 from typing import Dict, List, Optional, Union
 
@@ -104,7 +100,13 @@ time_scales = (
 )
 
 
-Interval = Literal["hours", "days", "weeks", "months", "quarters", "years"]
+class Interval(enum.Enum):
+    hours = "hours"
+    days = "days"
+    weeks = "weeks"
+    months = "months"
+    quarters = "quarters"
+    years = "years"
 
 
 def rrule_list(
@@ -118,8 +120,8 @@ def rrule_list(
         "days": {"freq": DAILY},
         "hours": {"freq": HOURLY},
     }
-    freq = rrule_freqs[interval]["freq"]
-    rrule_interval = rrule_freqs[interval].get("interval", None)
+    freq = rrule_freqs[interval.value]["freq"]
+    rrule_interval = rrule_freqs[interval.value].get("interval", None)
     if rrule_interval:
         return list(rrule(freq=freq, interval=rrule_interval, dtstart=start, until=end))
     else:
@@ -131,30 +133,30 @@ def truncate(
 ) -> datetime.datetime:
     """Returns interval bounds the datetime is in."""
 
-    if interval == "hours":
+    if interval == Interval.hours:
         return datetime.datetime(dt.year, dt.month, dt.day, dt.hour).astimezone(
             dt.tzinfo
         ) + relativedelta(hours=add_intervals)
-    elif interval == "days":
+    elif interval == Interval.days:
         return datetime.datetime(dt.year, dt.month, dt.day).astimezone(dt.tzinfo) + relativedelta(
             days=add_intervals
         )
-    elif interval == "weeks":
+    elif interval == Interval.weeks:
         return (
             datetime.datetime(dt.year, dt.month, dt.day).astimezone(dt.tzinfo)
             - relativedelta(weekday=MO(-1))
             + relativedelta(days=add_intervals * 7)
         )
-    elif interval == "months":
+    elif interval == Interval.months:
         return datetime.datetime(dt.year, dt.month, 1).astimezone(dt.tzinfo) + relativedelta(
             months=add_intervals
         )
-    elif interval == "quarters":
+    elif interval == Interval.quarters:
         qmonth = dt.month - (dt.month - 1) % 3
         return datetime.datetime(dt.year, qmonth, 1).astimezone(dt.tzinfo) + relativedelta(
             months=add_intervals * 3
         )
-    elif interval == "years":
+    elif interval == Interval.years:
         return datetime.datetime(dt.year, 1, 1).astimezone(dt.tzinfo) + relativedelta(
             years=add_intervals
         )
@@ -615,7 +617,7 @@ class DashboardStats(models.Model):
         qs = model_name.objects
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
-        kind = interval[:-1]
+        kind = interval.value[:-1]
         qs = qs.annotate(d=Trunc(self.date_field_name, kind))  # tzinfo=get_charts_timezone()
         qs = qs.values_list("d")
         qs = qs.order_by("d")

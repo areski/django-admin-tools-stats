@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from .models import DashboardStats, get_charts_timezone, truncate
+from .models import DashboardStats, Interval, get_charts_timezone, truncate
 
 
 logger = logging.getLogger(__name__)
@@ -35,10 +35,10 @@ interval_dateformat_map = {
 }
 
 
-def get_dateformat(interval, chart_type):
+def get_dateformat(interval: Interval, chart_type):
     if chart_type == "discreteBarChart":
-        return interval_dateformat_map_bar_chart[interval]
-    return interval_dateformat_map[interval]
+        return interval_dateformat_map_bar_chart[interval.value]
+    return interval_dateformat_map[interval.value]
 
 
 def remove_multiple_keys(in_dict, entries_to_remove):
@@ -49,7 +49,7 @@ def remove_multiple_keys(in_dict, entries_to_remove):
 class ChartDataView(TemplateView):
     template_name = "admin_tools_stats/chart_data.html"
 
-    def get_context_data(self, *args, interval=None, graph_key=None, **kwargs):
+    def get_context_data(self, *args, interval: Interval = None, graph_key=None, **kwargs):
         dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
         context = super().get_context_data(*args, **kwargs)
 
@@ -65,7 +65,7 @@ class ChartDataView(TemplateView):
 
         configuration = dict(self.request.GET.dict())
         remove_multiple_keys(configuration, ["csrfmiddlewaretoken", "_", "graph_key"])
-        interval = (
+        selected_interval: Interval = Interval(
             configuration.pop("select_box_interval", interval) or dashboard_stats.default_time_scale
         )
         operation = configuration.pop(
@@ -87,8 +87,10 @@ class ChartDataView(TemplateView):
                 .astimezone(utc_tz)
                 .replace(hour=23, minute=59)
             )
-            time_since = truncate(time_since, interval)
-            time_until = truncate(time_until, interval, add_intervals=1) - timedelta(microseconds=1)
+            time_since = truncate(time_since, selected_interval)
+            time_until = truncate(time_until, selected_interval, add_intervals=1) - timedelta(
+                microseconds=1
+            )
 
             if time_since > time_until:
                 context["error"] = "Time since is greater than time until"
@@ -99,7 +101,7 @@ class ChartDataView(TemplateView):
                 configuration,
                 time_since,
                 time_until,
-                interval,
+                selected_interval,
                 operation,
                 operation_field,
                 self.request.user,
@@ -149,7 +151,7 @@ class ChartDataView(TemplateView):
             context["extra"]["use_interactive_guideline"] = True
 
         tooltip_date_format, context["extra"]["x_axis_format"] = get_dateformat(
-            interval, context["chart_type"]
+            selected_interval, context["chart_type"]
         )
 
         extra_serie = {
@@ -159,7 +161,7 @@ class ChartDataView(TemplateView):
 
         context["values"] = {
             "x": xdata,
-            "name1": interval,
+            "name1": selected_interval,
             **ydata_serie,
             **names,
             "extra1": extra_serie,
