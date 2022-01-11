@@ -98,7 +98,12 @@ class ChartDataView(TemplateView):
                 context["graph_title"] = dashboard_stats.graph_title
                 return context
 
-            series = dashboard_stats.get_multi_time_series_cached(
+            if dashboard_stats.cache_values:
+                get_time_series = dashboard_stats.get_multi_time_series_cached
+            else:
+                get_time_series = dashboard_stats.get_multi_time_series
+
+            series = get_time_series(
                 configuration,
                 time_since,
                 time_until,

@@ -117,6 +117,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
                     "y_axis_format",
                     "default_multiseries_criteria",
                     "is_visible",
+                    "cache_values",
                 ),
             },
         ),
@@ -131,6 +132,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
         "type_operation_field_name",
         "is_visible",
         "show_to_users",
+        "cache_values",
         "created_date",
         "date_field_name",
         "operation_field_name",
@@ -175,4 +177,5 @@ class CachedValueAdmin(admin.ModelAdmin):
         "time_scale",
         "is_final",
         "multiple_series_choice",
+        "stats__cache_values",
     )

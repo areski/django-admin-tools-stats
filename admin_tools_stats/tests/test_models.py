@@ -558,6 +558,31 @@ class ModelTests(TestCase):
         }
         self.assertDictEqual(serie, testing_data)
 
+    @override_settings(USE_TZ=True, TIME_ZONE="Europe/Prague", ADMIN_CHARTS_TIMEZONE=UTC)
+    def test_get_multi_series_datetime_set_utc_zone(self):
+        """
+        Test function to check DashboardStats.get_multi_time_series()
+        Test, that everything works, if the chart is set in different timezone than the server
+        Set timezone by zone parameter
+        """
+        current_tz = dj_timezone.get_current_timezone()
+        user = mommy.make("User", date_joined=datetime(2010, 10, 10, 0, 0, tzinfo=current_tz))
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
+        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
+        time_since = datetime(2010, 10, 9, 0, 0, tzinfo=UTC)
+        time_until = datetime(2010, 10, 11, 0, 0, tzinfo=UTC)
+
+        interval = Interval.days
+        serie = self.stats.get_multi_time_series(
+            {}, time_since, time_until, interval, None, None, user
+        )
+        testing_data = {
+            datetime(2010, 10, 9, 0, 0, tzinfo=UTC): {"": 1},
+            datetime(2010, 10, 10, 0, 0, tzinfo=UTC): {"": 2},
+            datetime(2010, 10, 11, 0, 0, tzinfo=UTC): {"": 0},
+        }
+        self.assertDictEqual(serie, testing_data)
+
     @override_settings(USE_TZ=True, TIME_ZONE="CET")
     def test_get_multi_series_date_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
@@ -1306,6 +1331,7 @@ class CacheModelTests(TestCase):
             model_name="User",
             model_app_name="auth",
             graph_key="user_graph",
+            cache_values=True,
         )
         common_parameters = {
             "stats": self.stats,
@@ -1336,7 +1362,27 @@ class CacheModelTests(TestCase):
         )
 
     def test_get_multi_series_cached(self):
-        """Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache"""
+        """Test DashboardStats.get_multi_time_series_cached() if some values were already in cache"""
+        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        current_tz = dj_timezone.get_current_timezone()
+        time_since = datetime(2010, 10, 8).astimezone(current_tz)
+        time_until = datetime(2010, 10, 13).astimezone(current_tz)
+
+        serie = self.stats.get_multi_time_series_cached(
+            {}, time_since, time_until, Interval.days, None, None, user
+        )
+        testing_data = {
+            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 3},
+            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 5},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 5},
+        }
+        self.assertDictEqual(serie, testing_data)
+
+    def test_get_multi_series_cached_reload(self):
+        """
+        Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache
+        Without reload, and with no cached values, the output is blank.
+        """
         user = mommy.make("User", date_joined=date(2010, 10, 10))
         CachedValue.objects.all().delete()
         current_tz = dj_timezone.get_current_timezone()
@@ -1346,13 +1392,7 @@ class CacheModelTests(TestCase):
         serie = self.stats.get_multi_time_series_cached(
             {}, time_since, time_until, Interval.days, None, None, user
         )
-        testing_data = {
-            datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
-            datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 0},
-            datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
-            datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 0},
-            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
-        }
+        testing_data = {}
         self.assertDictEqual(serie, testing_data)
 
     def test_get_gaps(self):
@@ -1388,14 +1428,14 @@ class CacheModelTests(TestCase):
         time_until = datetime(2010, 10, 13).astimezone(current_tz)
 
         serie = self.stats.get_multi_time_series_cached(
-            {}, time_since, time_until, Interval.days, None, None, user
+            {"reload": "True"}, time_since, time_until, Interval.days, None, None, user
         )
         testing_data = {
             datetime(2010, 10, 8, 0, 0).astimezone(current_tz): {"": 0},
             datetime(2010, 10, 9, 0, 0).astimezone(current_tz): {"": 3},
             datetime(2010, 10, 10, 0, 0).astimezone(current_tz): {"": 1},
             datetime(2010, 10, 11, 0, 0).astimezone(current_tz): {"": 5},
-            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 5},
+            datetime(2010, 10, 12, 0, 0).astimezone(current_tz): {"": 0},
             datetime(2010, 10, 13, 0, 0).astimezone(current_tz): {"": 0},
         }
         self.assertDictEqual(serie, testing_data)
@@ -1516,7 +1556,7 @@ class CacheModelTests(TestCase):
 
         interval = Interval.days
         serie = self.stats.get_multi_time_series_cached(
-            {f"select_box_dynamic_{m2m.id}": "Milos"},
+            {f"select_box_dynamic_{m2m.id}": "Milos", "reload": "True"},
             time_since,
             time_until,
             interval,

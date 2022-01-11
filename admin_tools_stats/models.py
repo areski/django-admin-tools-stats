@@ -327,6 +327,10 @@ class DashboardStats(models.Model):
         default=False,
         null=False,
         blank=False,
+        help_text=_(
+            "If chart's values are cached, you will always get cached values, "
+            "unless you pres reload/reload_all button"
+        ),
     )
     type_operation_field_name = models.CharField(
         max_length=90,
@@ -743,48 +747,44 @@ class DashboardStats(models.Model):
         cached_query = CachedValue.objects.filter(
             **common_options, date__gte=time_since, date__lte=time_until
         )
-        gaps = self.get_gaps(
-            reload_data,
-            reload_all_data,
-            time_since,
-            time_until,
-            interval,
-            cached_query,
-        )
-        bulk = []
-        for gap_since, gap_until in gaps:
-            cached_query.filter(date__gte=gap_since, date__lte=gap_until).delete()
-            values = self.get_multi_time_series(
-                configuration,
-                gap_since,
-                gap_until,
-                interval,
-                operation_choice,
-                operation_field_choice,
-                user,
+        if reload_data or reload_all_data:
+            gaps = self.get_gaps(
+                reload_data, reload_all_data, time_since, time_until, interval, cached_query
             )
-            i = 0
-            for date, values_dict in values.items():
-                for filtered_value, value in values_dict.items():
-                    is_final = (
-                        truncate(
-                            datetime.datetime.now().astimezone(get_charts_timezone()),
-                            interval.val(),
+            bulk = []
+            for gap_since, gap_until in gaps:
+                cached_query.filter(date__gte=gap_since, date__lte=gap_until).delete()
+                values = self.get_multi_time_series(
+                    configuration,
+                    gap_since,
+                    gap_until,
+                    interval,
+                    operation_choice,
+                    operation_field_choice,
+                    user,
+                )
+                i = 0
+                for date, values_dict in values.items():
+                    for filtered_value, value in values_dict.items():
+                        is_final = (
+                            truncate(
+                                datetime.datetime.now().astimezone(get_charts_timezone()),
+                                interval.val(),
+                            )
+                            > date
                         )
-                        > date
-                    )
-                    bulk += [
-                        CachedValue(
-                            **common_options,
-                            is_final=is_final,
-                            date=date,
-                            filtered_value=filtered_value,
-                            value=value,
-                            order=i,
-                        ),
-                    ]
-                    i += 1
-        CachedValue.objects.bulk_create(bulk)
+                        bulk += [
+                            CachedValue(
+                                **common_options,
+                                is_final=is_final,
+                                date=date,
+                                filtered_value=filtered_value,
+                                value=value,
+                                order=i,
+                            ),
+                        ]
+                        i += 1
+            CachedValue.objects.bulk_create(bulk)
 
         return transform_cached_values(
             cached_query.values("date", "filtered_value", "value"),
@@ -884,7 +884,7 @@ class CriteriaToStatsM2M(models.Model):
         operation_choice=None,
         operation_field_choice=None,
         user=None,
-    ) -> Optional[OrderedDict[str, Tuple[Union[str, bool, List[str]], str]]]:
+    ) -> "Optional[OrderedDict[str, Tuple[Union[str, bool, List[str]], str]]]":
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:

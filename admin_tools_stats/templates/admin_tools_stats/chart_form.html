@@ -28,6 +28,8 @@
       {{ w }}
    {% endfor %}
    &nbsp;<button class="reload" id="reload" title="reload values from unfinished periods" type="button" style="font-size:14px">⟳</button>
+   {% if chart.cache_values %}
    &nbsp;<button class="reload" id="reload_all" title="reload all visible values" type="button" style="font-size:14px">⟳ all</button>
+   {% endif %}
    &nbsp;<a href='{% url 'chart-analytics' %}?show={{ chart.graph_key }}' target='_blank'>analytics</a>
 </form>

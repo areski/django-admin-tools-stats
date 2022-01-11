@@ -16,7 +16,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 from model_mommy import mommy
 
-from admin_tools_stats.views import AnalyticsView
+from admin_tools_stats.views import AnalyticsView, Interval
 
 from .utils import (
     BaseSuperuserAuthenticatedClient,
@@ -131,13 +131,13 @@ class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
-            "select_box_chart_type=discreteBarChart&select_box_operation_field="
+            "select_box_chart_type=stackedAreaChart&select_box_operation_field="
         )
         response = self.client.get(url)
         assertContainsAny(
             self,
             response,
-            ('{"x": 1286668800000, "y": 1.0}', '{"y": 1.0, "x": 1286668800000}'),
+            ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'),
         )
 
 
@@ -149,6 +149,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
             model_name="User",
             model_app_name="auth",
             graph_key="user_graph",
+            y_axis_format="%s",
         )
         super().setUp()
 
@@ -163,6 +164,34 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12"
             "&select_box_interval=days&select_box_chart_type=discreteBarChart"
+        )
+        response = self.client.get(url)
+        assertContainsAny(
+            self,
+            response,
+            ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'),
+        )
+
+    @override_settings(USE_TZ=True, TIME_ZONE="UTC")
+    def test_get_multi_series_cached(self):
+        """Test function view rendering multi series"""
+        self.stats.cache_values = True
+        self.stats.save()
+
+        mommy.make(
+            "CachedValue",
+            stats=self.stats,
+            time_scale=Interval.days,
+            operation=None,
+            dynamic_choices=[],
+            filtered_value="",
+            date=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc),
+            value=1,
+        )
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += (
+            "?time_since=2010-10-08&time_until=2010-10-12"
+            "&select_box_interval=days&select_box_chart_type=lineChart"
         )
         response = self.client.get(url)
         assertContainsAny(
