@@ -19,7 +19,7 @@ try:
 except ImportError:
     from backports import zoneinfo  # type: ignore
 
-from typing import Dict, List, Mapping, Optional, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 from cache_utils.decorators import cached
 from datetime_truncate import truncate
@@ -884,11 +884,11 @@ class CriteriaToStatsM2M(models.Model):
         operation_choice=None,
         operation_field_choice=None,
         user=None,
-    ):
+    ) -> Optional[OrderedDict[str, Tuple[Union[str, bool, List[str]], str]]]:
         model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:
-            return dict(self.criteria.criteria_dynamic_mapping)
+            return OrderedDict(self.criteria.criteria_dynamic_mapping)
         if field_name:
             if field_name.endswith("__isnull"):
                 return OrderedDict(
@@ -908,8 +908,8 @@ class CriteriaToStatsM2M(models.Model):
                     )
                 )
             else:
-                choices = OrderedDict()
-                fchoices = dict(field.choices or [])
+                choices: OrderedDict[str, Tuple[Union[str, bool, List[str]], str]] = OrderedDict()
+                fchoices: Dict[str, str] = dict(field.choices or [])
                 date_filters = {}
                 if not self.stats.cache_values:
                     if time_since is not None:
@@ -949,7 +949,7 @@ class CriteriaToStatsM2M(models.Model):
                         "-f_count",
                     )
                     choices_list = list(choices_queryset)
-                    other_choices_queryset = choices_list[count_limit:]
+                    other_choices_queryset: List[str] = choices_list[count_limit:]
                     choices_queryset = choices_list[:count_limit]
                 else:
                     choices_queryset = choices_queryset.order_by(field_name)
@@ -962,6 +962,7 @@ class CriteriaToStatsM2M(models.Model):
                     )
                     choices.move_to_end("other", last=False)
                 return choices
+        return None
 
     def __str__(self):
         return f"{self.stats.graph_title} - {self.criteria.criteria_name}"
