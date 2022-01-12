@@ -87,11 +87,11 @@ class ChartDataView(TemplateView):
             chart_tz = get_charts_timezone()
             time_since = datetime.strptime(str(configuration.pop("time_since")), "%Y-%m-%d")
             time_since = truncate(time_since, selected_interval.val())
-            time_since = time_since.replace(tzinfo=chart_tz)
+            time_since = time_since.astimezone(chart_tz)
 
             time_until = datetime.strptime(str(configuration.pop("time_until")), "%Y-%m-%d")
             time_until = truncate_ceiling(time_until, selected_interval.val())
-            time_until = time_until.replace(tzinfo=chart_tz)
+            time_until = time_until.astimezone(chart_tz)
 
             if time_since > time_until:
                 context["error"] = "Time since is greater than time until"

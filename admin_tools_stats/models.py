@@ -676,13 +676,19 @@ class DashboardStats(models.Model):
         # fill with zeros where the records are missing
         start = truncate(time_since, interval.val())
         end = time_until
+        tz = get_charts_timezone()
+        if hasattr(tz, 'zone'):  # pytz conversion
+            start = start.replace(tzinfo=None)
+            end = end.replace(tzinfo=None)
         dates: List[datetime.datetime] = rrule_list(interval, start, end)
         for time in dates:
             if self.get_date_field().__class__ == DateField:
                 time = time.date()
             elif settings.USE_TZ:
-                time = time.astimezone(get_charts_timezone())
-
+                if hasattr(tz, 'zone'):  # pytz conversion
+                    time = tz.localize(time)
+                else:
+                    time = time.astimezone(tz)
             if time not in series:
                 series[time] = {}
             for key in names:

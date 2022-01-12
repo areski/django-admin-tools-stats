@@ -8,15 +8,16 @@
 # The Initial Developer of the Original Code is
 # Arezqui Belaid <info@star2billing.com>
 #
-import datetime
+from datetime import datetime, timezone
 
 import django
 from django.contrib.auth.models import Permission
+from django.test import RequestFactory
 from django.test.utils import override_settings
 from django.urls import reverse
 from model_mommy import mommy
 
-from admin_tools_stats.views import AnalyticsView, Interval
+from admin_tools_stats.views import AnalyticsView, ChartDataView, Interval
 
 from .utils import (
     BaseSuperuserAuthenticatedClient,
@@ -124,10 +125,7 @@ class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series_multiple_operations(self):
         """Test function view rendering multi series with multiple operations"""
-        mommy.make(
-            "User",
-            date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc),
-        )
+        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
@@ -138,6 +136,147 @@ class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
             self,
             response,
             ('{"x": 1286668800000, "y": 1}', '{"y": 1, "x": 1286668800000}'),
+        )
+
+
+class ChartDataViewContextTests(BaseSuperuserAuthenticatedClient):
+    maxDiff = None
+
+    def setUp(self):
+        self.stats = mommy.make(
+            "DashboardStats",
+            date_field_name="date_joined",
+            graph_title="Users chart",
+            model_name="User",
+            model_app_name="auth",
+            graph_key="user_graph",
+            operation_field_name="is_active,is_staff",
+        )
+        self.request_factory = RequestFactory()
+        super().setUp()
+
+    @override_settings(USE_TZ=True, TIME_ZONE="Europe/Prague")
+    def test_get_context_no_permission(self):
+        """
+        Test function view rendering multi series with multiple operations
+        Test no permissions
+        """
+        user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += (
+            "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
+            "select_box_chart_type=stackedAreaChart&select_box_operation_field="
+        )
+        chart_data_view = ChartDataView()
+        chart_data_view.request = self.client.request(url=url)
+        chart_data_view.request.user = user
+        context = chart_data_view.get_context_data(graph_key="user_graph")
+        self.assertEqual(
+            context,
+            {
+                "error": "You have no permission to view this chart. Check if you are logged in",
+                "graph_title": "Users chart",
+                "view": chart_data_view,
+            },
+        )
+
+    def test_get_context(self):
+        """
+        Test function view rendering multi series with multiple operations
+        """
+        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += (
+            "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
+            "select_box_chart_type=stackedAreaChart&select_box_operation_field=&debug=True"
+        )
+        chart_data_view = ChartDataView()
+        chart_data_view.request = self.request_factory.get(url)
+        chart_data_view.request.user = self.user
+        context = chart_data_view.get_context_data(graph_key="user_graph")
+        self.assertDictEqual(
+            context,
+            {
+                "chart_container": "chart_container_user_graph",
+                "chart_type": "stackedAreaChart",
+                "extra": {
+                    "tag_script_js": False,
+                    "use_interactive_guideline": True,
+                    "x_axis_format": "%d %b %Y",
+                    "x_is_date": True,
+                },
+                "values": {
+                    "extra1": {
+                        "date_format": "%a %d %b %Y",
+                        "tooltip": {"y_end": "", "y_start": ""},
+                    },
+                    "name0": "",
+                    "name1": Interval.days,
+                    "x": [
+                        1286514000000,
+                        1286600400000,
+                        1286686800000,
+                        1286773200000,
+                        1286859600000,
+                    ],
+                    "y0": [0, 1, 0, 0, 0],
+                },
+                "view": chart_data_view,
+            },
+        )
+
+    @override_settings(USE_TZ=True, TIME_ZONE="Europe/Prague")
+    def test_get_context_tz(self):
+        """
+        Test function view rendering multi series with multiple operations
+        Test correct context in more complicated timezone setting
+        """
+        mommy.make("User", date_joined=datetime(2021, 10, 30, tzinfo=timezone.utc))
+        mommy.make("User", date_joined=datetime(2021, 10, 31, tzinfo=timezone.utc))
+        mommy.make("User", date_joined=datetime(2021, 11, 1, tzinfo=timezone.utc))
+        mommy.make("User", date_joined=datetime(2021, 11, 2, tzinfo=timezone.utc))
+        mommy.make("User", date_joined=datetime(2021, 11, 3, tzinfo=timezone.utc))
+        url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
+        url += (
+            "?time_since=2021-10-29&time_until=2021-11-05&select_box_interval=days&"
+            "select_box_chart_type=stackedAreaChart&select_box_operation_field=&debug=True"
+        )
+        chart_data_view = ChartDataView()
+        chart_data_view.request = self.request_factory.get(url)
+        chart_data_view.request.user = self.user
+        context = chart_data_view.get_context_data(graph_key="user_graph")
+        self.assertDictEqual(
+            context,
+            {
+                "chart_container": "chart_container_user_graph",
+                "chart_type": "stackedAreaChart",
+                "extra": {
+                    "tag_script_js": False,
+                    "use_interactive_guideline": True,
+                    "x_axis_format": "%d %b %Y",
+                    "x_is_date": True,
+                },
+                "values": {
+                    "extra1": {
+                        "date_format": "%a %d %b %Y",
+                        "tooltip": {"y_end": "", "y_start": ""},
+                    },
+                    "name0": "",
+                    "name1": Interval.days,
+                    "x": [
+                        1635458400000,  # 2021-10-28 22:00:00 GMT
+                        1635544800000,
+                        1635631200000,
+                        1635721200000,
+                        1635807600000,
+                        1635894000000,
+                        1635980400000,
+                        1636066800000,  # 2021-11-04 23:00:00 GMT
+                    ],
+                    "y0": [0, 1, 1, 1, 1, 1, 0, 0],
+                },
+                "view": chart_data_view,
+            },
         )
 
 
@@ -156,10 +295,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series(self):
         """Test function view rendering multi series"""
-        mommy.make(
-            "User",
-            date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc),
-        )
+        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12"
@@ -185,7 +321,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
             operation=None,
             dynamic_choices=[],
             filtered_value="",
-            date=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc),
+            date=datetime(2010, 10, 10, tzinfo=timezone.utc),
             value=1,
         )
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
@@ -262,10 +398,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
             use_as="multiple_series",
             id=5,
         )
-        mommy.make(
-            "User",
-            date_joined=datetime.datetime(2010, 10, 10, tzinfo=datetime.timezone.utc),
-        )
+        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += "?time_since=2010-10-08"
         url += "&time_until=2010-10-12"
