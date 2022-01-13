@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
-from model_mommy import mommy
+from model_bakery import baker
 
 from admin_tools_stats.models import DashboardStatsCriteria
 
@@ -10,7 +10,7 @@ from .utils import BaseSuperuserAuthenticatedClient
 
 class AdminIndexTests(BaseSuperuserAuthenticatedClient):
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             graph_title="User chart",
             date_field_name="date_joined",
@@ -74,21 +74,21 @@ class AdminToolsStatsAdminInterfaceTestCase(BaseSuperuserAuthenticatedClient):
 class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
     def test_admin_dashboard_page(self):
         """Test function to check dashboardstatscriteria admin pages"""
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             graph_title="User graph",
             model_name="User",
             model_app_name="auth",
         )
-        mommy.make(
+        baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             graph_title="User logged in graph",
             model_name="User",
             model_app_name="auth",
         )
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
@@ -98,7 +98,7 @@ class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
                 "true": [True, "Active"],
             },
         )
-        mommy.make("CriteriaToStatsM2M", criteria=criteria, stats=stats)
+        baker.make("CriteriaToStatsM2M", criteria=criteria, stats=stats)
         response = self.client.get("/admin/")
         self.assertContains(
             response,
@@ -127,14 +127,14 @@ class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
         )
 
     def test_admin_dashboard_page_multi_series(self):
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
             model_app_name="auth",
             graph_key="user_graph",
         )
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
@@ -144,7 +144,7 @@ class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
                 "true": [True, "Active"],
             },
         )
-        cm2m = mommy.make(
+        cm2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=stats,
@@ -165,14 +165,14 @@ class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
 
     def test_admin_dashboard_page_post(self):
         """Test function to check dashboardstatscriteria admin pages"""
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
             model_app_name="auth",
             graph_key="user_graph",
         )
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
@@ -182,7 +182,7 @@ class AdminToolsStatsAdminCharts(BaseSuperuserAuthenticatedClient):
                 "true": [True, "Active"],
             },
         )
-        mommy.make("CriteriaToStatsM2M", criteria=criteria, stats=stats)
+        baker.make("CriteriaToStatsM2M", criteria=criteria, stats=stats)
         response = self.client.post("/admin/", {"select_box_user_graph": "true"})
         self.assertContains(
             response,
@@ -225,7 +225,7 @@ class AdminToolsStatsModel(TestCase):
         self.assertEqual(self.dashboard_stats_criteria.__str__(), "call_type")
 
         # DashboardStats model
-        self.dashboard_stats = mommy.make(
+        self.dashboard_stats = baker.make(
             "DashboardStats",
             graph_key="user_graph_test",
             graph_title="User graph",
@@ -234,7 +234,7 @@ class AdminToolsStatsModel(TestCase):
             date_field_name="date_joined",
             is_visible=1,
         )
-        mommy.make(
+        baker.make(
             "CriteriaToStatsM2M",
             criteria=self.dashboard_stats_criteria,
             stats=self.dashboard_stats,

@@ -1,7 +1,7 @@
 django-nvd3
 django-bower
 django-admin-tools
-model-mommy
+model-bakery
 psycopg2==2.8.6
 mysqlclient
 django-coverage-plugin

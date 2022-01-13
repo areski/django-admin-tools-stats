@@ -15,7 +15,7 @@ from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 from django.test.utils import override_settings
 from django.urls import reverse
-from model_mommy import mommy
+from model_bakery import baker
 
 from admin_tools_stats.views import AnalyticsView, ChartDataView, Interval
 
@@ -28,7 +28,7 @@ from .utils import (
 
 class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             graph_title="User chart",
             date_field_name="date_joined",
@@ -37,7 +37,7 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
             graph_key="user_graph",
             allowed_type_operation_field_name=["Sum", "Count"],
         )
-        self.kid_stats = mommy.make(
+        self.kid_stats = baker.make(
             "DashboardStats",
             graph_title="Kid chart",
             date_field_name="birthday",
@@ -70,7 +70,7 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
     def test_get_charts_query(self):
         a = AnalyticsView()
         a.request = self.client.request()
-        a.request.user = mommy.make("User", is_superuser=True)
+        a.request.user = baker.make("User", is_superuser=True)
         if django.VERSION > (3, 2):
             self.assertQuerysetEqual(a.get_charts_query(), [self.kid_stats, self.stats])
         else:
@@ -81,7 +81,7 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
 
     def test_get_charts_query_usser(self):
         a = AnalyticsView()
-        kid_graph_user = mommy.make(
+        kid_graph_user = baker.make(
             "DashboardStats",
             graph_title="Kid chart",
             date_field_name="birthday",
@@ -91,7 +91,7 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
             show_to_users=True,
         )
         a.request = self.client.request()
-        a.request.user = mommy.make("User")
+        a.request.user = baker.make("User")
         if django.VERSION > (3, 2):
             self.assertQuerysetEqual(a.get_charts_query(), [kid_graph_user])
         else:
@@ -100,19 +100,19 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
     def test_get_templates_names(self):
         a = AnalyticsView()
         a.request = self.client.request()
-        a.request.user = mommy.make("User", is_superuser=True)
+        a.request.user = baker.make("User", is_superuser=True)
         self.assertEqual(a.get_template_names(), "admin_tools_stats/analytics.html")
 
     def test_get_templates_names_usser(self):
         a = AnalyticsView()
         a.request = self.client.request()
-        a.request.user = mommy.make("User")
+        a.request.user = baker.make("User")
         self.assertEqual(a.get_template_names(), "admin_tools_stats/analytics_user.html")
 
 
 class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
@@ -125,7 +125,7 @@ class MultiFieldViewsTests(BaseSuperuserAuthenticatedClient):
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series_multiple_operations(self):
         """Test function view rendering multi series with multiple operations"""
-        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
@@ -143,7 +143,7 @@ class ChartDataViewContextTests(BaseSuperuserAuthenticatedClient):
     maxDiff = None
 
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             graph_title="Users chart",
@@ -161,7 +161,7 @@ class ChartDataViewContextTests(BaseSuperuserAuthenticatedClient):
         Test function view rendering multi series with multiple operations
         Test no permissions
         """
-        user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        user = baker.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
@@ -184,7 +184,7 @@ class ChartDataViewContextTests(BaseSuperuserAuthenticatedClient):
         """
         Test function view rendering multi series with multiple operations
         """
-        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12&select_box_interval=days&"
@@ -231,11 +231,11 @@ class ChartDataViewContextTests(BaseSuperuserAuthenticatedClient):
         Test function view rendering multi series with multiple operations
         Test correct context in more complicated timezone setting
         """
-        mommy.make("User", date_joined=datetime(2021, 10, 30, tzinfo=timezone.utc))
-        mommy.make("User", date_joined=datetime(2021, 10, 31, tzinfo=timezone.utc))
-        mommy.make("User", date_joined=datetime(2021, 11, 1, tzinfo=timezone.utc))
-        mommy.make("User", date_joined=datetime(2021, 11, 2, tzinfo=timezone.utc))
-        mommy.make("User", date_joined=datetime(2021, 11, 3, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2021, 10, 30, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2021, 10, 31, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2021, 11, 1, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2021, 11, 2, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2021, 11, 3, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2021-10-29&time_until=2021-11-05&select_box_interval=days&"
@@ -282,7 +282,7 @@ class ChartDataViewContextTests(BaseSuperuserAuthenticatedClient):
 
 class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
@@ -295,7 +295,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series(self):
         """Test function view rendering multi series"""
-        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += (
             "?time_since=2010-10-08&time_until=2010-10-12"
@@ -314,7 +314,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         self.stats.cache_values = True
         self.stats.save()
 
-        mommy.make(
+        baker.make(
             "CachedValue",
             stats=self.stats,
             time_scale=Interval.days,
@@ -381,7 +381,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_get_multi_series_dynamic_criteria(self):
         """Test function view rendering multi series with dynamic criteria"""
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
@@ -391,14 +391,14 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
                 "true": [False, "Active"],
             },
         )
-        mommy.make(
+        baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
             id=5,
         )
-        mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
+        baker.make("User", date_joined=datetime(2010, 10, 10, tzinfo=timezone.utc))
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += "?time_since=2010-10-08"
         url += "&time_until=2010-10-12"
@@ -414,7 +414,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
 class UserViewsTests(BaseUserAuthenticatedClient):
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_no_permissions_not_enabled(self):
-        mommy.make(
+        baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
@@ -436,7 +436,7 @@ class UserViewsTests(BaseUserAuthenticatedClient):
 
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_no_permissions(self):
-        mommy.make(
+        baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
@@ -461,7 +461,7 @@ class UserViewsTests(BaseUserAuthenticatedClient):
 
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
     def test_user_chart(self):
-        mommy.make(
+        baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",

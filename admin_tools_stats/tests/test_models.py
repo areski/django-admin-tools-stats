@@ -19,7 +19,7 @@ from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Varia
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.utils import timezone as dj_timezone
-from model_mommy import mommy
+from model_bakery import baker
 
 from admin_tools_stats.models import CachedValue, truncate_ceiling
 from admin_tools_stats.views import Interval
@@ -39,7 +39,7 @@ class DashboardStatsCriteriaTests(TestCase):
         """
         Test criteria_dynamic_mapping_preview() function
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             criteria_dynamic_mapping="{'foo': 'bar'}",
@@ -50,7 +50,7 @@ class DashboardStatsCriteriaTests(TestCase):
         """
         Test criteria_dynamic_mapping_preview() function
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
         )
@@ -60,7 +60,7 @@ class DashboardStatsCriteriaTests(TestCase):
         """
         Test criteria_dynamic_mapping_preview() function
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             criteria_dynamic_mapping="{'foo': 'bar" + "a" * 105 + "'}",
@@ -74,7 +74,7 @@ class DashboardStatsCriteriaTests(TestCase):
         """
         Test get_dynamic_criteria_field_name() function
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "CriteriaToStatsM2M",
             criteria__dynamic_criteria_field_name="field_name",
             prefix="related__",
@@ -87,14 +87,14 @@ class ModelTests(TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
             model_app_name="auth",
             graph_key="user_graph",
         )
-        self.kid_stats = mommy.make(
+        self.kid_stats = baker.make(
             "DashboardStats",
             date_field_name="birthday",
             model_name="TestKid",
@@ -163,7 +163,7 @@ class ModelTests(TestCase):
     maxDiff = None
 
     def test_get_operation(self):
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="TestKid",
             model_app_name="demoproject",
@@ -186,7 +186,7 @@ class ModelTests(TestCase):
 
     @skipIf(django.VERSION[0] < 3, "Django < 3 doesn't support distinct Avg, Sum, ...")
     def test_get_operation_distinct(self):
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="TestKid",
             model_app_name="demoproject",
@@ -207,7 +207,7 @@ class ModelTests(TestCase):
         )
 
     def test_get_operation_no_operation_choice(self):
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="TestKid",
             model_app_name="demoproject",
@@ -233,7 +233,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 10, 12)
 
@@ -260,16 +260,16 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         with m2m criteria with related prefix
         """
-        user = mommy.make("User", first_name="Milos", is_superuser=True)
-        mommy.make("TestKid", author=user, birthday=date(2010, 10, 10))
+        user = baker.make("User", first_name="Milos", is_superuser=True)
+        baker.make("TestKid", author=user, birthday=date(2010, 10, 10))
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 10, 12)
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="first_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.kid_stats,
@@ -307,26 +307,26 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Choices are based on time range
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="first_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
             choices_based_on_time_range=True,
         )
-        user = mommy.make(
+        user = baker.make(
             "User",
             date_joined=date(2010, 10, 10),
             first_name="Petr",
             is_superuser=True,
         )
-        mommy.make("User", date_joined=date(2010, 10, 9), first_name="Adam")
-        mommy.make("User", date_joined=date(2010, 10, 15), first_name="Jirka")
+        baker.make("User", date_joined=date(2010, 10, 9), first_name="Adam")
+        baker.make("User", date_joined=date(2010, 10, 15), first_name="Jirka")
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 10, 12)
 
@@ -359,27 +359,27 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Choices are limited by count
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="first_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
             count_limit=1,
         )
-        user = mommy.make(
+        user = baker.make(
             "User",
             date_joined=date(2010, 10, 10),
             first_name="Petr",
             is_superuser=True,
         )
-        mommy.make("User", date_joined=date(2010, 10, 10), first_name="Petr")
-        mommy.make("User", date_joined=date(2010, 10, 9), first_name="Adam")
-        mommy.make("User", date_joined=date(2010, 10, 11), first_name="Jirka")
+        baker.make("User", date_joined=date(2010, 10, 10), first_name="Petr")
+        baker.make("User", date_joined=date(2010, 10, 9), first_name="Adam")
+        baker.make("User", date_joined=date(2010, 10, 11), first_name="Jirka")
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 10, 12)
 
@@ -409,7 +409,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_hours(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=datetime(2010, 10, 8, 23, 13))
+        user = baker.make("User", date_joined=datetime(2010, 10, 8, 23, 13))
         time_since = datetime(2010, 10, 8, 22)
         time_until = datetime(2010, 10, 8, 23, 59)
 
@@ -430,7 +430,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_weeks(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        user = baker.make("User", date_joined=date(2010, 10, 30))
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 11, 8)
 
@@ -455,7 +455,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_months(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        user = baker.make("User", date_joined=date(2010, 10, 30))
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 11, 30)
 
@@ -476,7 +476,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_quarters(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        user = baker.make("User", date_joined=date(2010, 10, 30))
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2011, 10, 8)
 
@@ -500,7 +500,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_years(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        user = mommy.make("User", date_joined=date(2010, 10, 30))
+        user = baker.make("User", date_joined=date(2010, 10, 30))
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2011, 10, 8)
 
@@ -518,8 +518,8 @@ class ModelTests(TestCase):
     def test_get_multi_series_datetime_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
         current_tz = dj_timezone.get_current_timezone()
-        user = mommy.make("User", date_joined=datetime(2010, 10, 10, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
+        user = baker.make("User", date_joined=datetime(2010, 10, 10, tzinfo=current_tz))
+        baker.make("User", date_joined=datetime(2010, 10, 10, 12, 34, tzinfo=current_tz))
         time_since = datetime(2010, 10, 9, 0, 0)
         time_until = datetime(2010, 10, 11, 0, 0)
 
@@ -541,9 +541,9 @@ class ModelTests(TestCase):
         Test, that everything works, if the chart is set in different timezone than the server
         """
         current_tz = dj_timezone.get_current_timezone()
-        user = mommy.make("User", date_joined=datetime(2010, 10, 10, 0, 0, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
+        user = baker.make("User", date_joined=datetime(2010, 10, 10, 0, 0, tzinfo=current_tz))
+        baker.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
+        baker.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
         time_since = datetime(2010, 10, 9, 0, 0, tzinfo=UTC)
         time_until = datetime(2010, 10, 11, 0, 0, tzinfo=UTC)
 
@@ -566,9 +566,9 @@ class ModelTests(TestCase):
         Set timezone by zone parameter
         """
         current_tz = dj_timezone.get_current_timezone()
-        user = mommy.make("User", date_joined=datetime(2010, 10, 10, 0, 0, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
-        mommy.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
+        user = baker.make("User", date_joined=datetime(2010, 10, 10, 0, 0, tzinfo=current_tz))
+        baker.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=current_tz))
+        baker.make("User", date_joined=datetime(2010, 10, 10, 23, 34, tzinfo=UTC))
         time_since = datetime(2010, 10, 9, 0, 0, tzinfo=UTC)
         time_until = datetime(2010, 10, 11, 0, 0, tzinfo=UTC)
 
@@ -586,13 +586,13 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=True, TIME_ZONE="CET")
     def test_get_multi_series_date_tz(self):
         """Test function to check DashboardStats.get_multi_time_series()"""
-        mommy.make("TestKid", birthday=date(2010, 10, 10))
-        mommy.make("TestKid", birthday=None)
+        baker.make("TestKid", birthday=date(2010, 10, 10))
+        baker.make("TestKid", birthday=None)
         time_since = datetime(2010, 10, 9)
         time_until = datetime(2010, 10, 11)
 
         interval = Interval.days
-        user = mommy.make("User")
+        user = baker.make("User")
         serie = self.kid_stats.get_multi_time_series(
             {}, time_since, time_until, interval, None, None, user
         )
@@ -610,7 +610,7 @@ class ModelTests(TestCase):
         on edge of daylight saving time change
         """
         current_tz = zoneinfo.ZoneInfo("Europe/Prague")
-        user = mommy.make("User", date_joined=datetime(2019, 10, 28).astimezone(current_tz))
+        user = baker.make("User", date_joined=datetime(2019, 10, 28).astimezone(current_tz))
         time_since = datetime(2019, 10, 27, 0, 0)
         time_until = datetime(2019, 10, 29, 0, 0)
 
@@ -632,7 +632,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_distinct_count(self):
         """Test function to check DashboardStats.get_multi_time_series() with distinct count."""
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="User",
             date_field_name="date_joined",
@@ -641,9 +641,9 @@ class ModelTests(TestCase):
             distinct=True,
             operation_field_name="first_name",
         )
-        user = mommy.make("User", date_joined=date(2010, 10, 10), first_name="Foo")
-        mommy.make("User", date_joined=date(2010, 10, 10), first_name="Foo")
-        mommy.make("User", date_joined=date(2010, 10, 10), first_name="Bar")
+        user = baker.make("User", date_joined=date(2010, 10, 10), first_name="Foo")
+        baker.make("User", date_joined=date(2010, 10, 10), first_name="Foo")
+        baker.make("User", date_joined=date(2010, 10, 10), first_name="Bar")
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 10, 12)
 
@@ -674,7 +674,7 @@ class ModelTests(TestCase):
             ("Variance", 24.666666666666668),
             ("AvgCountPerInstance", 1),
         ):
-            stats = mommy.make(
+            stats = baker.make(
                 "DashboardStats",
                 model_name="TestKid",
                 date_field_name="birthday",
@@ -682,15 +682,15 @@ class ModelTests(TestCase):
                 type_operation_field_name=func,
                 operation_field_name="age",
             )
-            mommy.make("TestKid", birthday=date(2010, 10, 10), age=12)
-            mommy.make("TestKid", birthday=date(2010, 10, 10), age=1)
-            mommy.make("TestKid", birthday=date(2010, 10, 10), age=2)
-            mommy.make("TestKid", birthday=None)
+            baker.make("TestKid", birthday=date(2010, 10, 10), age=12)
+            baker.make("TestKid", birthday=date(2010, 10, 10), age=1)
+            baker.make("TestKid", birthday=date(2010, 10, 10), age=2)
+            baker.make("TestKid", birthday=None)
             time_since = datetime(2010, 10, 9)
             time_until = datetime(2010, 10, 10)
 
             interval = Interval.days
-            user = mommy.make("User")
+            user = baker.make("User")
             serie = stats.get_multi_time_series(
                 {}, time_since, time_until, interval, None, None, user
             )
@@ -707,7 +707,7 @@ class ModelTests(TestCase):
     @override_settings(USE_TZ=False)
     def test_get_multi_series_dynamic_field_name(self):
         """Test function to check DashboardStats.get_multi_time_series() with dynamic criteria mapping"""
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
@@ -717,14 +717,14 @@ class ModelTests(TestCase):
                 "true": [True, "Active"],
             },
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
-        mommy.make("User", date_joined=date(2010, 10, 13), is_active=False)
+        user = baker.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        baker.make("User", date_joined=date(2010, 10, 13), is_active=False)
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
@@ -757,7 +757,7 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series() with dynamic criteria mapping
         the criteria is given in old format
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
@@ -766,14 +766,14 @@ class ModelTests(TestCase):
                 "True": "Active",
             },
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
-        mommy.make("User", date_joined=date(2010, 10, 13), is_active=False)
+        user = baker.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        baker.make("User", date_joined=date(2010, 10, 13), is_active=False)
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
@@ -800,7 +800,7 @@ class ModelTests(TestCase):
         """
         Test exception is thrown, if time_since is greate than time_until
         """
-        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        user = baker.make("User", date_joined=date(2010, 10, 12), is_active=True)
         with self.assertRaisesRegexp(Exception, "time_since is greater than time_until"):
             self.stats.get_multi_time_series(
                 {}, datetime(2010, 10, 14), datetime(2010, 10, 10), Interval.days, None, None, user
@@ -816,19 +816,19 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         DashboardStatsCriteria is set, but without dynamic mapping, so the values are autogenerated.
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User", date_joined=date(2010, 10, 12), is_active=True)
-        mommy.make("User", date_joined=date(2010, 10, 13), is_active=False)
+        user = baker.make("User", date_joined=date(2010, 10, 12), is_active=True)
+        baker.make("User", date_joined=date(2010, 10, 13), is_active=False)
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
@@ -862,25 +862,25 @@ class ModelTests(TestCase):
         DashboardStatsCriteria is set, but without dynamic mapping,
         so the values are autogenerated on CharField.
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="last_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        mommy.make("User", date_joined=date(2010, 10, 12), last_name="Foo")
-        mommy.make("User", date_joined=date(2010, 10, 13), last_name="Bar")
-        mommy.make("User", date_joined=date(2010, 10, 14))
+        baker.make("User", date_joined=date(2010, 10, 12), last_name="Foo")
+        baker.make("User", date_joined=date(2010, 10, 13), last_name="Bar")
+        baker.make("User", date_joined=date(2010, 10, 14))
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
-        user = mommy.make("User", is_superuser=True)
+        user = baker.make("User", is_superuser=True)
         serie = self.stats.get_multi_time_series(
             {"select_box_multiple_series": m2m.id},
             time_since,
@@ -909,35 +909,35 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Try to combine multiple_series filter with chart_filter.
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="last_name",
         )
-        criteria_active = mommy.make(
+        criteria_active = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             dynamic_criteria_field_name="is_active",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        m2m_active = mommy.make(
+        m2m_active = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria_active,
             stats=self.stats,
             use_as="chart_filter",
         )
-        mommy.make(
+        baker.make(
             "User",
             date_joined=date(2010, 10, 12),
             last_name="Foo",
             is_active=True,
         )
-        mommy.make(
+        baker.make(
             "User",
             date_joined=date(2010, 10, 13),
             last_name="Bar",
@@ -947,7 +947,7 @@ class ModelTests(TestCase):
         time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
-        user = mommy.make("User", is_superuser=True)
+        user = baker.make("User", is_superuser=True)
         arguments = {
             "select_box_multiple_series": m2m.id,
             "select_box_dynamic_%s" % m2m_active.id: "True",
@@ -970,12 +970,12 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         If user has no permission and user field is not defined, exception must be thrown.
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="last_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
@@ -985,7 +985,7 @@ class ModelTests(TestCase):
         time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
-        user = mommy.make("User")
+        user = baker.make("User")
         arguments = {"select_box_multiple_series": m2m.id}
         with self.assertRaisesRegex(
             Exception,
@@ -1002,7 +1002,7 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Check results, if stats are displayed for user
         """
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="TestKid",
             date_field_name="appointment",
@@ -1012,33 +1012,33 @@ class ModelTests(TestCase):
             operation_field_name="age",
             user_field_name="author",
         )
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=stats,
             use_as="multiple_series",
         )
-        user = mommy.make("User")
-        mommy.make(
+        user = baker.make("User")
+        baker.make(
             "TestKid",
             appointment=date(2010, 10, 12),
             name="Foo",
             age=5,
             author=user,
         )
-        mommy.make(
+        baker.make(
             "TestKid",
             appointment=date(2010, 10, 13),
             name="Bar",
             age=7,
             author=user,
         )
-        mommy.make("TestKid", appointment=date(2010, 10, 13), name="Bar", age=7)
+        baker.make("TestKid", appointment=date(2010, 10, 13), name="Bar", age=7)
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
@@ -1063,7 +1063,7 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Check __isnull criteria
         """
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="TestKid",
             date_field_name="appointment",
@@ -1072,30 +1072,30 @@ class ModelTests(TestCase):
             distinct=True,
             operation_field_name="age",
         )
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="birthday",
             dynamic_criteria_field_name="birthday__isnull",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=stats,
             use_as="multiple_series",
         )
-        mommy.make(
+        baker.make(
             "TestKid",
             appointment=date(2010, 10, 12),
             birthday=date(2010, 11, 12),
             age=4,
         )
-        mommy.make("TestKid", appointment=date(2010, 10, 13), birthday=None, age=3)
+        baker.make("TestKid", appointment=date(2010, 10, 13), birthday=None, age=3)
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
-        user = mommy.make("User", is_staff=True)
+        user = baker.make("User", is_staff=True)
         serie = stats.get_multi_time_series(
             arguments, time_since, time_until, interval, None, None, user
         )
@@ -1114,7 +1114,7 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Test case with multiple operations and no operation field set
         """
-        stats = mommy.make(
+        stats = baker.make(
             "DashboardStats",
             model_name="TestKid",
             date_field_name="appointment",
@@ -1122,31 +1122,31 @@ class ModelTests(TestCase):
             type_operation_field_name="Sum",
             operation_field_name="age, height",
         )
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="birthday",
             dynamic_criteria_field_name="birthday__isnull",
         )
-        mommy.make(
+        baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=stats,
             use_as="multiple_series",
         )
-        mommy.make(
+        baker.make(
             "TestKid",
             appointment=date(2010, 10, 12),
             birthday=date(2010, 11, 12),
             age=4,
             height=60,
         )
-        mommy.make("TestKid", appointment=date(2010, 10, 13), birthday=None, age=3, height=50)
+        baker.make("TestKid", appointment=date(2010, 10, 13), birthday=None, age=3, height=50)
         time_since = datetime(2010, 10, 10)
         time_until = datetime(2010, 10, 14)
 
         interval = Interval.days
         arguments = {"operation_choice": ""}
-        user = mommy.make("User", is_staff=True)
+        user = baker.make("User", is_staff=True)
         serie = stats.get_multi_time_series(
             arguments, time_since, time_until, interval, "", None, user
         )
@@ -1169,35 +1169,35 @@ class ModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series()
         Try to combine multiple_series filter with chart_filter.
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="last_name",
         )
-        criteria_active = mommy.make(
+        criteria_active = baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             criteria_fix_mapping={"is_active": True},
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        mommy.make(
+        baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria_active,
             stats=self.stats,
             use_as="chart_filter",
         )
-        mommy.make(
+        baker.make(
             "User",
             date_joined=date(2010, 10, 12),
             last_name="Foo",
             is_active=True,
         )
-        mommy.make(
+        baker.make(
             "User",
             date_joined=date(2010, 10, 13),
             last_name="Bar",
@@ -1208,7 +1208,7 @@ class ModelTests(TestCase):
 
         interval = Interval.days
         arguments = {"select_box_multiple_series": m2m.id}
-        user = mommy.make("User", is_superuser=True)
+        user = baker.make("User", is_superuser=True)
         serie = self.stats.get_multi_time_series(
             arguments, time_since, time_until, interval, None, None, user
         )
@@ -1225,23 +1225,23 @@ class ModelTests(TestCase):
         """
         Test that non-superuser without user_field_name can't see charts
         """
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="last_name",
         )
-        mommy.make(
+        baker.make(
             "DashboardStatsCriteria",
             criteria_name="active",
             criteria_fix_mapping={"is_active": True},
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
             use_as="multiple_series",
         )
-        user = mommy.make(
+        user = baker.make(
             "User",
             date_joined=date(2010, 10, 12),
             last_name="Foo",
@@ -1286,7 +1286,7 @@ class ModelTests(TestCase):
 
 class GetTimeSeriesTests(TestCase):
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
@@ -1296,7 +1296,7 @@ class GetTimeSeriesTests(TestCase):
 
     def test_get_time_series(self):
         """Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache"""
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         CachedValue.objects.all().delete()
         time_since = datetime(2010, 10, 8)
         time_until = datetime(2010, 10, 12)
@@ -1325,7 +1325,7 @@ class CacheModelTests(TestCase):
     maxDiff = None
 
     def setUp(self):
-        self.stats = mommy.make(
+        self.stats = baker.make(
             "DashboardStats",
             date_field_name="date_joined",
             model_name="User",
@@ -1341,19 +1341,19 @@ class CacheModelTests(TestCase):
             "filtered_value": "",
         }
         current_tz = dj_timezone.get_current_timezone()
-        mommy.make(
+        baker.make(
             "CachedValue",
             **common_parameters,
             date=datetime(2010, 10, 9).astimezone(current_tz),
             value=3,
         )
-        mommy.make(
+        baker.make(
             "CachedValue",
             **common_parameters,
             date=datetime(2010, 10, 11).astimezone(current_tz),
             value=5,
         )
-        mommy.make(
+        baker.make(
             "CachedValue",
             **common_parameters,
             date=datetime(2010, 10, 12).astimezone(current_tz),
@@ -1363,7 +1363,7 @@ class CacheModelTests(TestCase):
 
     def test_get_multi_series_cached(self):
         """Test DashboardStats.get_multi_time_series_cached() if some values were already in cache"""
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
         time_until = datetime(2010, 10, 13).astimezone(current_tz)
@@ -1383,7 +1383,7 @@ class CacheModelTests(TestCase):
         Simple test of DashboardStats.get_multi_time_series_cached() same as the variant without cache
         Without reload, and with no cached values, the output is blank.
         """
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         CachedValue.objects.all().delete()
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
@@ -1422,7 +1422,7 @@ class CacheModelTests(TestCase):
 
     def test_get_multi_series_cached_values(self):
         """Test DashboardStats.get_multi_time_series_cached() if some values were already in cache"""
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
         time_until = datetime(2010, 10, 13).astimezone(current_tz)
@@ -1442,7 +1442,7 @@ class CacheModelTests(TestCase):
 
     def test_get_multi_series_cached_values_reload(self):
         """Same as test above, but the data reload is requested"""
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
         time_until = datetime(2010, 10, 13).astimezone(current_tz)
@@ -1462,7 +1462,7 @@ class CacheModelTests(TestCase):
 
     def test_get_multi_series_cached_values_reload_all(self):
         """Same as test above, but reload of all data is requested"""
-        user = mommy.make("User", date_joined=date(2010, 10, 10))
+        user = baker.make("User", date_joined=date(2010, 10, 10))
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
         time_until = datetime(2010, 10, 13).astimezone(current_tz)
@@ -1482,24 +1482,24 @@ class CacheModelTests(TestCase):
 
     def test_choices_based_on_time_range(self):
         """Same as test above, but reload of all data is requested"""
-        user = mommy.make(
+        user = baker.make(
             "User",
             date_joined=date(2010, 10, 10),
             is_superuser=True,
             first_name="John",
         )
-        mommy.make("User", date_joined=date(2010, 10, 11), first_name="Karl")
-        mommy.make("User", date_joined=date(2010, 10, 18), first_name="Mark")
+        baker.make("User", date_joined=date(2010, 10, 11), first_name="Karl")
+        baker.make("User", date_joined=date(2010, 10, 18), first_name="Mark")
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
         time_until = datetime(2010, 10, 13).astimezone(current_tz)
 
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="first_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
@@ -1533,20 +1533,20 @@ class CacheModelTests(TestCase):
         Test function to check DashboardStats.get_multi_time_series_cached()
         with m2m criteria with dynamic_choices
         """
-        user = mommy.make(
+        user = baker.make(
             "User", date_joined=date(2010, 10, 10), first_name="Milos", is_superuser=True
         )
-        mommy.make("User", date_joined=date(2010, 10, 12), first_name="Milos")
-        mommy.make("User", date_joined=date(2010, 10, 11), first_name="Kuba")
+        baker.make("User", date_joined=date(2010, 10, 12), first_name="Milos")
+        baker.make("User", date_joined=date(2010, 10, 11), first_name="Kuba")
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 8).astimezone(current_tz)
         time_until = datetime(2010, 10, 12).astimezone(current_tz)
-        criteria = mommy.make(
+        criteria = baker.make(
             "DashboardStatsCriteria",
             criteria_name="name",
             dynamic_criteria_field_name="first_name",
         )
-        m2m = mommy.make(
+        m2m = baker.make(
             "CriteriaToStatsM2M",
             criteria=criteria,
             stats=self.stats,
@@ -1579,9 +1579,9 @@ class CacheModelTests(TestCase):
         Test, that last value is counted correctly
         """
         CachedValue.objects.all().delete()
-        user = mommy.make("User", date_joined=date(2010, 10, 10), is_superuser=True)
-        mommy.make("User", date_joined=datetime(2010, 10, 12, 12, 12))
-        mommy.make("User", date_joined=datetime(2010, 10, 11))
+        user = baker.make("User", date_joined=date(2010, 10, 10), is_superuser=True)
+        baker.make("User", date_joined=datetime(2010, 10, 12, 12, 12))
+        baker.make("User", date_joined=datetime(2010, 10, 11))
         current_tz = dj_timezone.get_current_timezone()
         time_since = datetime(2010, 10, 10).astimezone(current_tz)
         time_until = datetime(2010, 10, 12, 23, 59).astimezone(current_tz)
