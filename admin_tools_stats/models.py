@@ -677,7 +677,7 @@ class DashboardStats(models.Model):
         start = truncate(time_since, interval.val())
         end = time_until
         tz = get_charts_timezone()
-        if hasattr(tz, 'zone'):  # pytz conversion
+        if hasattr(tz, "zone"):  # pytz conversion
             start = start.replace(tzinfo=None)
             end = end.replace(tzinfo=None)
         dates: List[datetime.datetime] = rrule_list(interval, start, end)
@@ -685,7 +685,7 @@ class DashboardStats(models.Model):
             if self.get_date_field().__class__ == DateField:
                 time = time.date()
             elif settings.USE_TZ:
-                if hasattr(tz, 'zone'):  # pytz conversion
+                if hasattr(tz, "zone"):  # pytz conversion
                     time = tz.localize(time)
                 else:
                     time = time.astimezone(tz)
