@@ -361,8 +361,8 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         response = self.client.get(url)
         self.assertContains(
             response,
-            b"time data \u00272010\u002D13\u002D12\u0027 "
-            b"does not match format \u0027%Y\u002D%m\u002D%d\u0027",
+            b"time data \\u00272010\\u002D13\\u002D12\\u0027 "
+            b"does not match format \\u0027%Y\\u002D%m\\u002D%d\\u0027",
         )
 
     @override_settings(USE_TZ=True, TIME_ZONE="UTC")
@@ -373,7 +373,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         """
         url = reverse("chart-data", kwargs={"graph_key": "user_graph"})
         url += "?time_since=2010-10-08&time_until=2010-13-12&debug=True"
-        with self.assertRaisesRegexp(
+        with self.assertRaisesRegex(
             ValueError, "^time data '2010-13-12' does not match format '%Y-%m-%d'$"
         ):
             self.client.get(url)

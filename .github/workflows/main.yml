@@ -80,14 +80,21 @@ jobs:
         if: ${{ matrix.DJANGO_VERSION == '2.2.*' || matrix.DJANGO_VERSION == '3.0.*' }}
         run: pip install django-jsonfield
       - name: Install patched django-cache-utils for Django 4.0
-        if: ${{ matrix.DJANGO_VERSION == '4.0.*' }}
+        if: ${{ matrix.DJANGO_VERSION == '4.0.*' || matrix.DJANGO_VERSION == '3.2.*' }}
         run: pip install git+https://github.com/PetrDlouhy/django-cache-utils@django40
       - name: Testing
         run: |
           if [ "$matrix.DB_ENGINE" = 'mysql' ]; then
             mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u db_user -p mysql mysql
           fi
-          coverage run manage.py test
+          case "${{ matrix.DJANGO_VERSION }},${{ matrix.python-version }}" in
+            "2.2.*,3.10"|"3.0.*,3.10"|"3.1.*,3.10")  # Django runs with warnings in this python version
+              python -m coverage run manage.py test
+              ;;
+            *)
+              python -W error::DeprecationWarning -m coverage run manage.py test
+              ;;
+          esac
           coverage xml && codecov
         env:
           POSTGRES_HOST: localhost

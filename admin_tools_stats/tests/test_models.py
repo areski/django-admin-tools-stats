@@ -68,7 +68,7 @@ class DashboardStatsCriteriaTests(TestCase):
         result = criteria.criteria_dynamic_mapping_preview()
         self.assertTrue("{'foo': 'baraaaaaa" in result)
         self.assertTrue("aaaaaa..." in result)
-        self.assertEquals(len(result), 103)
+        self.assertEqual(len(result), 103)
 
     def test_criteria_m2m_get_dynamic_criteria_field_name_prefix(self):
         """
@@ -80,7 +80,7 @@ class DashboardStatsCriteriaTests(TestCase):
             prefix="related__",
         )
         result = criteria.get_dynamic_criteria_field_name()
-        self.assertEquals(result, "related__field_name")
+        self.assertEqual(result, "related__field_name")
 
 
 class ModelTests(TestCase):
@@ -801,7 +801,7 @@ class ModelTests(TestCase):
         Test exception is thrown, if time_since is greate than time_until
         """
         user = baker.make("User", date_joined=date(2010, 10, 12), is_active=True)
-        with self.assertRaisesRegexp(Exception, "time_since is greater than time_until"):
+        with self.assertRaisesRegex(Exception, "time_since is greater than time_until"):
             self.stats.get_multi_time_series(
                 {}, datetime(2010, 10, 14), datetime(2010, 10, 10), Interval.days, None, None, user
             )
