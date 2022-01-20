@@ -983,7 +983,7 @@ class CriteriaToStatsM2M(models.Model):
     ):
         if not self.count_limit:  # We don't have to cache different operation choices
             operation_choice = None
-        if not self.choices_based_on_time_range:
+        if not self.choices_based_on_time_range or self.stats.cache_values:
             time_since = None
             time_until = None
         choices = self._get_dynamic_choices(
