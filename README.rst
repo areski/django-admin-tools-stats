@@ -86,7 +86,12 @@ Run migrations::
 
     $ python manage.py migrate
 
-Open admin panel, configure ``Dashboard Stats Criteria`` & ``Dashboard Stats`` respectively
+Open Django admin root and add your ``Dashboard Stats`` configuration:
+
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/master/docs/source/_static/Sn%C3%ADmek%20obrazovky_2022-03-04_17-29-58.png
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/raw/master/docs/source/_static/Sn%C3%ADmek%20obrazovky_2022-03-04_17-31-16.png
+
+Then the charts will appear on the root of Django admin page as well as on analytics page (``/admin_tools_stats/analytics/``).
 
 ======================
 Special configurations
