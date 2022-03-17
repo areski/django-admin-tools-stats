@@ -1,8 +1,8 @@
 Changelog
 =========
 
-0.26.0 (unreleased)
--------------------
+1.0.0 (unreleased)
+------------------
 * store chart values in CachedValue table in DB to make charts with more complicated queries faster
 * add refresh/refresh all/reload on change controls to the charts
 * use unpkg versions of nvd3/d3 libraries as default to simplify initial configuration
