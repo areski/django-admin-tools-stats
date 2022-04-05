@@ -120,11 +120,6 @@ class ChartDataView(TemplateView):
             context["graph_title"] = dashboard_stats.graph_title
             logger.exception(e)
             return context
-        criteria = dashboard_stats.get_multi_series_criteria(configuration)
-        if criteria:
-            choices = criteria.get_dynamic_choices(time_since, time_until)
-        else:
-            choices = {}
 
         ydata_serie: Dict[str, List[int]] = {}
         names = {}
@@ -141,9 +136,7 @@ class ChartDataView(TemplateView):
                 y_key = "y%i" % serie_i_map[key]
                 if y_key not in ydata_serie:
                     ydata_serie[y_key] = []
-                    names["name%i" % serie_i_map[key]] = str(
-                        choices[key][1] if key in choices else key
-                    )
+                    names["name%i" % serie_i_map[key]] = str(key)
                 ydata_serie[y_key].append(value if value else 0)
 
         context["extra"] = {
