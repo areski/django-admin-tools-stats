@@ -738,6 +738,7 @@ class DashboardStats(models.Model):
         operation_field_choice: Optional[str],
         user: Union[User, AnonymousUser],
     ):
+        configuration = configuration.copy()
         m2m = self.get_multi_series_criteria(configuration)
         reload_data = configuration.pop("reload", None) in ("true", "True")
         reload_all_data = configuration.pop("reload_all", None) in ("true", "True")
