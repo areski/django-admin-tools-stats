@@ -758,9 +758,8 @@ class DashboardStats(models.Model):
             gaps = self.get_gaps(
                 reload_data, reload_all_data, time_since, time_until, interval, cached_query
             )
-            bulk = []
             for gap_since, gap_until in gaps:
-                cached_query.filter(date__gte=gap_since, date__lte=gap_until).delete()
+                bulk = []
                 values = self.get_multi_time_series(
                     configuration,
                     gap_since,
@@ -791,7 +790,8 @@ class DashboardStats(models.Model):
                             ),
                         ]
                         i += 1
-            CachedValue.objects.bulk_create(bulk)
+                cached_query.filter(date__gte=gap_since, date__lte=gap_until).delete()
+                CachedValue.objects.bulk_create(bulk)
 
         return transform_cached_values(
             cached_query.values("date", "filtered_value", "value"),
