@@ -747,7 +747,7 @@ class DashboardStats(models.Model):
             "stats": self,
             "operation": operation_choice,
             "operation_field_name": operation_field_choice,
-            "time_scale": interval,
+            "time_scale": interval.value,
             "multiple_series_choice": criteria,
             "dynamic_choices": get_dynamic_choices_array(configuration),
         }
@@ -1006,7 +1006,7 @@ class CachedValue(models.Model):
     )
     date = models.DateTimeField()
     time_scale = models.CharField(
-        verbose_name=_("Default time scale"),
+        verbose_name=_("Time scale"),
         null=False,
         blank=False,
         default="days",
