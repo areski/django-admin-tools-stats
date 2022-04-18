@@ -317,7 +317,7 @@ class SuperuserViewsTests(BaseSuperuserAuthenticatedClient):
         baker.make(
             "CachedValue",
             stats=self.stats,
-            time_scale=Interval.days,
+            time_scale="days",
             operation=None,
             dynamic_choices=[],
             filtered_value="",
