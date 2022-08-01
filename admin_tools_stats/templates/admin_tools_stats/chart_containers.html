@@ -1,4 +1,8 @@
 {% load admin_chart_tags %}
 {% for chart in charts %}
    {% include "./chart_container.html" with chart=chart %}
+{% empty %}
+   <p>
+      No charts available, please <a href="{% url 'admin:admin_tools_stats_dashboardstats_changelist' %}">configure them</a>
+   </p>
 {% endfor %}

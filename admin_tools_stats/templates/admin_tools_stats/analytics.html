@@ -74,6 +74,10 @@
 {% block content %}
    {% for chart in charts %}
    <a class="change_chart_button" href="?show={{ chart.graph_key }}" data-chart-key="{{ chart.graph_key }}"><button>{{ chart.graph_title }}</button></a>
+   {% empty %}
+      <p>
+         No charts available, please <a href="{% url 'admin:admin_tools_stats_dashboardstats_changelist' %}">configure them</a>
+      </p>
    {% endfor %}
    {% for chart in charts %}
    <div class="admin_charts notloaded" id="chart_element_{{ chart.graph_key }}" data-chart-key="{{ chart.graph_key }}">
