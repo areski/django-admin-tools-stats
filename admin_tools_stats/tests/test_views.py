@@ -17,6 +17,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 from model_bakery import baker
 
+from admin_tools_stats.models import DashboardStats
 from admin_tools_stats.views import AnalyticsView, ChartDataView, Interval
 
 from .utils import (
@@ -48,11 +49,31 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
         )
         super().setUp()
 
+    def test_analytics_view_empty(self):
+        """Test of analytics page when no charts are present"""
+        DashboardStats.objects.all().delete()
+        response = self.client.get(reverse("chart-analytics"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(
+            response,
+            "<p>No charts available, please "
+            '<a href="/admin/admin_tools_stats/dashboardstats/">configure them</a></p>',
+            html=True,
+        )
+
     def test_analytics_view(self):
         """Test function to check dashboardstats admin pages"""
         response = self.client.get(reverse("chart-analytics"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "<button>Kid chart</button>", html=True)
+        self.assertNotContains(response, "loadAnalyticsChart('")
+
+    def test_analytics_view_show(self):
+        """Test function to check dashboardstats admin pages that should show certain chart"""
+        response = self.client.get(reverse("chart-analytics") + "?show=kid_graph")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<button>Kid chart</button>", html=True)
+        self.assertContains(response, "loadAnalyticsChart('kid_graph')")
 
     def test_analytics_chart_view(self):
         """Test function to check dashboardstats admin pages"""

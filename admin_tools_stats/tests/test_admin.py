@@ -3,7 +3,7 @@ from django.test.utils import override_settings
 from django.urls import reverse
 from model_bakery import baker
 
-from admin_tools_stats.models import DashboardStatsCriteria
+from admin_tools_stats.models import DashboardStats, DashboardStatsCriteria
 
 from .utils import BaseSuperuserAuthenticatedClient
 
@@ -20,6 +20,34 @@ class AdminIndexTests(BaseSuperuserAuthenticatedClient):
             operation_field_name="is_active,is_staff",
         )
         super().setUp()
+
+    @override_settings(
+        INSTALLED_APPS=[
+            "django_nvd3",
+            "admin_tools_stats",
+            "admin_tools.menu",
+            "django.contrib.admin",
+            "django.contrib.auth",
+            "django.contrib.contenttypes",
+            "django.contrib.sessions",
+            "django.contrib.sites",
+            "django.contrib.messages",
+            "django.contrib.staticfiles",
+            "djangobower",
+            "demoproject",
+        ]
+    )
+    def test_admin_index_empty(self):
+        """Vanila admin index page without any chart, should note how to create it"""
+        DashboardStats.objects.all().delete()
+        url = reverse("admin:index")
+        response = self.client.get(url)
+        self.assertContains(
+            response,
+            "<p>No charts available, please "
+            '<a href="/admin/admin_tools_stats/dashboardstats/">configure them</a></p>',
+            html=True,
+        )
 
     @override_settings(
         INSTALLED_APPS=[
