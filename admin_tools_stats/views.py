@@ -65,7 +65,8 @@ class ChartDataView(TemplateView):
             context["graph_title"] = dashboard_stats.graph_title
             return context
 
-        configuration: Dict[str, Union[str, List[str]]] = self.request.GET.dict()
+        dict = self.request.GET
+        configuration: Dict[str, Union[str, List[str]]] = {item: dict[item] for item in dict}
         remove_multiple_keys(configuration, ["csrfmiddlewaretoken", "_", "graph_key"])
         selected_interval: Interval = Interval(
             configuration.pop("select_box_interval", interval) or dashboard_stats.default_time_scale
