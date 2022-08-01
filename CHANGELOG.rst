@@ -1,7 +1,13 @@
 Changelog
 =========
 
-1.0.0 (unreleased)
+1.1.0 (2022-08-01)
+------------------
+* pefrormance fixes
+* show info when no dashboard stats are available
+
+
+1.0.0 (2022-03-17)
 ------------------
 * store chart values in CachedValue table in DB to make charts with more complicated queries faster
 * add refresh/refresh all/reload on change controls to the charts
