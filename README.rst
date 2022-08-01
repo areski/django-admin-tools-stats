@@ -209,7 +209,9 @@ Running demo
 
 Run following commands::
 
-   pip install -r requirements
+   export DB_ENGINE='sqlite'
+   pip install -r requirements.txt
+   pip install git+https://github.com/PetrDlouhy/django-cache-utils@django40  # django-cache-utils is not compatible with Django >= 4
    python manage.py migrate
    python manage.py loaddata demoproject/fixtures/auth_user.json
    python manage.py loaddata demoproject/fixtures/test_data.json
