@@ -43,7 +43,6 @@ Requirements
 * ``Python>3.6``
 * PostgreSQL (MySQL is experimental, other databases probably not working but PRs are welcome)
 * ``simplejson`` for charts based on ``DecimalField`` values
-* The current PyPI version of `django-cache-utils` `is not compatible with Django 4.0 <https://github.com/PetrDlouhy/django-admin-charts/issues/39>`_. To install compatible version you can install working version by running ``pip install git+https://github.com/PetrDlouhy/django-cache-utils@django40``.
 
 ============
 Installation
@@ -233,7 +232,6 @@ Run following commands:
 
    export DB_ENGINE='sqlite'
    pip install -r requirements.txt
-   pip install git+https://github.com/PetrDlouhy/django-cache-utils@django40  # django-cache-utils is not compatible with Django >= 4
    python manage.py migrate
    python manage.py loaddata demoproject/fixtures/auth_user.json
    python manage.py loaddata demoproject/fixtures/test_data.json

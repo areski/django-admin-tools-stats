@@ -88,9 +88,6 @@ jobs:
       - name: Install django-jsonfield for older Django versions
         if: ${{ matrix.DJANGO_VERSION == '2.2.*' || matrix.DJANGO_VERSION == '3.0.*' }}
         run: pip install django-jsonfield
-      - name: Install patched django-cache-utils for Django 4.0
-        if: ${{ matrix.DJANGO_VERSION == '4.1.*' || matrix.DJANGO_VERSION == '4.0.*' || matrix.DJANGO_VERSION == '3.2.*' }}
-        run: pip install git+https://github.com/PetrDlouhy/django-cache-utils@django40
       - name: Testing
         run: |
           if [ "$matrix.DB_ENGINE" = 'mysql' ]; then
@@ -111,7 +108,6 @@ jobs:
       - name: Install
         run: |
           pip install -r test_requirements.txt
-          pip install git+https://github.com/PetrDlouhy/django-cache-utils@django40
       - name: Running Flake8
         run: flake8
       - name: Running isort

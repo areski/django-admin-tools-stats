@@ -1,5 +1,5 @@
 # django-qsstats-magic>=0.7.2
-djcacheutils>=3.0.0
+django-memoize
 django-nvd3>=0.5.0
 django-bower
 python-dateutil
