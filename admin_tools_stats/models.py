@@ -882,9 +882,9 @@ class CriteriaToStatsM2M(models.Model):
     @memoize(60 * 60 * 24 * 7)
     def _get_dynamic_choices(
         self,
-        time_since,
-        time_until,
-        count_limit=None,
+        time_since: datetime.datetime,
+        time_until: datetime.datetime,
+        count_limit: int = None,
         operation_choice=None,
         operation_field_choice=None,
         user=None,

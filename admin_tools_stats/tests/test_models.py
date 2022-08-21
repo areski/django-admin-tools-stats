@@ -81,6 +81,46 @@ class DashboardStatsCriteriaTests(TestCase):
         result = criteria.get_dynamic_criteria_field_name()
         self.assertEqual(result, "related__field_name")
 
+    def test__get_dynamic_choices_no_field_name(self):
+        """
+        Test _get_dynamic_choices() function
+        """
+        criteria_m2m = baker.make(
+            "CriteriaToStatsM2M",
+            stats__graph_title="Graph",
+            criteria__criteria_name="Foo",
+            criteria__dynamic_criteria_field_name="",
+            stats__model_app_name="auth",
+            stats__model_name="User",
+            stats__cache_values=False,
+        )
+        result = criteria_m2m._get_dynamic_choices(None, None)
+        self.assertEqual(result, None)
+
+    def test__get_dynamic_choices_time_values(self):
+        """
+        Test _get_dynamic_choices() function
+        """
+        baker.make("User", first_name="user1", last_name="bar_1", date_joined=date(2014, 1, 1))
+        criteria_m2m = baker.make(
+            "CriteriaToStatsM2M",
+            stats__graph_title="Graph",
+            criteria__criteria_name="Foo",
+            criteria__dynamic_criteria_field_name="first_name",
+            stats__model_app_name="auth",
+            stats__model_name="User",
+            stats__cache_values=False,
+            stats__date_field_name="date_joined",
+        )
+        result = criteria_m2m._get_dynamic_choices(
+            datetime(2014, 1, 1, tzinfo=UTC), datetime(2014, 1, 2, tzinfo=UTC)
+        )
+        self.assertEqual(result, OrderedDict([("user1", ("user1", "user1"))]))
+        result = criteria_m2m._get_dynamic_choices(
+            datetime(2014, 1, 1, tzinfo=None), datetime(2014, 1, 2, tzinfo=None)
+        )
+        self.assertEqual(result, OrderedDict([("user1", ("user1", "user1"))]))
+
     def test__get_dynamic_choices_caching(self):
         """
         Test _get_dynamic_choices() function
