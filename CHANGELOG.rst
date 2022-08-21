@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.2.0 (2022-XX-XX)
+1.2.0 (2022-08-21)
 ------------------
 * migrate to django-memoize from unmaintained django-cache-utils
 * testing passes in Django 4.1
