@@ -81,6 +81,93 @@ class DashboardStatsCriteriaTests(TestCase):
         result = criteria.get_dynamic_criteria_field_name()
         self.assertEqual(result, "related__field_name")
 
+    def test__get_dynamic_choices_caching(self):
+        """
+        Test _get_dynamic_choices() function
+
+        Test, that the value is really cached, but invalidates after CriteriaToStatsM2M save
+
+        Different criteria should have different value
+        This didn't work with cache_utils, and had to be
+        dealt with slef parameter containing another self
+        """
+        baker.make("User", first_name="user1", last_name="bar_1")
+        criteria_m2m = baker.make(
+            "CriteriaToStatsM2M",
+            stats__graph_title="Graph",
+            criteria__criteria_name="Foo",
+            criteria__dynamic_criteria_field_name="first_name",
+            stats__model_app_name="auth",
+            stats__model_name="User",
+            stats__cache_values=False,
+        )
+        self.assertEqual(
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1"))]),
+        )
+
+        criteria_m2m_1 = baker.make(
+            "CriteriaToStatsM2M",
+            criteria__dynamic_criteria_field_name="last_name",
+            stats__model_app_name="auth",
+            stats__model_name="User",
+        )
+        self.assertEqual(
+            criteria_m2m_1._get_dynamic_choices(None, None),
+            OrderedDict([("bar_1", ("bar_1", "bar_1"))]),
+        )
+
+        user2 = baker.make("User", first_name="user2", last_name="bar_2")
+        self.assertEqual(  # Value is cached, so it doesn't change
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1"))]),
+        )
+
+        criteria_m2m.criteria.save()
+        self.assertEqual(  # Criteria save invalidates cache, so returned value changes
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1")), ("user2", ("user2", "user2"))]),
+        )
+
+        user2.first_name = "user3"
+        user2.save()
+        self.assertEqual(  # Cache is not invalidated, so returned value doesn't change
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1")), ("user2", ("user2", "user2"))]),
+        )
+
+        criteria_m2m.save()
+        self.assertEqual(  # Criteria save invalidates cache, so returned value changes
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1")), ("user3", ("user3", "user3"))]),
+        )
+
+        user2.first_name = "user4"
+        user2.save()
+        self.assertEqual(  # Cache is not invalidated, so returned value doesn't change
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1")), ("user3", ("user3", "user3"))]),
+        )
+
+        criteria_m2m.stats.save()
+        self.assertEqual(  # Criteria save invalidates cache, so returned value changes
+            criteria_m2m._get_dynamic_choices(None, None),
+            OrderedDict([("user1", ("user1", "user1")), ("user4", ("user4", "user4"))]),
+        )
+
+        # Value for different criteria didn't invalidate the whole time
+        self.assertEqual(
+            criteria_m2m_1._get_dynamic_choices(None, None),
+            OrderedDict([("bar_1", ("bar_1", "bar_1"))]),
+        )
+
+        # But now they will
+        criteria_m2m_1.save()
+        self.assertEqual(
+            criteria_m2m_1._get_dynamic_choices(None, None),
+            OrderedDict([("bar_1", ("bar_1", "bar_1")), ("bar_2", ("bar_2", "bar_2"))]),
+        )
+
 
 class ModelTests(TestCase):
     maxDiff = None
