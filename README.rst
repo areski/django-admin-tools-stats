@@ -49,7 +49,7 @@ Requirements
 Installation
 ============
 
-Install django-admin-charts with these commands::
+Install django-admin-charts with these commands:
 
     $ pip install django-admin-charts
 
@@ -58,7 +58,9 @@ Install django-admin-charts with these commands::
 Basic setup for ``django-admin``
 --------------------------------
 
-Add ``admin_tools_stats`` (the Django admin charts application) & ``django_nvd3`` into INSTALLED_APPS in settings.py::
+Add ``admin_tools_stats`` (the Django admin charts application) & ``django_nvd3`` into INSTALLED_APPS in settings.py:
+
+.. code:: python
 
     INSTALLED_APPS = (
         'admin_tools_stats',  # this must be BEFORE 'admin_tools' and 'django.contrib.admin'
@@ -67,7 +69,9 @@ Add ``admin_tools_stats`` (the Django admin charts application) & ``django_nvd3`
         'django.contrib.admin',
     )
 
-Register chart views in your ``urls.py``::
+Register chart views in your ``urls.py``:
+
+.. code:: python
 
     from django.urls import include, path
     urlpatterns = [
@@ -76,7 +80,9 @@ Register chart views in your ``urls.py``::
 
 Ensure, you have ``default`` cache set up: https://docs.djangoproject.com/en/3.2/topics/cache/#memcached
 
-Run migrations::
+Run migrations:
+
+.. code:: sh
 
     $ python manage.py migrate
 
@@ -108,7 +114,9 @@ Configure javascript libraries
 ----------------------------------------------------------
 
 By default the nvd3/d3 libraries are taken from unpkg.
-If you want to install those libraries on your own, you can set their path by following settings::
+If you want to install those libraries on your own, you can set their path by following settings:
+
+.. code:: python
 
    ADMIN_CHARTS_NVD3_JS_PATH = 'bow/nvd3/build/nv.d3.js'
    ADMIN_CHARTS_NVD3_CSS_PATH = 'bow/nvd3/build/nv.d3.css'
@@ -121,14 +129,18 @@ Note that versions ``nvd3==1.8.6`` and ``d3==3.3.13`` are the only tested to be 
 Installation of javascript libraries with ``django-bower``
 ----------------------------------------------------------
 
-Add ``django-bower`` to INSTALLED_APPS in settings.py::
+Add ``django-bower`` to INSTALLED_APPS in settings.py:
+
+.. code:: python
 
     INSTALLED_APPS = (
         ...
         'djangobower'
     )
 
-Add the following properties to you settings.py file::
+Add the following properties to you settings.py file:
+
+.. code:: python
 
     # Specifie path to components root (you need to use absolute path)
     BOWER_COMPONENTS_ROOT = os.path.join(PROJECT_ROOT, 'components')
@@ -139,14 +151,18 @@ Add the following properties to you settings.py file::
         'nvd3#1.8.6',
     )
 
-Add django-bower finder to your static file finders::
+Add django-bower finder to your static file finders:
+
+.. code:: python
 
     STATICFILES_FINDERS = (
         ...
         'djangobower.finders.BowerFinder',
     )
 
-Run the following commands. These will download nvd3.js and its dependencies using bower and throw them in to you static folder for access by your application::
+Run the following commands. These will download nvd3.js and its dependencies using bower and throw them in to you static folder for access by your application:
+
+.. code:: sh
 
     $ python manage.py bower_install
     $ python manage.py collectstatic
@@ -158,7 +174,9 @@ Usage with ``django-admin-tools``
 
 Configure ``admin_tools``
 
-Add following code to dashboard.py::
+Add following code to dashboard.py:
+
+.. code:: python
 
     from admin_tools_stats.modules import DashboardChart, get_active_graph
 
@@ -196,7 +214,9 @@ You may also need to add some includes to your template admin base, see an examp
 Usage on DB that doesn't support JSONFields
 -------------------------------------------
 
-You can add following line to your settings in order to use JSONField from `django-jsonfield` instead of native Django JSONField::
+You can add following line to your settings in order to use JSONField from `django-jsonfield` instead of native Django JSONField:
+
+.. code:: python
 
    ADMIN_CHARTS_USE_JSONFIELD = False
 
@@ -207,7 +227,9 @@ This can become handy, when deploying on MySQL<5.7 (Like AWS RDS Aurora)
 Running demo
 ============
 
-Run following commands::
+Run following commands:
+
+.. code:: sh
 
    export DB_ENGINE='sqlite'
    pip install -r requirements.txt
@@ -232,6 +254,16 @@ django-admin-charts is a django based application, the major requirements are:
 - django-jsonfield
 - django-nvd3
 - django-bower
+
+
+Running tests
+-------------
+
+Test can be run with:
+
+.. code:: sh
+
+    DB_ENGINE="postgres" coverage run ./manage.py test --keepdb
 
 
 Contributing
