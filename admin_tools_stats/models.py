@@ -421,6 +421,7 @@ class DashboardStats(models.Model):
         db_table = "dashboard_stats"
         verbose_name = _("dashboard stats")
         verbose_name_plural = _("dashboard stats")
+        permissions = (("view_dashboard_stats", _("Can view dashboard charts")),)
 
     def allowed_type_operation_field_name_choices(self):
         return (op for op in operation if op[0] in self.allowed_type_operation_field_name)

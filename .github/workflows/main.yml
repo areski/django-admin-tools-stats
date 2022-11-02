@@ -93,6 +93,7 @@ jobs:
           if [ "$matrix.DB_ENGINE" = 'mysql' ]; then
             mysql_tzinfo_to_sql /usr/share/zoneinfo | mysql -u db_user -p mysql mysql
           fi
+          python manage.py makemigrations --check --dry-run
           python -W error::DeprecationWarning -m coverage run manage.py test
           coverage xml && codecov
         env:
@@ -112,8 +113,6 @@ jobs:
         run: flake8
       - name: Running isort
         run: python -m isort . --check-only --diff
-      - name: Running black
-        run: black --check .
       - name: Running black
         run: black --check .
       - name: Running mypy
