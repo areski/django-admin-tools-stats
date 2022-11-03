@@ -1,6 +1,19 @@
 Changelog
 =========
 
+1.2.2 (2022-11-03)
+------------------
+
+* remove unnecessary (wrongly added) permission and explain which permission to enable in error message
+
+1.2.1 (2022-11-02)
+------------------
+
+* add permissions
+* add missing migration
+* check missing migrations during testing
+* remove duplicate black check
+
 1.2.0 (2022-08-21)
 ------------------
 * migrate to django-memoize from unmaintained django-cache-utils
