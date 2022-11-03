@@ -59,9 +59,10 @@ class ChartDataView(TemplateView):
             self.request.user.has_perm("admin_tools_stats.view_dashboardstats")
             or dashboard_stats.show_to_users
         ):
-            context[
-                "error"
-            ] = "You have no permission to view this chart. Check if you are logged in"
+            context["error"] = (
+                "You have no permission to view this chart. "
+                "Check if you are logged in and have permission 'admin_tools_stats | dashboard stats | Can view dashboard stats'"
+            )
             context["graph_title"] = dashboard_stats.graph_title
             return context
 
