@@ -61,7 +61,8 @@ class ChartDataView(TemplateView):
         ):
             context["error"] = (
                 "You have no permission to view this chart. "
-                "Check if you are logged in and have permission 'admin_tools_stats | dashboard stats | Can view dashboard stats'"
+                "Check if you are logged in and have permission "
+                "'admin_tools_stats | dashboard stats | Can view dashboard stats'"
             )
             context["graph_title"] = dashboard_stats.graph_title
             return context
