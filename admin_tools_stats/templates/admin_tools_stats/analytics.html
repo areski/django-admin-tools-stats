@@ -72,7 +72,7 @@
 {% endblock %}
 
 {% block content %}
-   {% for chart in charts %}
+   {% for chart in nonuser_charts %}
    <a class="change_chart_button" href="?show={{ chart.graph_key }}" data-chart-key="{{ chart.graph_key }}"><button>{{ chart.graph_title }}</button></a>
    {% empty %}
       <p>

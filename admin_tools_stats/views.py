@@ -191,6 +191,7 @@ class AnalyticsView(LoginRequiredMixin, ChartsMixin, TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         context_data = super().get_context_data(*args, **kwargs)
+        context_data["nonuser_charts"] = self.get_charts_query().filter(show_to_users=False)
         context_data["charts"] = self.get_charts_query()
         return context_data
 
