@@ -63,6 +63,7 @@ class DashboardStatsCriteriaInline(admin.TabularInline):
         "use_as",
         "default_option",
         "choices_based_on_time_range",
+        "recalculate",
         "count_limit",
         "prefix",
         "criteria__dynamic_criteria_field_name",
@@ -142,6 +143,7 @@ class DashboardStatsAdmin(admin.ModelAdmin):
         "created_date",
         "is_visible",
         "show_to_users",
+        "cache_values",
     ]
     exclude = ("criteria",)
     inlines = [DashboardStatsCriteriaInline]

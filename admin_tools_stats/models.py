@@ -851,6 +851,10 @@ class CriteriaToStatsM2M(models.Model):
         ),
         default="chart_filter",
     )
+    recalculate = models.BooleanField(
+        "Recalculate by management command (apply only for multiple series)",
+        default=False,
+    )
     default_option = models.CharField(
         max_length=255,
         verbose_name=_("Default filter criteria option"),
