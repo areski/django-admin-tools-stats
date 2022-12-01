@@ -28,6 +28,7 @@ from django.apps import apps
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import FieldError, ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 from django.db.models import ExpressionWrapper, Q
 from django.db.models.aggregates import Avg, Count, Max, Min, StdDev, Sum, Variance
@@ -262,6 +263,11 @@ class DashboardStats(models.Model):
         unique=True,
         max_length=90,
         verbose_name=_("graph identifier"),
+        validators=[
+            RegexValidator(
+                "^[a-z0-9_]+$", _("Only small alphanumeric characters and underscore allowed.")
+            ),
+        ],
         help_text=_("it needs to be one word unique. ex. auth, mygraph"),
     )
     graph_title = models.CharField(
