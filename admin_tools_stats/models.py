@@ -962,7 +962,7 @@ class CriteriaToStatsM2M(models.Model):
                 )
                 if count_limit:
                     choices.update(
-                        [("other", ([i for i in other_choices_queryset], "other"))],
+                        [("other", (other_choices_queryset, "other"))],
                     )
                     choices.move_to_end("other", last=False)
                 return choices
