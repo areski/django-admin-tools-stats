@@ -884,7 +884,7 @@ class CriteriaToStatsM2M(models.Model):
         self,
         time_since: datetime.datetime,
         time_until: datetime.datetime,
-        count_limit: int = None,
+        count_limit: Optional[int] = None,
         operation_choice=None,
         operation_field_choice=None,
         user=None,

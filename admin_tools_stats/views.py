@@ -2,7 +2,7 @@ import logging
 import time
 from collections import OrderedDict
 from datetime import datetime
-from typing import Dict, List, Union
+from typing import Dict, List, Optional, Union
 
 from datetime_truncate import truncate
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -51,7 +51,9 @@ def remove_multiple_keys(in_dict, entries_to_remove):
 class ChartDataView(TemplateView):
     template_name = "admin_tools_stats/chart_data.html"
 
-    def get_context_data(self, *args, interval: Interval = None, graph_key=None, **kwargs):
+    def get_context_data(
+        self, *args, interval: Optional[Interval] = None, graph_key=None, **kwargs
+    ):
         dashboard_stats = DashboardStats.objects.get(graph_key=graph_key)
         context = super().get_context_data(*args, **kwargs)
 
