@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.2.4 (2022-12-01)
+------------------
+
+* add recalculate_charts management command
+* fix linting
+* forbid to insert non-working characters into chart_key
+
 1.2.3 (2022-11-03)
 ------------------
 
