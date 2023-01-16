@@ -19,4 +19,9 @@ urlpatterns = [
         views.AnalyticsChartView.as_view(),
         name="chart-analytics",
     ),
+    path(  # Only to get the base address in template, will need parameters
+        "analytics/chart/",
+        views.AnalyticsChartView.as_view(),
+        name="chart-analytics-without-key",
+    ),
 ]

@@ -64,7 +64,7 @@ function loadAnalyticsChart(chart_key){
    if($("#chart_element_" + chart_key + ".notloaded").length)
       $('body').addClass("loading");
    $('.admin_charts').hide();
-   $("#chart_element_" + chart_key + ".notloaded").load("/admin_tools_stats/analytics/chart/" + chart_key, function(){
+   $("#chart_element_" + chart_key + ".notloaded").load("{% url "chart-analytics-without-key" %}" + chart_key, function(){
       $(this).removeClass('notloaded');
       $(this).addClass('loaded');
       $(this).find('form.stateform:visible').each(loadAnchor);
