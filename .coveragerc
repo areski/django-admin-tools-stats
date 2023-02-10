@@ -1,9 +1,9 @@
 [run]
 omit =
-   *virtualenvs*,
-   *migrations*,
-   *site-packages*
-include = admin_tools_stats*
+   */virtualenvs/*,
+   */migrations/*,
+   */site-packages/*
+include = admin_tools_stats/*
 plugins =
     django_coverage_plugin
 branch = True
