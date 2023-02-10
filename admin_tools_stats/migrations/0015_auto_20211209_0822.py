@@ -14,7 +14,6 @@ except ImportError:
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("admin_tools_stats", "0014_auto_20211122_1511"),
     ]

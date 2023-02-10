@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("admin_tools_stats", "0010_dashboardstats_show_to_users"),
     ]

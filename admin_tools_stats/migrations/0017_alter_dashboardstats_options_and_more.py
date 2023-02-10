@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("admin_tools_stats", "0016_dashboardstats_cache_values"),
     ]

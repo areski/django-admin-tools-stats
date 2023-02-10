@@ -18,7 +18,6 @@ def transform_distinct_count_reverse(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("admin_tools_stats", "0004_dashboardstats_y_tick_format"),
     ]

@@ -32,7 +32,6 @@ def transform_criteria_mtm_reverse(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("admin_tools_stats", "0005_auto_20200203_1537"),
     ]
