@@ -1,6 +1,13 @@
 Changelog
 =========
 
+1.3.0 (2023-02-10)
+------------------
+
+* set BigAutoField as app default
+* remove support for Django<=3.1
+* fix hardcoded url in admin_charts.js template
+
 1.2.4 (2022-12-01)
 ------------------
 
