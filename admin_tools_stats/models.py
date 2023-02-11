@@ -54,12 +54,9 @@ def get_charts_timezone():
     return None
 
 
-try:
-    if getattr(settings, "ADMIN_CHARTS_USE_JSONFIELD", True):
-        from django.db.models import JSONField
-    else:
-        from jsonfield.fields import JSONField  # type: ignore
-except ImportError:
+if getattr(settings, "ADMIN_CHARTS_USE_JSONFIELD", True):
+    from django.db.models import JSONField
+else:
     from jsonfield.fields import JSONField  # type: ignore
 
 logger = logging.getLogger(__name__)

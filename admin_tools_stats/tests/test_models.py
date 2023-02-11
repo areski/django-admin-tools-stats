@@ -1409,18 +1409,7 @@ class GetTimeSeriesTests(TestCase):
         testing_data = [
             (datetime(2010, 10, 10, 0, 0).astimezone(UTC), 1),
         ]
-        if django.VERSION > (3, 2):
-            self.assertQuerysetEqual(serie, testing_data)
-        else:
-            self.assertQuerysetEqual(
-                serie,
-                [
-                    (
-                        "(datetime.datetime(2010, 10, 10, 0, 0, "
-                        "tzinfo=<DstTzInfo 'America/Chicago' CDT-1 day, 19:00:00 DST>), 1)"
-                    )
-                ],
-            )
+        self.assertQuerysetEqual(serie, testing_data)
 
 
 class CacheModelTests(TestCase):

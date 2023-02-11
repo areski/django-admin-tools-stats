@@ -10,7 +10,6 @@
 #
 from datetime import datetime, timezone
 
-import django
 from django.contrib.auth.models import Permission
 from django.test import RequestFactory
 from django.test.utils import override_settings
@@ -93,13 +92,7 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
         a = AnalyticsView()
         a.request = self.client.request()
         a.request.user = baker.make("User", is_superuser=True)
-        if django.VERSION > (3, 2):
-            self.assertQuerysetEqual(a.get_charts_query(), [self.kid_stats, self.stats])
-        else:
-            self.assertQuerysetEqual(
-                a.get_charts_query(),
-                ["<DashboardStats: kid_graph>", "<DashboardStats: user_graph>"],
-            )
+        self.assertQuerysetEqual(a.get_charts_query(), [self.kid_stats, self.stats])
 
     def test_get_charts_query_usser(self):
         a = AnalyticsView()
@@ -114,10 +107,7 @@ class AnalyticsViewTest(BaseSuperuserAuthenticatedClient):
         )
         a.request = self.client.request()
         a.request.user = baker.make("User")
-        if django.VERSION > (3, 2):
-            self.assertQuerysetEqual(a.get_charts_query(), [kid_graph_user])
-        else:
-            self.assertQuerysetEqual(a.get_charts_query(), ["<DashboardStats: kid_graph_user>"])
+        self.assertQuerysetEqual(a.get_charts_query(), [kid_graph_user])
 
     def test_get_templates_names(self):
         a = AnalyticsView()
