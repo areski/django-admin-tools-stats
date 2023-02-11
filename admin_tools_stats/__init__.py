@@ -13,7 +13,7 @@
 #
 
 # edit also docs/source/conf.py and update requirements.txt
-__version__ = "1.2.4"
+__version__ = "1.3.0"
 __author__ = "Petr Dlouhy"
 __contact__ = "petr.dlouhy@emai.cz"
 __homepage__ = "https://github.com/PetrDlouhy"
