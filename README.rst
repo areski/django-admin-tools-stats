@@ -5,8 +5,8 @@ Django admin charts
 :Description: Easily configurable charts statistics for ``django-admin`` and ``django-admin-tools``.
 :Documentation: http://django-admin-charts.readthedocs.org/en/latest/
 
-.. image:: https://travis-ci.org/PetrDlouhy/django-admin-charts.svg?branch=master
-    :target: https://travis-ci.org/PetrDlouhy/django-admin-charts
+.. image:: https://github.com/PetrDlouhy/django-admin-charts/actions/workflows/main.yml/badge.svg?branch=master
+    :target: https://github.com/PetrDlouhy/django-admin-charts/actions/workflows/main.yml
 
 .. image:: https://img.shields.io/pypi/v/django-admin-charts.svg
   :target: https://pypi.python.org/pypi/django-admin-charts/
