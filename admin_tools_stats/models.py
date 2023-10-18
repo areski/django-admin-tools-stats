@@ -437,12 +437,16 @@ class DashboardStats(models.Model):
     def get_model(self):
         return apps.get_model(self.model_app_name, self.model_name)
 
+    def get_queryset(self):
+        qs = self.get_model().objects
+        return qs
+
     def get_operation_field(self, operation):
-        query = self.get_model().objects.all().query
+        query = self.get_queryset().all().query
         return query.resolve_ref(operation).field
 
     def get_date_field(self):
-        query = self.get_model().objects.all().query
+        query = self.get_queryset().all().query
         return query.resolve_ref(self.date_field_name).field
 
     def clean(self, *args, **kwargs):
@@ -526,7 +530,6 @@ class DashboardStats(models.Model):
         interval: Interval,
     ):
         """Get the stats time series"""
-        model_name = apps.get_model(self.model_app_name, self.model_name)
         kwargs = {}
         dynamic_kwargs: List[Optional[Q]] = []
         if not user.has_perm("admin_tools_stats.view_dashboardstats") and self.user_field_name:
@@ -596,7 +599,7 @@ class DashboardStats(models.Model):
 
         # TODO: maybe backport values_list support back to django-qsstats-magic and use it again for the query
         time_range = {"%s__range" % self.date_field_name: (time_since, time_until)}
-        qs = model_name.objects
+        qs = self.get_queryset()
         qs = qs.filter(**time_range)
         qs = qs.filter(**kwargs)
         if isinstance(self.get_date_field(), DateTimeField):
@@ -881,9 +884,9 @@ class CriteriaToStatsM2M(models.Model):
             return self.prefix + self.criteria.dynamic_criteria_field_name
         return self.criteria.dynamic_criteria_field_name
 
-    def get_dynamic_field(self, model):
+    def get_dynamic_field(self):
         field_name = self.get_dynamic_criteria_field_name()
-        query = model.objects.all().query
+        query = self.stats.get_queryset().all().query
         return query.resolve_ref(field_name).field
 
     @memoize(60 * 60 * 24 * 7)
@@ -896,7 +899,6 @@ class CriteriaToStatsM2M(models.Model):
         operation_field_choice=None,
         user=None,
     ) -> "Optional[OrderedDict[str, Tuple[Union[str, bool, List[str]], str]]]":
-        model = self.stats.get_model()
         field_name = self.get_dynamic_criteria_field_name()
         if self.criteria.criteria_dynamic_mapping:
             return OrderedDict(self.criteria.criteria_dynamic_mapping)
@@ -909,7 +911,7 @@ class CriteriaToStatsM2M(models.Model):
                         ("False", (False, "Non blank")),
                     )
                 )
-            field = self.get_dynamic_field(model)
+            field = self.get_dynamic_field()
             if field.__class__ == models.BooleanField:
                 return OrderedDict(
                     (
@@ -940,7 +942,7 @@ class CriteriaToStatsM2M(models.Model):
                             )
                         end_time = time_until
                         date_filters["%s__lte" % self.stats.date_field_name] = end_time
-                choices_queryset = model.objects.filter(
+                choices_queryset = self.stats.get_queryset().filter(
                     **date_filters,
                 )
                 if user and not user.has_perm("admin_tools_stats.view_dashboardstats"):
