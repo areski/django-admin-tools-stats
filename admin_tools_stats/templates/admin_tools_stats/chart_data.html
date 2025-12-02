@@ -8,7 +8,12 @@ alert('{{ graph_title }} error: \n{{ error|escapejs }}');
 {% elif values %}
 function loadChartScript(){
    d3.selectAll('.nvtooltip').remove();
-   {% load_chart chart_type values chart_container extra %}
+   var chartInstance = (function() {
+      {% load_chart chart_type values chart_container extra %}
+   })();
+   if (chartInstance && typeof chart_instances !== 'undefined') {
+      chart_instances['{{ graph_key }}'] = chartInstance;
+   }
 };
 loadChartScript();
 {% endif %}

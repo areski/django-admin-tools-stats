@@ -200,6 +200,7 @@ class ChartDataView(ChartDataMixin, TemplateView):
         }
 
         context["chart_container"] = "chart_container_" + graph_key
+        context["graph_key"] = graph_key
         return context
 
 

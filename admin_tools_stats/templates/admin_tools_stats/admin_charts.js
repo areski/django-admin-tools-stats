@@ -2,6 +2,31 @@
 var html_string = '<svg style="width:100%;height:400px"></svg>';
 var html_string_analytics = '<svg style="width:100%;height:100%"></svg>';
 var chart_scripts = {};
+var chart_instances = {};
+
+function cleanupChart(graph_key) {
+   d3.selectAll('.nvtooltip').remove();
+
+   const containerId = 'chart_container_' + graph_key;
+   const container = document.getElementById(containerId);
+   if (container) {
+      const svg = container.querySelector('svg');
+      if (svg) {
+         d3.select(svg).on('.zoom', null);
+         d3.select(svg).selectAll('*').on('.nv', null);
+      }
+   }
+
+   if (chart_instances[graph_key]) {
+      delete chart_instances[graph_key];
+   }
+
+   if (window.nv && window.nv.graphs) {
+      window.nv.graphs = window.nv.graphs.filter(function(g) {
+         return g && g.container && g.container.id !== containerId;
+      });
+   }
+}
 
 function getChartParamsFromUrl(graph_key) {
    const urlParams = new URLSearchParams(window.location.search);
@@ -135,9 +160,9 @@ function loadAnchor(){
    data.addClass("loading");
    var graph_key = data.find(".hidden_graph_key").first().val();
    var is_analytics = data.closest('.chrt_flex').length > 0;
-   if($(this).hasClass('select_box_chart_type') || $(this).hasClass('stateform')){
-      $("#chart_container_" + graph_key).empty().append(is_analytics ? html_string_analytics : html_string);
-   };
+
+   cleanupChart(graph_key);
+   $("#chart_container_" + graph_key).empty().append(is_analytics ? html_string_analytics : html_string);
 
    updateAnalyticsLink(data, graph_key);
    loadChart(data, graph_key, reload, is_analytics);
